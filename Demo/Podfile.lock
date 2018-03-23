@@ -1,0 +1,28 @@
+PODS:
+  - OpenSSL-Apple (1.1.0g)
+  - PIATunnel (1.0):
+    - PIATunnel/AppExtension (= 1.0)
+    - PIATunnel/Core (= 1.0)
+  - PIATunnel/AppExtension (1.0):
+    - PIATunnel/Core
+    - SwiftyBeaver
+  - PIATunnel/Core (1.0):
+    - OpenSSL-Apple (= 1.1.0g)
+    - SwiftyBeaver
+  - SwiftyBeaver (1.5.1)
+
+DEPENDENCIES:
+  - PIATunnel (from `..`)
+
+EXTERNAL SOURCES:
+  PIATunnel:
+    :path: ..
+
+SPEC CHECKSUMS:
+  OpenSSL-Apple: e259fc621b6d3f6433253097dc266fce69e47c52
+  PIATunnel: 42d00f8e9cfdba29d9a6a8c642660e2ae84f5306
+  SwiftyBeaver: 4f74563624b2c1e821c522c54142b5dd5ebb0f30
+
+PODFILE CHECKSUM: 1199e89f72f37e986463243abe5442ffdc81274c
+
+COCOAPODS: 1.4.0

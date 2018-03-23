@@ -1,0 +1,26 @@
+clean:
+module: "PIATunnel"
+author: "Davide De Rosa @ London Trust Media, Inc."
+author_url: "https://www.privateinternetaccess.com"
+
+theme: fullwidth
+
+xcodebuild_arguments:
+    - "-workspace"
+    - "PIATunnel.xcworkspace"
+    - "-scheme"
+    - "PIATunnel-iOS"
+
+custom_categories:
+    - name: Core
+      children:
+        - EncryptionProxy
+        - IOInterface
+        - LinkInterface
+        - TunnelInterface
+        - SessionProxy
+        - SessionProxyDelegate
+        - SessionError
+    - name: AppExtension
+      children:
+        - PIATunnelProvider

@@ -88,11 +88,11 @@ The generated output is stored into the `docs` directory in HTML format.
 
 Here you will find the low-level entities on top of which the connection is established. Code is mixed Swift and Obj-C, most of it is not exposed to consumers. The *Core* module depends on OpenSSL and is mostly platform-agnostic.
 
-The entry point is the [SessionProxy](/PIATunnel/Sources/Core/SessionProxy.swift) class. The networking layer is fully abstract and delegated externally with the use of opaque [IOInterface](/PIATunnel/Sources/Core/IOInterface.swift) ([LinkInterface](/PIATunnel/Sources/Core/LinkInterface.swift) and [TunnelInterface](/PIATunnel/Sources/Core/TunnelInterface.swift)) and [SessionProxyDelegate](/PIATunnel/Sources/Core/SessionProxy.swift) protocols.
+The entry point is the `SessionProxy` class. The networking layer is fully abstract and delegated externally with the use of opaque `IOInterface` (`LinkInterface` and `TunnelInterface`) and `SessionProxyDelegate` protocols.
 
 ### AppExtension
 
-The goal of this module is packaging up a black box implementation of a [NEPacketTunnelProvider][ne-ptp], which is the essential part of a Packet Tunnel Provider app extension. You will find the main implementation in the [PIATunnelProvider](/PIATunnel/Sources/AppExtension/PIATunnelProvider.swift) class.
+The goal of this module is packaging up a black box implementation of a [NEPacketTunnelProvider][ne-ptp], which is the essential part of a Packet Tunnel Provider app extension. You will find the main implementation in the `PIATunnelProvider` class.
 
 Currently, the extension supports VPN over [UDP sockets only][ne-udp]. A debug log snapshot is optionally maintained and shared to host apps via `UserDefaults` in a shared App Group.
 

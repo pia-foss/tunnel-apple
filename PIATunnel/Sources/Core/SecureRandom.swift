@@ -62,7 +62,7 @@ class SecureRandom {
         defer {
 //            randomBytes.initialize(to: 0, count: length)
             bzero(randomBytes, length)
-            randomBytes.deallocate(capacity: length)
+            randomBytes.deallocate()
         }
         
         guard (SecRandomCopyBytes(kSecRandomDefault, length, randomBytes) == 0) else {

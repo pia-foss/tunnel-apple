@@ -129,9 +129,11 @@ This project is licensed under the [MIT (Expat) license](https://choosealicense.
 
 ## Acknowledgements
 
+- SwiftyBeaver - © 2015 Sebastian Kreutzberger
+
 This product includes software developed by the OpenSSL Project for use in the OpenSSL Toolkit. ([https://www.openssl.org/][dep-openssl])
 
-© 2002-2017 OpenVPN Inc. - OpenVPN is a registered trademark of OpenVPN Inc.
+© 2002-2018 OpenVPN Inc. - OpenVPN is a registered trademark of OpenVPN Inc.
 
 [pia-image]: https://www.privateinternetaccess.com/assets/PIALogo2x-0d1e1094ac909ea4c93df06e2da3db4ee8a73d8b2770f0f7d768a8603c62a82f.png
 [pia-url]: https://www.privateinternetaccess.com/

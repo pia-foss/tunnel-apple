@@ -98,8 +98,6 @@ Currently, the extension supports VPN over [UDP sockets only][ne-udp]. A debug l
 
 ## Known issues
 
-The code in this repository is still a Work In Progress (WIP) and as yet not contained in App Store releases.
-
 ### macOS support
 
 As seen when creating an Xcode target, Packet Tunnel Provider extensions are available for iOS 9+ and macOS 10.11+. The library was initially written for iOS and relies on the use of a shared keychain between the host app and the extension.

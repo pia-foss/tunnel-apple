@@ -359,11 +359,11 @@ public class SessionProxy: NSObject {
         }
         
         autoreleasepool {
-            if negotiationKey.didHardResetTimeOut() {
+            guard !negotiationKey.didHardResetTimeOut() else {
                 doReconnect(error: SessionError.connectionTimeout)
                 return
             }
-            if negotiationKey.didNegotiationTimeOut() {
+            guard !negotiationKey.didNegotiationTimeOut() else {
                 doShutdown(error: SessionError.connectionTimeout)
                 return
             }
@@ -372,12 +372,11 @@ public class SessionProxy: NSObject {
                 switch stopMethod {
                 case .shutdown:
                     doShutdown(error: stopError)
-                    return
 
                 case .reconnect:
                     doReconnect(error: stopError)
-                    return
                 }
+                return
             }
         
             maybeRenegotiate()
@@ -396,7 +395,7 @@ public class SessionProxy: NSObject {
     private func loopLink() {
 
         // WARNING: runs in Network.framework queue
-        link?.setReadHandler({ (newPackets, error) in
+        link?.setReadHandler { (newPackets, error) in
             if let error = error {
                 log.error("Failed LINK read: \(error)")
                 return
@@ -408,7 +407,7 @@ public class SessionProxy: NSObject {
                     self.receiveLink(packets: packets)
                 }
             }
-        })
+        }
     }
 
     // Ruby: tun_loop
@@ -562,11 +561,11 @@ public class SessionProxy: NSObject {
         }
         
         let now = Date()
-        if (now.timeIntervalSince(lastPingIn) > Configuration.pingTimeout) {
+        guard (now.timeIntervalSince(lastPingIn) <= Configuration.pingTimeout) else {
             deferStop(.shutdown, SessionError.pingTimeout)
             return
         }
-        if (now.timeIntervalSince(lastPingOut) < Configuration.pingInterval) {
+        guard (now.timeIntervalSince(lastPingOut) >= Configuration.pingInterval) else {
             return
         }
     
@@ -933,7 +932,7 @@ public class SessionProxy: NSObject {
         for controlPacket in controlQueueOut {
             if let sentDate = controlPacket.sentDate {
                 let timeAgo = -sentDate.timeIntervalSinceNow
-                if (timeAgo < Configuration.retransmissionLimit) {
+                guard (timeAgo >= Configuration.retransmissionLimit) else {
                     log.debug("Skip control packet with id \(controlPacket.packetId) (sent on \(sentDate), \(timeAgo) seconds ago)")
                     continue
                 }

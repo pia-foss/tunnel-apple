@@ -473,7 +473,6 @@
 				0E1108A61F77B9F900A92462 /* Frameworks */,
 				0E1108A71F77B9F900A92462 /* Resources */,
 				D8CE7C5A74A8E75A0756E08F /* [CP] Embed Pods Frameworks */,
-				7038EAB2A0C90CF2F5D93102 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -494,7 +493,6 @@
 				0E17D7F51F730D9F009EE129 /* Frameworks */,
 				0E17D7F61F730D9F009EE129 /* Headers */,
 				0E17D7F71F730D9F009EE129 /* Resources */,
-				771F546986F8EB023D6C812C /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -514,7 +512,6 @@
 				0E3251C11F95770D00C108D9 /* Frameworks */,
 				0E3251C21F95770D00C108D9 /* Headers */,
 				0E3251C31F95770D00C108D9 /* Resources */,
-				2591AB95EA06AECCA33FE2C4 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -630,21 +627,6 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		2591AB95EA06AECCA33FE2C4 /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "[CP] Copy Pods Resources";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-PIATunnel-PIATunnel-macOS/Pods-PIATunnel-PIATunnel-macOS-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
 		5578C17CB1FA354FB3939356 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -661,36 +643,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-		7038EAB2A0C90CF2F5D93102 /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "[CP] Copy Pods Resources";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-PIATunnel-PIATunnelHost/Pods-PIATunnel-PIATunnelHost-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		771F546986F8EB023D6C812C /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "[CP] Copy Pods Resources";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-PIATunnel-PIATunnel-iOS/Pods-PIATunnel-PIATunnel-iOS-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		B81ED2229B05F6217EE28199 /* [CP] Check Pods Manifest.lock */ = {

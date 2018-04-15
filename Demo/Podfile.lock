@@ -14,9 +14,14 @@ PODS:
 DEPENDENCIES:
   - PIATunnel (from `..`)
 
+SPEC REPOS:
+  https://github.com/CocoaPods/Specs.git:
+    - OpenSSL-Apple
+    - SwiftyBeaver
+
 EXTERNAL SOURCES:
   PIATunnel:
-    :path: ..
+    :path: ".."
 
 SPEC CHECKSUMS:
   OpenSSL-Apple: e259fc621b6d3f6433253097dc266fce69e47c52
@@ -25,4 +30,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: 1199e89f72f37e986463243abe5442ffdc81274c
 
-COCOAPODS: 1.4.0
+COCOAPODS: 1.5.0

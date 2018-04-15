@@ -16,7 +16,6 @@ private let log = SwiftyBeaver.self
  Packet Tunnel Provider extension both on iOS and macOS.
  */
 open class PIATunnelProvider: NEPacketTunnelProvider, SessionProxyDelegate {
-    private static var udpContext = 0
     
     // MARK: Tweaks
     
@@ -32,8 +31,8 @@ open class PIATunnelProvider: NEPacketTunnelProvider, SessionProxyDelegate {
     /// The number of milliseconds after a reconnection attempt is issued.
     public var reconnectionDelay = 1000
     
-    /// The number of UDP failures after which the tunnel is expected to die.
-    public var maxUDPFailures = 3
+    /// The number of link failures after which the tunnel is expected to die.
+    public var maxLinkFailures = 3
 
     // MARK: Constants
     
@@ -67,9 +66,10 @@ open class PIATunnelProvider: NEPacketTunnelProvider, SessionProxyDelegate {
 
     private var proxy: SessionProxy?
     
-    private var udp: NWUDPSession?
-    
-    private var udpFailures = 0
+//    private var udp: NWUDPSession?
+    private var socket: GenericSocket?
+
+    private var linkFailures = 0
 
     private var pendingStartHandler: ((Error?) -> Void)?
     
@@ -189,15 +189,20 @@ open class PIATunnelProvider: NEPacketTunnelProvider, SessionProxyDelegate {
     // MARK: Connection (tunnel queue)
 
     private func connectTunnel(endpoint: NWEndpoint) {
-        log.info("Creating UDP session")
+        log.info("Creating link session")
         log.info("Will connect to \(endpoint)")
 
         NotificationCenter.default.addObserver(self, selector: #selector(handleWifiChange), name: .__InterfaceObserverDidDetectWifiChange, object: nil)
         observer.start(queue: tunnelQueue)
 
-        udp = createUDPSession(to: endpoint, from: nil)
-        udp?.addObserver(self, forKeyPath: #keyPath(NWUDPSession.state), options: [.initial, .new], context: &PIATunnelProvider.udpContext)
-        udp?.addObserver(self, forKeyPath: #keyPath(NWUDPSession.hasBetterPath), options: .new, context: &PIATunnelProvider.udpContext)
+//        udp = createUDPSession(to: endpoint, from: nil)
+//        udp?.addObserver(self, forKeyPath: #keyPath(NWUDPSession.state), options: [.initial, .new], context: &PIATunnelProvider.linkContext)
+//        udp?.addObserver(self, forKeyPath: #keyPath(NWUDPSession.hasBetterPath), options: .new, context: &PIATunnelProvider.linkContext)
+        // FIXME: depending on cfg.socketType
+        let backend = createUDPSession(to: endpoint, from: nil)
+        socket = NEUDPSocket(udp: backend)
+        socket?.delegate = self
+        socket?.observe(queue: tunnelQueue)
     }
     
     private func finishTunnelDisconnection(error: Error?) {
@@ -206,9 +211,11 @@ open class PIATunnelProvider: NEPacketTunnelProvider, SessionProxyDelegate {
         observer.stop()
         NotificationCenter.default.removeObserver(self, name: .__InterfaceObserverDidDetectWifiChange, object: nil)
 
-        udp?.removeObserver(self, forKeyPath: #keyPath(NWUDPSession.state), context: &PIATunnelProvider.udpContext)
-        udp?.removeObserver(self, forKeyPath: #keyPath(NWUDPSession.hasBetterPath), context: &PIATunnelProvider.udpContext)
-        udp = nil
+//        udp?.removeObserver(self, forKeyPath: #keyPath(NWUDPSession.state), context: &PIATunnelProvider.linkContext)
+//        udp?.removeObserver(self, forKeyPath: #keyPath(NWUDPSession.hasBetterPath), context: &PIATunnelProvider.linkContext)
+//        udp = nil
+        socket?.unobserve()
+        socket = nil
 
         if let error = error {
             log.error("Tunnel did stop (error: \(error))")
@@ -242,50 +249,50 @@ open class PIATunnelProvider: NEPacketTunnelProvider, SessionProxyDelegate {
         }
     }
     
-    private func handleUDPStateChange(udp: NWUDPSession) {
-        guard let proxy = proxy else {
-            fatalError("Observing UDP events without initializing a SessionProxy before")
-        }
-
-        var shouldShutdown = false
-        var shutdownError: Error?
-
-        switch udp.state {
-        case .ready:
-            proxy.setLink(link: NEUDPInterface(udp: udp))
-            
-        case .cancelled:
-            shouldShutdown = true
-            shutdownError = proxy.stopError
-            
-        case .failed:
-            udpFailures += 1
-            shouldShutdown = true
-            shutdownError = proxy.stopError ?? TunnelError.udpError
-            log.debug("UDP failures so far: \(udpFailures) (max = \(maxUDPFailures))")
-
-        default:
-            break
-        }
-
-        if shouldShutdown {
-            finishTunnelDisconnection(error: shutdownError)
-            if reasserting {
-                guard (udpFailures < maxUDPFailures) else {
-                    log.debug("Too many UDP failures (\(udpFailures)), tunnel will die now")
-                    reasserting = false
-                    disposeTunnel(error: shutdownError)
-                    return
-                }
-                log.debug("Disconnection is recoverable, tunnel will reconnect in \(reconnectionDelay) milliseconds...")
-                schedule(after: .milliseconds(reconnectionDelay)) {
-                    self.connectTunnel(endpoint: udp.endpoint)
-                }
-                return
-            }
-            disposeTunnel(error: shutdownError)
-        }
-    }
+//    private func handleUDPStateChange(udp: NWUDPSession) {
+//        guard let proxy = proxy else {
+//            fatalError("Observing UDP events without initializing a SessionProxy before")
+//        }
+//
+//        var shouldShutdown = false
+//        var shutdownError: Error?
+//
+//        switch udp.state {
+//        case .ready:
+//            proxy.setLink(link: NEUDPInterface(udp: udp))
+//
+//        case .cancelled:
+//            shouldShutdown = true
+//            shutdownError = proxy.stopError
+//
+//        case .failed:
+//            linkFailures += 1
+//            shouldShutdown = true
+//            shutdownError = proxy.stopError ?? TunnelError.linkError
+//            log.debug("UDP failures so far: \(linkFailures) (max = \(maxLinkFailures))")
+//
+//        default:
+//            break
+//        }
+//
+//        if shouldShutdown {
+//            finishTunnelDisconnection(error: shutdownError)
+//            if reasserting {
+//                guard (linkFailures < maxLinkFailures) else {
+//                    log.debug("Too many UDP failures (\(linkFailures)), tunnel will die now")
+//                    reasserting = false
+//                    disposeTunnel(error: shutdownError)
+//                    return
+//                }
+//                log.debug("Disconnection is recoverable, tunnel will reconnect in \(reconnectionDelay) milliseconds...")
+//                schedule(after: .milliseconds(reconnectionDelay)) {
+//                    self.connectTunnel(endpoint: udp.endpoint)
+//                }
+//                return
+//            }
+//            disposeTunnel(error: shutdownError)
+//        }
+//    }
     
     @objc private func handleWifiChange() {
         log.info("Stopping tunnel due to network change (will reconnect)")
@@ -293,59 +300,59 @@ open class PIATunnelProvider: NEPacketTunnelProvider, SessionProxyDelegate {
         proxy?.reconnect(error: TunnelError.networkChanged)
     }
     
-    private func handlePathChange() {
-        log.info("Stopping tunnel due to a new better path (will reconnect)")
-        logCurrentSSID()
-        proxy?.reconnect(error: TunnelError.networkChanged)
-    }
-    
-    // MARK: Connection KVO (any queue)
-    
-    /// :nodoc:
-    open override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
-        guard (context == &PIATunnelProvider.udpContext) else {
-            super.observeValue(forKeyPath: keyPath, of: object, change: change, context: context)
-            return
-        }
-        if let keyPath = keyPath {
-            log.debug("KVO change reported (\(anyPointer(object)).\(keyPath))")
-        }
-        tunnelQueue.async {
-            self.observeValueInTunnelQueue(forKeyPath: keyPath, of: object, change: change, context: context)
-        }
-    }
-
-    private func observeValueInTunnelQueue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
-        if let keyPath = keyPath {
-            log.debug("KVO change reported (\(anyPointer(object)).\(keyPath))")
-        }
-        guard let udp = object as? NWUDPSession, (udp == self.udp) else {
-            log.warning("Discard KVO change from old UDP socket")
-            return
-        }
-        guard let keyPath = keyPath else {
-            return
-        }
-        switch keyPath {
-        case #keyPath(NWUDPSession.state):
-            if let resolvedEndpoint = udp.resolvedEndpoint {
-                log.debug("UDP socket state is \(udp.state) (endpoint: \(udp.endpoint) -> \(resolvedEndpoint))")
-            } else {
-                log.debug("UDP socket state is \(udp.state) (endpoint: \(udp.endpoint) -> in progress)")
-            }
-            handleUDPStateChange(udp: udp)
-
-        case #keyPath(NWUDPSession.hasBetterPath):
-            guard udp.hasBetterPath else {
-                break
-            }
-            log.debug("UDP socket has a better path")
-            handlePathChange()
-            
-        default:
-            break
-        }
-    }
+//    private func handlePathChange() {
+//        log.info("Stopping tunnel due to a new better path (will reconnect)")
+//        logCurrentSSID()
+//        proxy?.reconnect(error: TunnelError.networkChanged)
+//    }
+//    
+//    // MARK: Connection KVO (any queue)
+//
+//    /// :nodoc:
+//    open override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
+//        guard (context == &PIATunnelProvider.linkContext) else {
+//            super.observeValue(forKeyPath: keyPath, of: object, change: change, context: context)
+//            return
+//        }
+//        if let keyPath = keyPath {
+//            log.debug("KVO change reported (\(anyPointer(object)).\(keyPath))")
+//        }
+//        tunnelQueue.async {
+//            self.observeValueInTunnelQueue(forKeyPath: keyPath, of: object, change: change, context: context)
+//        }
+//    }
+//
+//    private func observeValueInTunnelQueue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
+//        if let keyPath = keyPath {
+//            log.debug("KVO change reported (\(anyPointer(object)).\(keyPath))")
+//        }
+//        guard let udp = object as? NWUDPSession, (udp == self.udp) else {
+//            log.warning("Discard KVO change from old UDP socket")
+//            return
+//        }
+//        guard let keyPath = keyPath else {
+//            return
+//        }
+//        switch keyPath {
+//        case #keyPath(NWUDPSession.state):
+//            if let resolvedEndpoint = udp.resolvedEndpoint {
+//                log.debug("UDP socket state is \(udp.state) (endpoint: \(udp.endpoint) -> \(resolvedEndpoint))")
+//            } else {
+//                log.debug("UDP socket state is \(udp.state) (endpoint: \(udp.endpoint) -> in progress)")
+//            }
+//            handleUDPStateChange(udp: udp)
+//
+//        case #keyPath(NWUDPSession.hasBetterPath):
+//            guard udp.hasBetterPath else {
+//                break
+//            }
+//            log.debug("UDP socket has a better path")
+//            handlePathChange()
+//
+//        default:
+//            break
+//        }
+//    }
     
     // MARK: SessionProxyDelegate (tunnel queue)
 
@@ -384,7 +391,8 @@ open class PIATunnelProvider: NEPacketTunnelProvider, SessionProxyDelegate {
         if shouldReconnect {
             reasserting = true
         }
-        udp?.cancel()
+//        udp?.cancel()
+        socket?.shutdown()
     }
 
     private func updateNetwork(tunnel: String, vpn: String, gateway: String, dnsServers: [String], completionHandler: @escaping (Error?) -> Void) {
@@ -451,8 +459,51 @@ open class PIATunnelProvider: NEPacketTunnelProvider, SessionProxyDelegate {
         }
     }
     
-    private func anyPointer(_ object: Any?) -> UnsafeMutableRawPointer {
-        let anyObject = object as AnyObject
-        return Unmanaged<AnyObject>.passUnretained(anyObject).toOpaque()
+//    private func anyPointer(_ object: Any?) -> UnsafeMutableRawPointer {
+//        let anyObject = object as AnyObject
+//        return Unmanaged<AnyObject>.passUnretained(anyObject).toOpaque()
+//    }
+}
+
+extension PIATunnelProvider: GenericSocketDelegate {
+    func socketDidBecomeActive(_ socket: GenericSocket) {
+        proxy?.setLink(link: socket.link())
+    }
+    
+    func socket(_ socket: GenericSocket, didShutdownWithFailure failure: Bool) {
+        guard let proxy = proxy else {
+            fatalError("Observing socket events without initializing a SessionProxy before")
+        }
+
+        var shutdownError: Error?
+        if !failure {
+            shutdownError = proxy.stopError
+        } else {
+            shutdownError = proxy.stopError ?? TunnelError.linkError
+            linkFailures += 1
+            log.debug("Link failures so far: \(linkFailures) (max = \(maxLinkFailures))")
+        }
+    
+        finishTunnelDisconnection(error: shutdownError)
+        if reasserting {
+            guard (linkFailures < maxLinkFailures) else {
+                log.debug("Too many link failures (\(linkFailures)), tunnel will die now")
+                reasserting = false
+                disposeTunnel(error: shutdownError)
+                return
+            }
+            log.debug("Disconnection is recoverable, tunnel will reconnect in \(reconnectionDelay) milliseconds...")
+            schedule(after: .milliseconds(reconnectionDelay)) {
+                self.connectTunnel(endpoint: socket.endpoint)
+            }
+            return
+        }
+        disposeTunnel(error: shutdownError)
+    }
+    
+    func socketHasBetterPath(_ socket: GenericSocket) {
+        log.info("Stopping tunnel due to a new better path (will reconnect)")
+        logCurrentSSID()
+        proxy?.reconnect(error: TunnelError.networkChanged)
     }
 }

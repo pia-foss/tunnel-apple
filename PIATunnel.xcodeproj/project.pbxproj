@@ -35,6 +35,12 @@
 		0EBBF2F6208505D700E36B40 /* NETunnelInterface.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EBBF2EB2085055100E36B40 /* NETunnelInterface.swift */; };
 		0EBBF2F7208505DD00E36B40 /* NWUDPSessionState+Description.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EBBF2EA2085055100E36B40 /* NWUDPSessionState+Description.swift */; };
 		0EBBF2F8208505DD00E36B40 /* NWUDPSessionState+Description.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EBBF2EA2085055100E36B40 /* NWUDPSessionState+Description.swift */; };
+		0EBBF2FA2085061600E36B40 /* NETCPInterface.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EBBF2F92085061600E36B40 /* NETCPInterface.swift */; };
+		0EBBF2FB2085061600E36B40 /* NETCPInterface.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EBBF2F92085061600E36B40 /* NETCPInterface.swift */; };
+		0EBBF2FD2085123200E36B40 /* NETCPSocket.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EBBF2FC2085123200E36B40 /* NETCPSocket.swift */; };
+		0EBBF2FE2085123200E36B40 /* NETCPSocket.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EBBF2FC2085123200E36B40 /* NETCPSocket.swift */; };
+		0EBBF3002085196000E36B40 /* NWTCPConnectionState+Description.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EBBF2FF2085196000E36B40 /* NWTCPConnectionState+Description.swift */; };
+		0EBBF3012085196000E36B40 /* NWTCPConnectionState+Description.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EBBF2FF2085196000E36B40 /* NWTCPConnectionState+Description.swift */; };
 		0EFEB4552006D3C800F81029 /* EncryptionProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EFEB42A2006D3C800F81029 /* EncryptionProxy.swift */; };
 		0EFEB4562006D3C800F81029 /* SessionKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EFEB42B2006D3C800F81029 /* SessionKey.swift */; };
 		0EFEB4572006D3C800F81029 /* HighLevelDataPath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EFEB42C2006D3C800F81029 /* HighLevelDataPath.swift */; };
@@ -161,6 +167,9 @@
 		0EBBF2EA2085055100E36B40 /* NWUDPSessionState+Description.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "NWUDPSessionState+Description.swift"; sourceTree = "<group>"; };
 		0EBBF2EB2085055100E36B40 /* NETunnelInterface.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NETunnelInterface.swift; sourceTree = "<group>"; };
 		0EBBF2EC2085055100E36B40 /* NEUDPInterface.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NEUDPInterface.swift; sourceTree = "<group>"; };
+		0EBBF2F92085061600E36B40 /* NETCPInterface.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NETCPInterface.swift; sourceTree = "<group>"; };
+		0EBBF2FC2085123200E36B40 /* NETCPSocket.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NETCPSocket.swift; sourceTree = "<group>"; };
+		0EBBF2FF2085196000E36B40 /* NWTCPConnectionState+Description.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NWTCPConnectionState+Description.swift"; sourceTree = "<group>"; };
 		0EFEB42A2006D3C800F81029 /* EncryptionProxy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EncryptionProxy.swift; sourceTree = "<group>"; };
 		0EFEB42B2006D3C800F81029 /* SessionKey.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SessionKey.swift; sourceTree = "<group>"; };
 		0EFEB42C2006D3C800F81029 /* HighLevelDataPath.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HighLevelDataPath.swift; sourceTree = "<group>"; };
@@ -322,9 +331,13 @@
 		0EBBF2E32084FDF400E36B40 /* Transport */ = {
 			isa = PBXGroup;
 			children = (
+				0EBBF2E42084FE6F00E36B40 /* GenericSocket.swift */,
+				0EBBF2F92085061600E36B40 /* NETCPInterface.swift */,
+				0EBBF2FC2085123200E36B40 /* NETCPSocket.swift */,
 				0EBBF2EB2085055100E36B40 /* NETunnelInterface.swift */,
 				0EBBF2EC2085055100E36B40 /* NEUDPInterface.swift */,
 				0EBBF2E72084FEB200E36B40 /* NEUDPSocket.swift */,
+				0EBBF2FF2085196000E36B40 /* NWTCPConnectionState+Description.swift */,
 				0EBBF2EA2085055100E36B40 /* NWUDPSessionState+Description.swift */,
 			);
 			path = Transport;
@@ -747,11 +760,14 @@
 				0EFEB4732006D3C800F81029 /* LinkInterface.swift in Sources */,
 				0EBBF2F8208505DD00E36B40 /* NWUDPSessionState+Description.swift in Sources */,
 				0EFEB4652006D3C800F81029 /* Authenticator.swift in Sources */,
+				0EBBF2FD2085123200E36B40 /* NETCPSocket.swift in Sources */,
 				0EFEB4562006D3C800F81029 /* SessionKey.swift in Sources */,
 				0EFEB4AB200760EC00F81029 /* MemoryDestination.swift in Sources */,
 				0EFEB4AE2007625E00F81029 /* Keychain.swift in Sources */,
+				0EBBF3002085196000E36B40 /* NWTCPConnectionState+Description.swift in Sources */,
 				0EFEB4622006D3C800F81029 /* SecureRandom.swift in Sources */,
 				0EFEB45D2006D3C800F81029 /* CryptoBox.m in Sources */,
+				0EBBF2FA2085061600E36B40 /* NETCPInterface.swift in Sources */,
 				0EFEB4552006D3C800F81029 /* EncryptionProxy.swift in Sources */,
 				0EFEB45C2006D3C800F81029 /* ZeroingData.m in Sources */,
 				0EFEB4632006D3C800F81029 /* ProtocolMacros.swift in Sources */,
@@ -789,11 +805,14 @@
 				0EFEB4872006D7C400F81029 /* PIATunnelProvider+Configuration.swift in Sources */,
 				0EBBF2F7208505DD00E36B40 /* NWUDPSessionState+Description.swift in Sources */,
 				0EFEB4882006D7C400F81029 /* PIATunnelProvider+Interaction.swift in Sources */,
+				0EBBF2FE2085123200E36B40 /* NETCPSocket.swift in Sources */,
 				0EFEB4B12007627700F81029 /* MemoryDestination.swift in Sources */,
 				0EFEB4A02006D7F300F81029 /* ReplayProtector.m in Sources */,
 				0EFEB4992006D7F300F81029 /* SessionProxy.swift in Sources */,
+				0EBBF3012085196000E36B40 /* NWTCPConnectionState+Description.swift in Sources */,
 				0EFEB4962006D7F300F81029 /* ProtocolMacros.swift in Sources */,
 				0EFEB48A2006D7C400F81029 /* PIATunnelProvider.swift in Sources */,
+				0EBBF2FB2085061600E36B40 /* NETCPInterface.swift in Sources */,
 				0EFEB4982006D7F300F81029 /* ZeroingData.swift in Sources */,
 				0EFEB4A32006D7F300F81029 /* Errors.m in Sources */,
 				0EFEB4A22006D7F300F81029 /* Configuration.swift in Sources */,

@@ -197,9 +197,8 @@ open class PIATunnelProvider: NEPacketTunnelProvider, SessionProxyDelegate {
 //        udp = createUDPSession(to: endpoint, from: nil)
 //        udp?.addObserver(self, forKeyPath: #keyPath(NWUDPSession.state), options: [.initial, .new], context: &PIATunnelProvider.linkContext)
 //        udp?.addObserver(self, forKeyPath: #keyPath(NWUDPSession.hasBetterPath), options: .new, context: &PIATunnelProvider.linkContext)
-        // FIXME: depending on cfg.socketType
-        let backend = createUDPSession(to: endpoint, from: nil)
-        socket = NEUDPSocket(udp: backend)
+
+        socket = genericSocket(endpoint: endpoint)
         socket?.delegate = self
         socket?.observe(queue: tunnelQueue)
     }
@@ -339,6 +338,18 @@ open class PIATunnelProvider: NEPacketTunnelProvider, SessionProxyDelegate {
             let defaults = cfg.defaults
             defaults?.set(memoryLog.buffer, forKey: key)
             defaults?.synchronize()
+        }
+    }
+    
+    private func genericSocket(endpoint: NWEndpoint) -> GenericSocket {
+        switch cfg.socketType {
+        case .udp:
+            let backend = createUDPSession(to: endpoint, from: nil)
+            return NEUDPSocket(udp: backend)
+            
+        case .tcp:
+            let backend = createTCPConnection(to: endpoint, enableTLS: false, tlsParameters: nil, delegate: nil)
+            return NETCPSocket(tcp: backend)
         }
     }
 

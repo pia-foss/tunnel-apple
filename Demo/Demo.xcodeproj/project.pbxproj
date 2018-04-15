@@ -296,7 +296,6 @@
 				0EB39FE41F7424F80023AFFC /* Resources */,
 				0EB3A0091F7425140023AFFC /* Embed App Extensions */,
 				5EA77968407E2BB9E7F9D2A1 /* [CP] Embed Pods Frameworks */,
-				1C642C7A86295C88314F85AF /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -316,7 +315,6 @@
 				0EB39FF81F7425140023AFFC /* Sources */,
 				0EB39FF91F7425140023AFFC /* Frameworks */,
 				0EB39FFA1F7425140023AFFC /* Resources */,
-				175ACF62E930993AE45B5FF5 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -337,7 +335,6 @@
 				0EB6EEB51F92D417005F6221 /* Resources */,
 				0EB6EED81F92D43D005F6221 /* Embed App Extensions */,
 				D085357F7FBD8DE21E96F005 /* [CP] Embed Pods Frameworks */,
-				2CFA819BACE81DF6F66353E7 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -357,7 +354,6 @@
 				0EB6EEC71F92D43D005F6221 /* Sources */,
 				0EB6EEC81F92D43D005F6221 /* Frameworks */,
 				0EB6EEC91F92D43D005F6221 /* Resources */,
-				FC9619512D9B8342CD76D652 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -489,36 +485,6 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		175ACF62E930993AE45B5FF5 /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "[CP] Copy Pods Resources";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-iOS-BasicTunnelExtension-iOS/Pods-iOS-BasicTunnelExtension-iOS-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		1C642C7A86295C88314F85AF /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "[CP] Copy Pods Resources";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-iOS-BasicTunnel-iOS/Pods-iOS-BasicTunnel-iOS-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
 		1CC2A33419D63F8F2EE3D4B3 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -535,21 +501,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-		2CFA819BACE81DF6F66353E7 /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "[CP] Copy Pods Resources";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-macOS-BasicTunnel-macOS/Pods-macOS-BasicTunnel-macOS-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		536DCA316B3C557C24BB6116 /* [CP] Check Pods Manifest.lock */ = {
@@ -648,21 +599,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-macOS-BasicTunnel-macOS/Pods-macOS-BasicTunnel-macOS-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		FC9619512D9B8342CD76D652 /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "[CP] Copy Pods Resources";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-macOS-BasicTunnelExtension-macOS/Pods-macOS-BasicTunnelExtension-macOS-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */

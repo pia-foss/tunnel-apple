@@ -15,7 +15,7 @@ private let log = SwiftyBeaver.self
  Provides an all-in-one `NEPacketTunnelProvider` implementation for use in a
  Packet Tunnel Provider extension both on iOS and macOS.
  */
-open class PIATunnelProvider: NEPacketTunnelProvider, SessionProxyDelegate {
+open class PIATunnelProvider: NEPacketTunnelProvider {
     
     // MARK: Tweaks
     
@@ -190,14 +190,10 @@ open class PIATunnelProvider: NEPacketTunnelProvider, SessionProxyDelegate {
     private func connectTunnel(endpoint: NWEndpoint) {
         log.info("Creating link session")
         log.info("Will connect to \(endpoint)")
-
+        
         NotificationCenter.default.addObserver(self, selector: #selector(handleWifiChange), name: .__InterfaceObserverDidDetectWifiChange, object: nil)
         observer.start(queue: tunnelQueue)
-
-//        udp = createUDPSession(to: endpoint, from: nil)
-//        udp?.addObserver(self, forKeyPath: #keyPath(NWUDPSession.state), options: [.initial, .new], context: &PIATunnelProvider.linkContext)
-//        udp?.addObserver(self, forKeyPath: #keyPath(NWUDPSession.hasBetterPath), options: .new, context: &PIATunnelProvider.linkContext)
-
+        
         socket = genericSocket(endpoint: endpoint)
         socket?.delegate = self
         socket?.observe(queue: tunnelQueue)
@@ -205,25 +201,25 @@ open class PIATunnelProvider: NEPacketTunnelProvider, SessionProxyDelegate {
     
     private func finishTunnelDisconnection(error: Error?) {
         proxy?.cleanup()
-
+        
         observer.stop()
         NotificationCenter.default.removeObserver(self, name: .__InterfaceObserverDidDetectWifiChange, object: nil)
-
+        
         socket?.unobserve()
         socket = nil
-
+        
         if let error = error {
             log.error("Tunnel did stop (error: \(error))")
         } else {
             log.info("Tunnel did stop on request")
         }
-
+        
         flushLog()
     }
-
+    
     private func disposeTunnel(error: Error?) {
         flushLog()
-
+        
         proxy = nil
         let fm = FileManager.default
         try? fm.removeItem(at: tmpCaURL)
@@ -249,13 +245,62 @@ open class PIATunnelProvider: NEPacketTunnelProvider, SessionProxyDelegate {
         logCurrentSSID()
         proxy?.reconnect(error: TunnelError.networkChanged)
     }
+}
+
+extension PIATunnelProvider: GenericSocketDelegate {
+    
+    // MARK: GenericSocketDelegate (tunnel queue)
+    
+    func socketDidBecomeActive(_ socket: GenericSocket) {
+        proxy?.setLink(link: socket.link())
+    }
+    
+    func socket(_ socket: GenericSocket, didShutdownWithFailure failure: Bool) {
+        guard let proxy = proxy else {
+            fatalError("Observing socket events without initializing a SessionProxy before")
+        }
+        
+        var shutdownError: Error?
+        if !failure {
+            shutdownError = proxy.stopError
+        } else {
+            shutdownError = proxy.stopError ?? TunnelError.linkError
+            linkFailures += 1
+            log.debug("Link failures so far: \(linkFailures) (max = \(maxLinkFailures))")
+        }
+        
+        finishTunnelDisconnection(error: shutdownError)
+        if reasserting {
+            guard (linkFailures < maxLinkFailures) else {
+                log.debug("Too many link failures (\(linkFailures)), tunnel will die now")
+                reasserting = false
+                disposeTunnel(error: shutdownError)
+                return
+            }
+            log.debug("Disconnection is recoverable, tunnel will reconnect in \(reconnectionDelay) milliseconds...")
+            schedule(after: .milliseconds(reconnectionDelay)) {
+                self.connectTunnel(endpoint: socket.endpoint)
+            }
+            return
+        }
+        disposeTunnel(error: shutdownError)
+    }
+    
+    func socketHasBetterPath(_ socket: GenericSocket) {
+        log.info("Stopping tunnel due to a new better path (will reconnect)")
+        logCurrentSSID()
+        proxy?.reconnect(error: TunnelError.networkChanged)
+    }
+}
+
+extension PIATunnelProvider: SessionProxyDelegate {
     
     // MARK: SessionProxyDelegate (tunnel queue)
-
+    
     /// :nodoc:
     public func sessionDidStart(_ proxy: SessionProxy, remoteAddress: String, address: String, gatewayAddress: String, dnsServers: [String]) {
         reasserting = false
-
+        
         log.info("Tunnel did start")
         
         log.info("Returned ifconfig parameters:")
@@ -276,7 +321,7 @@ open class PIATunnelProvider: NEPacketTunnelProvider, SessionProxyDelegate {
             self.tunnelQueue.sync {
                 proxy.setTunnel(tunnel: NETunnelInterface(impl: self.packetFlow))
             }
-
+            
             self.pendingStartHandler?(nil)
             self.pendingStartHandler = nil
         }
@@ -289,7 +334,7 @@ open class PIATunnelProvider: NEPacketTunnelProvider, SessionProxyDelegate {
         }
         socket?.shutdown()
     }
-
+    
     private func updateNetwork(tunnel: String, vpn: String, gateway: String, dnsServers: [String], completionHandler: @escaping (Error?) -> Void) {
         
         // route all traffic to VPN
@@ -309,6 +354,9 @@ open class PIATunnelProvider: NEPacketTunnelProvider, SessionProxyDelegate {
         
         setTunnelNetworkSettings(newSettings, completionHandler: completionHandler)
     }
+}
+
+extension PIATunnelProvider {
     
     // MARK: Helpers
     
@@ -352,12 +400,12 @@ open class PIATunnelProvider: NEPacketTunnelProvider, SessionProxyDelegate {
             return NETCPSocket(impl: impl)
         }
     }
-
+    
     private func schedule(after: DispatchTimeInterval, block: @escaping () -> Void) {
         let deadline = DispatchTime.now() + after
         tunnelQueue.asyncAfter(deadline: deadline, execute: block)
     }
-
+    
     private func logCurrentSSID() {
         if let ssid = observer.currentWifiNetworkName() {
             log.debug("Current SSID: '\(ssid)'")
@@ -370,50 +418,4 @@ open class PIATunnelProvider: NEPacketTunnelProvider, SessionProxyDelegate {
 //        let anyObject = object as AnyObject
 //        return Unmanaged<AnyObject>.passUnretained(anyObject).toOpaque()
 //    }
-}
-
-extension PIATunnelProvider: GenericSocketDelegate {
-
-    // MARK: GenericSocketDelegate (tunnel queue)
-    
-    func socketDidBecomeActive(_ socket: GenericSocket) {
-        proxy?.setLink(link: socket.link())
-    }
-    
-    func socket(_ socket: GenericSocket, didShutdownWithFailure failure: Bool) {
-        guard let proxy = proxy else {
-            fatalError("Observing socket events without initializing a SessionProxy before")
-        }
-        
-        var shutdownError: Error?
-        if !failure {
-            shutdownError = proxy.stopError
-        } else {
-            shutdownError = proxy.stopError ?? TunnelError.linkError
-            linkFailures += 1
-            log.debug("Link failures so far: \(linkFailures) (max = \(maxLinkFailures))")
-        }
-        
-        finishTunnelDisconnection(error: shutdownError)
-        if reasserting {
-            guard (linkFailures < maxLinkFailures) else {
-                log.debug("Too many link failures (\(linkFailures)), tunnel will die now")
-                reasserting = false
-                disposeTunnel(error: shutdownError)
-                return
-            }
-            log.debug("Disconnection is recoverable, tunnel will reconnect in \(reconnectionDelay) milliseconds...")
-            schedule(after: .milliseconds(reconnectionDelay)) {
-                self.connectTunnel(endpoint: socket.endpoint)
-            }
-            return
-        }
-        disposeTunnel(error: shutdownError)
-    }
-    
-    func socketHasBetterPath(_ socket: GenericSocket) {
-        log.info("Stopping tunnel due to a new better path (will reconnect)")
-        logCurrentSSID()
-        proxy?.reconnect(error: TunnelError.networkChanged)
-    }
 }

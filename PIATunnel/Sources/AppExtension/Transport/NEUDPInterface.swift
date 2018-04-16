@@ -14,6 +14,10 @@ class NEUDPInterface: LinkInterface {
     
     private let maxDatagrams: Int
     
+    var isReliable: Bool {
+        return false
+    }
+    
     var remoteAddress: String? {
         guard let endpoint = udp.resolvedEndpoint as? NWHostEndpoint else {
             return nil

@@ -166,6 +166,10 @@ public class SessionProxy: NSObject {
     
     private var tunnel: TunnelInterface?
     
+    private var isReliableLink: Bool {
+        return link?.isReliable ?? false
+    }
+
     private var sessionId: Data?
     
     private var remoteSessionId: Data?
@@ -353,6 +357,7 @@ public class SessionProxy: NSObject {
         loop()
     }
     
+    // TODO: convert quasi-busy-waiting loop to DispatchQueue blocks (may improve battery usage)
     private func loop() {
         guard !keys.isEmpty else {
             return
@@ -380,8 +385,10 @@ public class SessionProxy: NSObject {
             }
         
             maybeRenegotiate()
-            pushRequest()
-            flushControlQueue()
+            if !isReliableLink {
+                pushRequest()
+                flushControlQueue()
+            }
             ping()
             
             let nextTime = DispatchTime.now() + Configuration.tickInterval
@@ -648,8 +655,10 @@ public class SessionProxy: NSObject {
         guard (negotiationKey.controlState == .preIfConfig) else {
             return
         }
-        guard let targetDate = nextPushRequestDate, (Date() > targetDate) else {
-            return
+        if !isReliableLink {
+            guard let targetDate = nextPushRequestDate, (Date() > targetDate) else {
+                return
+            }
         }
         
         log.debug("TLS.ifconfig: Put plaintext (PUSH_REQUEST)")
@@ -809,6 +818,7 @@ public class SessionProxy: NSObject {
 
             negotiationKey.controlState = .preIfConfig
             nextPushRequestDate = Date().addingTimeInterval(negotiationKey.softReset ? Configuration.softResetDelay : Configuration.retransmissionLimit)
+            pushRequest()
         }
         
         for message in auth.parseMessages() {
@@ -904,6 +914,15 @@ public class SessionProxy: NSObject {
     
     // Ruby: q_ctrl
     private func enqueueControlPackets(code: PacketCode, key: UInt8, payload: Data) {
+        if isReliableLink {
+            let packet = ControlPacket(controlPacketIdOut, code, key, sessionId, payload)
+            controlQueueOut.append(packet)
+            controlPacketIdOut += 1
+            log.debug("Enqueued 1 control packet")
+            flushControlQueue()
+            return
+        }
+
         let oldIdOut = controlPacketIdOut
         let maxCount = Configuration.maxOutLength
         var queuedCount = 0

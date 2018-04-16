@@ -22,7 +22,7 @@ Pod::Spec.new do |s|
     end
 
     s.subspec "AppExtension" do |p|
-        p.source_files          = "PIATunnel/Sources/AppExtension/*.swift"
+        p.source_files          = "PIATunnel/Sources/AppExtension/**/*.swift"
         p.resources             = "PIATunnel/Resources/AppExtension/**/*"
         p.frameworks            = "NetworkExtension"
         p.pod_target_xcconfig   = { "APPLICATION_EXTENSION_API_ONLY" => "YES" }

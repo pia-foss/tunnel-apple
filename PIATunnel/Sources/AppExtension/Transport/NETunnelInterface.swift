@@ -10,10 +10,10 @@ import Foundation
 import NetworkExtension
 
 class NETunnelInterface: TunnelInterface {
-    private let flow: NEPacketTunnelFlow
+    private let impl: NEPacketTunnelFlow
     
-    init(flow: NEPacketTunnelFlow) {
-        self.flow = flow
+    init(impl: NEPacketTunnelFlow) {
+        self.impl = impl
     }
     
     func setReadHandler(_ handler: @escaping ([Data]?, Error?) -> Void) {
@@ -21,20 +21,20 @@ class NETunnelInterface: TunnelInterface {
     }
     
     private func loopReadPackets(_ handler: @escaping ([Data]?, Error?) -> Void) {
-        flow.readPackets { [weak self] (packets, protocols) in
+        impl.readPackets { [weak self] (packets, protocols) in
             handler(packets, nil)
             self?.loopReadPackets(handler)
         }
     }
     
     func writePacket(_ packet: Data, completionHandler: ((Error?) -> Void)?) {
-        flow.writePackets([packet], withProtocols: [AF_INET] as [NSNumber])
+        impl.writePackets([packet], withProtocols: [AF_INET] as [NSNumber])
         completionHandler?(nil)
     }
     
     func writePackets(_ packets: [Data], completionHandler: ((Error?) -> Void)?) {
         let protocols = [Int32](repeating: AF_INET, count: packets.count) as [NSNumber]
-        flow.writePackets(packets, withProtocols: protocols)
+        impl.writePackets(packets, withProtocols: protocols)
         completionHandler?(nil)
     }
 }

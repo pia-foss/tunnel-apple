@@ -10,7 +10,7 @@ import Foundation
 import NetworkExtension
 
 class NETCPInterface: LinkInterface {
-    private let tcp: NWTCPConnection
+    private let impl: NWTCPConnection
     
     private let maxPacketSize: Int
     
@@ -19,7 +19,7 @@ class NETCPInterface: LinkInterface {
     }
 
     var remoteAddress: String? {
-        guard let endpoint = tcp.remoteAddress as? NWHostEndpoint else {
+        guard let endpoint = impl.remoteAddress as? NWHostEndpoint else {
             return nil
         }
         return endpoint.hostname
@@ -47,7 +47,7 @@ class NETCPInterface: LinkInterface {
     }
     
     private func loopReadPackets(_ buffer: Data, _ handler: @escaping ([Data]?, Error?) -> Void) {
-        tcp.readMinimumLength(2, maximumLength: packetBufferSize) { [weak self] (data, error) in
+        impl.readMinimumLength(2, maximumLength: packetBufferSize) { [weak self] (data, error) in
             guard let data = data else {
                 handler(nil, error)
                 return
@@ -65,14 +65,14 @@ class NETCPInterface: LinkInterface {
 
     func writePacket(_ packet: Data, completionHandler: ((Error?) -> Void)?) {
         let stream = ControlPacket.stream(packet)
-        tcp.write(stream) { (error) in
+        impl.write(stream) { (error) in
             completionHandler?(error)
         }
     }
     
     func writePackets(_ packets: [Data], completionHandler: ((Error?) -> Void)?) {
         let stream = ControlPacket.stream(packets)
-        tcp.write(stream) { (error) in
+        impl.write(stream) { (error) in
             completionHandler?(error)
         }
     }

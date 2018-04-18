@@ -15,45 +15,45 @@ private let log = SwiftyBeaver.self
 class NEUDPSocket: NSObject, GenericSocket {
     private static var linkContext = 0
     
-    private let udp: NWUDPSession
+    private let impl: NWUDPSession
     
     private weak var queue: DispatchQueue?
     
     var endpoint: NWEndpoint {
-        return udp.endpoint
+        return impl.endpoint
     }
     
     var remoteAddress: String? {
-        return (udp.resolvedEndpoint as? NWHostEndpoint)?.hostname
+        return (impl.resolvedEndpoint as? NWHostEndpoint)?.hostname
     }
     
     var hasBetterPath: Bool {
-        return udp.hasBetterPath
+        return impl.hasBetterPath
     }
     
     weak var delegate: GenericSocketDelegate?
     
-    init(udp: NWUDPSession) {
-        self.udp = udp
+    init(impl: NWUDPSession) {
+        self.impl = impl
     }
     
     func observe(queue: DispatchQueue) {
         self.queue = queue
-        udp.addObserver(self, forKeyPath: #keyPath(NWUDPSession.state), options: [.initial, .new], context: &NEUDPSocket.linkContext)
-        udp.addObserver(self, forKeyPath: #keyPath(NWUDPSession.hasBetterPath), options: .new, context: &NEUDPSocket.linkContext)
+        impl.addObserver(self, forKeyPath: #keyPath(NWUDPSession.state), options: [.initial, .new], context: &NEUDPSocket.linkContext)
+        impl.addObserver(self, forKeyPath: #keyPath(NWUDPSession.hasBetterPath), options: .new, context: &NEUDPSocket.linkContext)
     }
     
     func unobserve() {
-        udp.removeObserver(self, forKeyPath: #keyPath(NWUDPSession.state), context: &NEUDPSocket.linkContext)
-        udp.removeObserver(self, forKeyPath: #keyPath(NWUDPSession.hasBetterPath), context: &NEUDPSocket.linkContext)
+        impl.removeObserver(self, forKeyPath: #keyPath(NWUDPSession.state), context: &NEUDPSocket.linkContext)
+        impl.removeObserver(self, forKeyPath: #keyPath(NWUDPSession.hasBetterPath), context: &NEUDPSocket.linkContext)
     }
     
     func shutdown() {
-        udp.cancel()
+        impl.cancel()
     }
     
     func link() -> LinkInterface {
-        return NEUDPInterface(udp: udp)
+        return NEUDPInterface(impl: impl)
     }
 
     // MARK: Connection KVO (any queue)
@@ -75,7 +75,7 @@ class NEUDPSocket: NSObject, GenericSocket {
 //        if let keyPath = keyPath {
 //            log.debug("KVO change reported (\(anyPointer(object)).\(keyPath))")
 //        }
-        guard let udp = object as? NWUDPSession, (udp == self.udp) else {
+        guard let impl = object as? NWUDPSession, (impl == self.impl) else {
             log.warning("Discard KVO change from old socket")
             return
         }
@@ -84,13 +84,13 @@ class NEUDPSocket: NSObject, GenericSocket {
         }
         switch keyPath {
         case #keyPath(NWUDPSession.state):
-            if let resolvedEndpoint = udp.resolvedEndpoint {
-                log.debug("Socket state is \(udp.state) (endpoint: \(udp.endpoint) -> \(resolvedEndpoint))")
+            if let resolvedEndpoint = impl.resolvedEndpoint {
+                log.debug("Socket state is \(impl.state) (endpoint: \(impl.endpoint) -> \(resolvedEndpoint))")
             } else {
-                log.debug("Socket state is \(udp.state) (endpoint: \(udp.endpoint) -> in progress)")
+                log.debug("Socket state is \(impl.state) (endpoint: \(impl.endpoint) -> in progress)")
             }
 
-            switch udp.state {
+            switch impl.state {
             case .ready:
                 delegate?.socketDidBecomeActive(self)
 
@@ -105,7 +105,7 @@ class NEUDPSocket: NSObject, GenericSocket {
             }
 
         case #keyPath(NWUDPSession.hasBetterPath):
-            guard udp.hasBetterPath else {
+            guard impl.hasBetterPath else {
                 break
             }
             log.debug("Socket has a better path")

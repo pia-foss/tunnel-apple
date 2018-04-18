@@ -274,7 +274,7 @@ open class PIATunnelProvider: NEPacketTunnelProvider, SessionProxyDelegate {
             
             log.info("Finished configuring tunnel!")
             self.tunnelQueue.sync {
-                proxy.setTunnel(tunnel: NETunnelInterface(flow: self.packetFlow))
+                proxy.setTunnel(tunnel: NETunnelInterface(impl: self.packetFlow))
             }
 
             self.pendingStartHandler?(nil)
@@ -344,12 +344,12 @@ open class PIATunnelProvider: NEPacketTunnelProvider, SessionProxyDelegate {
     private func genericSocket(endpoint: NWEndpoint) -> GenericSocket {
         switch cfg.socketType {
         case .udp:
-            let backend = createUDPSession(to: endpoint, from: nil)
-            return NEUDPSocket(udp: backend)
+            let impl = createUDPSession(to: endpoint, from: nil)
+            return NEUDPSocket(impl: impl)
             
         case .tcp:
-            let backend = createTCPConnection(to: endpoint, enableTLS: false, tlsParameters: nil, delegate: nil)
-            return NETCPSocket(tcp: backend)
+            let impl = createTCPConnection(to: endpoint, enableTLS: false, tlsParameters: nil, delegate: nil)
+            return NETCPSocket(impl: impl)
         }
     }
 
@@ -373,6 +373,9 @@ open class PIATunnelProvider: NEPacketTunnelProvider, SessionProxyDelegate {
 }
 
 extension PIATunnelProvider: GenericSocketDelegate {
+
+    // MARK: GenericSocketDelegate (tunnel queue)
+    
     func socketDidBecomeActive(_ socket: GenericSocket) {
         proxy?.setLink(link: socket.link())
     }
@@ -381,7 +384,7 @@ extension PIATunnelProvider: GenericSocketDelegate {
         guard let proxy = proxy else {
             fatalError("Observing socket events without initializing a SessionProxy before")
         }
-
+        
         var shutdownError: Error?
         if !failure {
             shutdownError = proxy.stopError
@@ -390,7 +393,7 @@ extension PIATunnelProvider: GenericSocketDelegate {
             linkFailures += 1
             log.debug("Link failures so far: \(linkFailures) (max = \(maxLinkFailures))")
         }
-    
+        
         finishTunnelDisconnection(error: shutdownError)
         if reasserting {
             guard (linkFailures < maxLinkFailures) else {

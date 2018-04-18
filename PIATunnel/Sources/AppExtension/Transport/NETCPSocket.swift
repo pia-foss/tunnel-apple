@@ -15,45 +15,45 @@ private let log = SwiftyBeaver.self
 class NETCPSocket: NSObject, GenericSocket {
     private static var linkContext = 0
     
-    private let tcp: NWTCPConnection
+    private let impl: NWTCPConnection
     
     private weak var queue: DispatchQueue?
     
     var endpoint: NWEndpoint {
-        return tcp.endpoint
+        return impl.endpoint
     }
     
     var remoteAddress: String? {
-        return (tcp.remoteAddress as? NWHostEndpoint)?.hostname
+        return (impl.remoteAddress as? NWHostEndpoint)?.hostname
     }
     
     var hasBetterPath: Bool {
-        return tcp.hasBetterPath
+        return impl.hasBetterPath
     }
     
     weak var delegate: GenericSocketDelegate?
     
-    init(tcp: NWTCPConnection) {
-        self.tcp = tcp
+    init(impl: NWTCPConnection) {
+        self.impl = impl
     }
     
     func observe(queue: DispatchQueue) {
         self.queue = queue
-        tcp.addObserver(self, forKeyPath: #keyPath(NWTCPConnection.state), options: [.initial, .new], context: &NETCPSocket.linkContext)
-        tcp.addObserver(self, forKeyPath: #keyPath(NWTCPConnection.hasBetterPath), options: .new, context: &NETCPSocket.linkContext)
+        impl.addObserver(self, forKeyPath: #keyPath(NWTCPConnection.state), options: [.initial, .new], context: &NETCPSocket.linkContext)
+        impl.addObserver(self, forKeyPath: #keyPath(NWTCPConnection.hasBetterPath), options: .new, context: &NETCPSocket.linkContext)
     }
     
     func unobserve() {
-        tcp.removeObserver(self, forKeyPath: #keyPath(NWTCPConnection.state), context: &NETCPSocket.linkContext)
-        tcp.removeObserver(self, forKeyPath: #keyPath(NWTCPConnection.hasBetterPath), context: &NETCPSocket.linkContext)
+        impl.removeObserver(self, forKeyPath: #keyPath(NWTCPConnection.state), context: &NETCPSocket.linkContext)
+        impl.removeObserver(self, forKeyPath: #keyPath(NWTCPConnection.hasBetterPath), context: &NETCPSocket.linkContext)
     }
     
     func shutdown() {
-        tcp.cancel()
+        impl.cancel()
     }
     
     func link() -> LinkInterface {
-        return NETCPInterface(tcp: tcp)
+        return NETCPInterface(impl: impl)
     }
     
     // MARK: Connection KVO (any queue)
@@ -75,8 +75,8 @@ class NETCPSocket: NSObject, GenericSocket {
 //        if let keyPath = keyPath {
 //            log.debug("KVO change reported (\(anyPointer(object)).\(keyPath))")
 //        }
-        guard let tcp = object as? NWTCPConnection, (tcp == self.tcp) else {
-            log.warning("Discard KVO change from old TCP socket")
+        guard let impl = object as? NWTCPConnection, (impl == self.impl) else {
+            log.warning("Discard KVO change from old socket")
             return
         }
         guard let keyPath = keyPath else {
@@ -84,13 +84,13 @@ class NETCPSocket: NSObject, GenericSocket {
         }
         switch keyPath {
         case #keyPath(NWTCPConnection.state):
-            if let resolvedEndpoint = tcp.remoteAddress {
-                log.debug("TCP socket state is \(tcp.state) (endpoint: \(tcp.endpoint) -> \(resolvedEndpoint))")
+            if let resolvedEndpoint = impl.remoteAddress {
+                log.debug("Socket state is \(impl.state) (endpoint: \(impl.endpoint) -> \(resolvedEndpoint))")
             } else {
-                log.debug("TCP socket state is \(tcp.state) (endpoint: \(tcp.endpoint) -> in progress)")
+                log.debug("Socket state is \(impl.state) (endpoint: \(impl.endpoint) -> in progress)")
             }
             
-            switch tcp.state {
+            switch impl.state {
             case .connected:
                 delegate?.socketDidBecomeActive(self)
                 
@@ -105,10 +105,10 @@ class NETCPSocket: NSObject, GenericSocket {
             }
             
         case #keyPath(NWTCPConnection.hasBetterPath):
-            guard tcp.hasBetterPath else {
+            guard impl.hasBetterPath else {
                 break
             }
-            log.debug("TCP socket has a better path")
+            log.debug("Socket has a better path")
             delegate?.socketHasBetterPath(self)
             
         default:

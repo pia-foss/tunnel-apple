@@ -29,8 +29,16 @@ class NEUDPInterface: LinkInterface {
         return maxDatagrams
     }
 
-    init(udp: NWUDPSession, maxDatagrams: Int = 200) {
-        self.udp = udp
+    var negotiationTimeout: TimeInterval {
+        return 10.0
+    }
+    
+    var hardResetTimeout: TimeInterval {
+        return 2.0
+    }
+    
+    init(impl: NWUDPSession, maxDatagrams: Int = 200) {
+        self.impl = impl
         self.maxDatagrams = maxDatagrams
     }
     

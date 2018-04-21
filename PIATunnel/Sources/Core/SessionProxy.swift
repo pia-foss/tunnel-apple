@@ -364,11 +364,11 @@ public class SessionProxy: NSObject {
         }
         
         autoreleasepool {
-            guard !negotiationKey.didHardResetTimeOut() else {
+            guard !negotiationKey.didHardResetTimeOut(link: link!) else {
                 doReconnect(error: SessionError.connectionTimeout)
                 return
             }
-            guard !negotiationKey.didNegotiationTimeOut() else {
+            guard !negotiationKey.didNegotiationTimeOut(link: link!) else {
                 doShutdown(error: SessionError.connectionTimeout)
                 return
             }

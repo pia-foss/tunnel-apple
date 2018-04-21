@@ -28,9 +28,17 @@ class NETCPInterface: LinkInterface {
     var packetBufferSize: Int {
         return maxPacketSize
     }
-
-    init(tcp: NWTCPConnection, maxPacketSize: Int = 32768) {
-        self.tcp = tcp
+    
+    var negotiationTimeout: TimeInterval {
+        return 10.0
+    }
+    
+    var hardResetTimeout: TimeInterval {
+        return 5.0
+    }
+    
+    init(impl: NWTCPConnection, maxPacketSize: Int = 32768) {
+        self.impl = impl
         self.maxPacketSize = maxPacketSize
     }
     

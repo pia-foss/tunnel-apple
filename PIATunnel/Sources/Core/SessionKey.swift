@@ -51,13 +51,13 @@ class SessionKey {
     }
 
     // Ruby: Key.hard_reset_timeout
-    func didHardResetTimeOut() -> Bool {
-        return ((state == .hardReset) && (-startTime.timeIntervalSinceNow > Configuration.hardResetTimeout))
+    func didHardResetTimeOut(link: LinkInterface) -> Bool {
+        return ((state == .hardReset) && (-startTime.timeIntervalSinceNow > link.hardResetTimeout))
     }
     
     // Ruby: Key.negotiate_timeout
-    func didNegotiationTimeOut() -> Bool {
-        let timeout = (softReset ? Configuration.softConnectionTimeout : Configuration.connectionTimeout)
+    func didNegotiationTimeOut(link: LinkInterface) -> Bool {
+        let timeout = (softReset ? Configuration.softNegotiationTimeout : link.negotiationTimeout)
         
         return ((controlState != .connected) && (-startTime.timeIntervalSinceNow > timeout))
     }

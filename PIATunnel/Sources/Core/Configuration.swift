@@ -20,10 +20,6 @@ struct Configuration {
 
     static let tickInterval = 0.2
     
-    static let hardResetTimeout = 2.0
-    
-    static let connectionTimeout = 10.0
-    
     static let pingInterval = 10.0
     
     static let pingTimeout = 120.0
@@ -32,7 +28,7 @@ struct Configuration {
     
     static let softResetDelay = 5.0
     
-    static let softConnectionTimeout = 120.0
+    static let softNegotiationTimeout = 120.0
     
     static let maxOutLength = 1000
 

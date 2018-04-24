@@ -166,6 +166,10 @@ public class SessionProxy: NSObject {
     
     private var tunnel: TunnelInterface?
     
+    private var isReliableLink: Bool {
+        return link?.isReliable ?? false
+    }
+
     private var sessionId: Data?
     
     private var remoteSessionId: Data?
@@ -353,17 +357,18 @@ public class SessionProxy: NSObject {
         loop()
     }
     
+    // TODO: convert quasi-busy-waiting loop to DispatchQueue blocks (may improve battery usage)
     private func loop() {
         guard !keys.isEmpty else {
             return
         }
         
         autoreleasepool {
-            if negotiationKey.didHardResetTimeOut() {
+            guard !negotiationKey.didHardResetTimeOut(link: link!) else {
                 doReconnect(error: SessionError.connectionTimeout)
                 return
             }
-            if negotiationKey.didNegotiationTimeOut() {
+            guard !negotiationKey.didNegotiationTimeOut(link: link!) else {
                 doShutdown(error: SessionError.connectionTimeout)
                 return
             }
@@ -372,17 +377,18 @@ public class SessionProxy: NSObject {
                 switch stopMethod {
                 case .shutdown:
                     doShutdown(error: stopError)
-                    return
 
                 case .reconnect:
                     doReconnect(error: stopError)
-                    return
                 }
+                return
             }
         
             maybeRenegotiate()
-            pushRequest()
-            flushControlQueue()
+            if !isReliableLink {
+                pushRequest()
+                flushControlQueue()
+            }
             ping()
             
             let nextTime = DispatchTime.now() + Configuration.tickInterval
@@ -396,7 +402,7 @@ public class SessionProxy: NSObject {
     private func loopLink() {
 
         // WARNING: runs in Network.framework queue
-        link?.setReadHandler({ (newPackets, error) in
+        link?.setReadHandler { (newPackets, error) in
             if let error = error {
                 log.error("Failed LINK read: \(error)")
                 return
@@ -408,7 +414,7 @@ public class SessionProxy: NSObject {
                     self.receiveLink(packets: packets)
                 }
             }
-        })
+        }
     }
 
     // Ruby: tun_loop
@@ -562,11 +568,11 @@ public class SessionProxy: NSObject {
         }
         
         let now = Date()
-        if (now.timeIntervalSince(lastPingIn) > Configuration.pingTimeout) {
+        guard (now.timeIntervalSince(lastPingIn) <= Configuration.pingTimeout) else {
             deferStop(.shutdown, SessionError.pingTimeout)
             return
         }
-        if (now.timeIntervalSince(lastPingOut) < Configuration.pingInterval) {
+        guard (now.timeIntervalSince(lastPingOut) >= Configuration.pingInterval) else {
             return
         }
     
@@ -649,8 +655,10 @@ public class SessionProxy: NSObject {
         guard (negotiationKey.controlState == .preIfConfig) else {
             return
         }
-        guard let targetDate = nextPushRequestDate, (Date() > targetDate) else {
-            return
+        if !isReliableLink {
+            guard let targetDate = nextPushRequestDate, (Date() > targetDate) else {
+                return
+            }
         }
         
         log.debug("TLS.ifconfig: Put plaintext (PUSH_REQUEST)")
@@ -810,6 +818,7 @@ public class SessionProxy: NSObject {
 
             negotiationKey.controlState = .preIfConfig
             nextPushRequestDate = Date().addingTimeInterval(negotiationKey.softReset ? Configuration.softResetDelay : Configuration.retransmissionLimit)
+            pushRequest()
         }
         
         for message in auth.parseMessages() {
@@ -905,6 +914,15 @@ public class SessionProxy: NSObject {
     
     // Ruby: q_ctrl
     private func enqueueControlPackets(code: PacketCode, key: UInt8, payload: Data) {
+        if isReliableLink {
+            let packet = ControlPacket(controlPacketIdOut, code, key, sessionId, payload)
+            controlQueueOut.append(packet)
+            controlPacketIdOut += 1
+            log.debug("Enqueued 1 control packet")
+            flushControlQueue()
+            return
+        }
+
         let oldIdOut = controlPacketIdOut
         let maxCount = Configuration.maxOutLength
         var queuedCount = 0
@@ -933,7 +951,7 @@ public class SessionProxy: NSObject {
         for controlPacket in controlQueueOut {
             if let sentDate = controlPacket.sentDate {
                 let timeAgo = -sentDate.timeIntervalSinceNow
-                if (timeAgo < Configuration.retransmissionLimit) {
+                guard (timeAgo >= Configuration.retransmissionLimit) else {
                     log.debug("Skip control packet with id \(controlPacket.packetId) (sent on \(sentDate), \(timeAgo) seconds ago)")
                     continue
                 }

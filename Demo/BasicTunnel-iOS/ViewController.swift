@@ -14,7 +14,7 @@ class ViewController: UIViewController, URLSessionDataDelegate {
     static let APP_GROUP = "group.com.privateinternetaccess.ios.demo.BasicTunnel"
     
     static let VPN_BUNDLE = "com.privateinternetaccess.ios.demo.BasicTunnel.BasicTunnelExtension"
-    
+
     static let CIPHER: PIATunnelProvider.Cipher = .aes128cbc
 
     static let DIGEST: PIATunnelProvider.Digest = .sha1
@@ -34,6 +34,8 @@ class ViewController: UIViewController, URLSessionDataDelegate {
     @IBOutlet var textDomain: UITextField!
     
     @IBOutlet var textPort: UITextField!
+    
+    @IBOutlet var switchTCP: UISwitch!
     
     @IBOutlet var buttonConnection: UIButton!
 
@@ -62,8 +64,8 @@ class ViewController: UIViewController, URLSessionDataDelegate {
         textDomain.text = "privateinternetaccess.com"
 //        textServer.text = "159.122.133.238"
 //        textDomain.text = ""
-        textPort.text = "1194"
-//        textPort.text = "8080"
+        textPort.text = "8080"
+        switchTCP.isOn = false
         textUsername.text = "myusername"
         textPassword.text = "mypassword"
         
@@ -103,6 +105,14 @@ class ViewController: UIViewController, URLSessionDataDelegate {
         }
     }
     
+    @IBAction func tcpClicked(_ sender: Any) {
+        if switchTCP.isOn {
+            textPort.text = "443"
+        } else {
+            textPort.text = "8080"
+        }
+    }
+    
     func connect() {
         let server = textServer.text!
         let domain = textDomain.text!
@@ -124,6 +134,7 @@ class ViewController: UIViewController, URLSessionDataDelegate {
             )
 
             var builder = PIATunnelProvider.ConfigurationBuilder(appGroup: ViewController.APP_GROUP)
+            builder.socketType = (self.switchTCP.isOn ? .tcp : .udp)
             builder.cipher = ViewController.CIPHER
             builder.digest = ViewController.DIGEST
             builder.handshake = ViewController.HANDSHAKE

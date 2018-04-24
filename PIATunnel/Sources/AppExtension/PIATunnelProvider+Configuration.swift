@@ -90,6 +90,16 @@ extension PIATunnelProvider {
 
     // MARK: Configuration
     
+    /// A socket type between UDP (recommended) and TCP.
+    public enum SocketType: String {
+
+        /// UDP socket type.
+        case udp = "UDP"
+        
+        /// TCP socket type.
+        case tcp = "TCP"
+    }
+    
     /// Encapsulates an endpoint along with the authentication credentials.
     public struct AuthenticatedEndpoint {
         
@@ -148,6 +158,9 @@ extension PIATunnelProvider {
         
         // MARK: Tunnel parameters
         
+        /// The socket type.
+        public var socketType: SocketType
+        
         /// The encryption algorithm.
         public var cipher: Cipher
         
@@ -180,6 +193,7 @@ extension PIATunnelProvider {
          */
         public init(appGroup: String) {
             self.appGroup = appGroup
+            socketType = .udp
             cipher = .aes128cbc
             digest = .sha1
             handshake = .rsa2048
@@ -211,6 +225,11 @@ extension PIATunnelProvider {
 
             self.appGroup = appGroup
 
+            if let socketTypeString = providerConfiguration[S.socketType] as? String, let socketType = SocketType(rawValue: socketTypeString) {
+                self.socketType = socketType
+            } else {
+                socketType = .udp
+            }
             self.cipher = cipher
             self.digest = digest
             self.handshake = handshake
@@ -236,6 +255,7 @@ extension PIATunnelProvider {
         public func build() -> Configuration {
             return Configuration(
                 appGroup: appGroup,
+                socketType: socketType,
                 cipher: cipher,
                 digest: digest,
                 handshake: handshake,
@@ -251,6 +271,8 @@ extension PIATunnelProvider {
     public struct Configuration {
         struct Keys {
             static let appGroup = "AppGroup"
+            
+            static let socketType = "SocketType"
             
             static let cipherAlgorithm = "CipherAlgorithm"
             
@@ -270,6 +292,9 @@ extension PIATunnelProvider {
         /// - Seealso: `PIATunnelProvider.ConfigurationBuilder.appGroup`
         public let appGroup: String
 
+        /// - Seealso: `PIATunnelProvider.ConfigurationBuilder.socketType`
+        public let socketType: SocketType
+        
         /// - Seealso: `PIATunnelProvider.ConfigurationBuilder.cipher`
         public let cipher: Cipher
         
@@ -328,6 +353,7 @@ extension PIATunnelProvider {
             
             var dict: [String: Any] = [
                 S.appGroup: appGroup,
+                S.socketType: socketType.rawValue,
                 S.cipherAlgorithm: cipher.rawValue,
                 S.digestAlgorithm: digest.rawValue,
                 S.handshakeCertificate: handshake.rawValue,
@@ -372,6 +398,7 @@ extension PIATunnelProvider {
         
         func print() {
 //            log.info("Address: \(endpoint.hostname):\(endpoint.port)")
+            log.info("Socket: \(socketType.rawValue)")
             log.info("Cipher: \(cipher.rawValue)")
             log.info("Digest: \(digest.rawValue)")
             log.info("Handshake: \(handshake.rawValue)")
@@ -397,6 +424,7 @@ extension PIATunnelProvider.Configuration: Equatable {
      */
     public func builder() -> PIATunnelProvider.ConfigurationBuilder {
         var builder = PIATunnelProvider.ConfigurationBuilder(appGroup: appGroup)
+        builder.socketType = socketType
         builder.cipher = cipher
         builder.digest = digest
         builder.handshake = handshake
@@ -410,6 +438,7 @@ extension PIATunnelProvider.Configuration: Equatable {
     /// :nodoc:
     public static func ==(lhs: PIATunnelProvider.Configuration, rhs: PIATunnelProvider.Configuration) -> Bool {
         return (
+            (lhs.socketType == rhs.socketType) &&
             (lhs.cipher == rhs.cipher) &&
             (lhs.digest == rhs.digest) &&
             (lhs.handshake == rhs.handshake) &&

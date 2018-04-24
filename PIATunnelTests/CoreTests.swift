@@ -308,4 +308,84 @@ class CoreTests: XCTestCase {
         XCTAssertEqual(z2.data, Data(hex: "5678ab"))
         XCTAssertEqual(z3.data, Data(hex: "5678abaaddcc"))
     }
+    
+    func testPacketStream() {
+        var bytes: [UInt8] = []
+        var until: Int
+        var packets: [Data]
+        
+        bytes.append(contentsOf: [0x00, 0x04])
+        bytes.append(contentsOf: [0x10, 0x20, 0x30, 0x40])
+        bytes.append(contentsOf: [0x00, 0x07])
+        bytes.append(contentsOf: [0x10, 0x20, 0x30, 0x40, 0x50, 0x66, 0x77])
+        bytes.append(contentsOf: [0x00, 0x01])
+        bytes.append(contentsOf: [0xff])
+        bytes.append(contentsOf: [0x00, 0x03])
+        bytes.append(contentsOf: [0xaa])
+        XCTAssertEqual(bytes.count, 21)
+
+        (until, packets) = ControlPacket.parsed(Data(bytes: bytes))
+        XCTAssertEqual(until, 18)
+        XCTAssertEqual(packets.count, 3)
+
+        bytes.append(contentsOf: [0xbb, 0xcc])
+        (until, packets) = ControlPacket.parsed(Data(bytes: bytes))
+        XCTAssertEqual(until, 23)
+        XCTAssertEqual(packets.count, 4)
+
+        bytes.append(contentsOf: [0x00, 0x05])
+        (until, packets) = ControlPacket.parsed(Data(bytes: bytes))
+        XCTAssertEqual(until, 23)
+        XCTAssertEqual(packets.count, 4)
+
+        bytes.append(contentsOf: [0x11, 0x22, 0x33, 0x44])
+        (until, packets) = ControlPacket.parsed(Data(bytes: bytes))
+        XCTAssertEqual(until, 23)
+        XCTAssertEqual(packets.count, 4)
+
+        bytes.append(contentsOf: [0x55])
+        (until, packets) = ControlPacket.parsed(Data(bytes: bytes))
+        XCTAssertEqual(until, 30)
+        XCTAssertEqual(packets.count, 5)
+        
+        //
+
+        bytes.removeSubrange(0..<until)
+        XCTAssertEqual(bytes.count, 0)
+
+        bytes.append(contentsOf: [0x00, 0x04])
+        bytes.append(contentsOf: [0x10, 0x20])
+        (until, packets) = ControlPacket.parsed(Data(bytes: bytes))
+        XCTAssertEqual(until, 0)
+        XCTAssertEqual(packets.count, 0)
+        bytes.removeSubrange(0..<until)
+        XCTAssertEqual(bytes.count, 4)
+
+        bytes.append(contentsOf: [0x30, 0x40])
+        bytes.append(contentsOf: [0x00, 0x07])
+        bytes.append(contentsOf: [0x10, 0x20, 0x30, 0x40])
+        (until, packets) = ControlPacket.parsed(Data(bytes: bytes))
+        XCTAssertEqual(until, 6)
+        XCTAssertEqual(packets.count, 1)
+        bytes.removeSubrange(0..<until)
+        XCTAssertEqual(bytes.count, 6)
+
+        bytes.append(contentsOf: [0x50, 0x66, 0x77])
+        bytes.append(contentsOf: [0x00, 0x01])
+        bytes.append(contentsOf: [0xff])
+        bytes.append(contentsOf: [0x00, 0x03])
+        bytes.append(contentsOf: [0xaa])
+        (until, packets) = ControlPacket.parsed(Data(bytes: bytes))
+        XCTAssertEqual(until, 12)
+        XCTAssertEqual(packets.count, 2)
+        bytes.removeSubrange(0..<until)
+        XCTAssertEqual(bytes.count, 3)
+
+        bytes.append(contentsOf: [0xbb, 0xcc])
+        (until, packets) = ControlPacket.parsed(Data(bytes: bytes))
+        XCTAssertEqual(until, 5)
+        XCTAssertEqual(packets.count, 1)
+        bytes.removeSubrange(0..<until)
+        XCTAssertEqual(bytes.count, 0)
+    }
 }

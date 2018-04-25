@@ -197,6 +197,8 @@ public class SessionProxy: NSObject {
 
     private var controlQueueIn: [ControlPacket]
 
+    private var controlPendingAcks: Set<UInt32>
+    
     private var controlPacketIdOut: UInt32
 
     private var controlPacketIdIn: UInt32
@@ -231,6 +233,7 @@ public class SessionProxy: NSObject {
         controlPlainBuffer = Z(count: TLSBoxMaxBufferLength)
         controlQueueOut = []
         controlQueueIn = []
+        controlPendingAcks = []
         controlPacketIdOut = 0
         controlPacketIdIn = 0
     }
@@ -589,6 +592,7 @@ public class SessionProxy: NSObject {
         controlPlainBuffer.zero()
         controlQueueOut.removeAll()
         controlQueueIn.removeAll()
+        controlPendingAcks.removeAll()
         controlPacketIdOut = 0
         controlPacketIdIn = 0
         authenticator = nil
@@ -970,6 +974,9 @@ public class SessionProxy: NSObject {
             let raw = controlPacket.toBuffer()
             log.debug("Send control packet (\(raw.count) bytes): \(raw.toHex())")
             
+            // track pending acks for sent packets
+            controlPendingAcks.insert(controlPacket.packetId)
+
             // WARNING: runs in Network.framework queue
             link?.writePacket(raw) { (error) in
                 self.queue.sync {
@@ -982,6 +989,7 @@ public class SessionProxy: NSObject {
             }
             controlPacket.sentDate = Date()
         }
+        log.debug("Packets now pending ack: \(controlPendingAcks)")
     }
     
     // Ruby: setup_keys
@@ -1087,6 +1095,15 @@ public class SessionProxy: NSObject {
             if packetIds.contains(controlPacket.packetId) {
                 controlQueueOut.remove(at: i)
             }
+        }
+
+        // remove ack-ed packets from pending
+        controlPendingAcks.subtract(packetIds)
+        log.debug("Packets still pending ack: \(controlPendingAcks)")
+
+        // retry PUSH_REQUEST if ack queue is empty (all sent packets were ack'ed)
+        if (isReliableLink && controlPendingAcks.isEmpty) {
+            pushRequest()
         }
     }
     

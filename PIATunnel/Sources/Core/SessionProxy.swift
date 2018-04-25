@@ -362,16 +362,19 @@ public class SessionProxy: NSObject {
     
     // TODO: convert quasi-busy-waiting loop to DispatchQueue blocks (may improve battery usage)
     private func loop() {
+        guard let link = link else {
+            return
+        }
         guard !keys.isEmpty else {
             return
         }
-        
+
         autoreleasepool {
-            guard !negotiationKey.didHardResetTimeOut(link: link!) else {
+            guard !negotiationKey.didHardResetTimeOut(link: link) else {
                 doReconnect(error: SessionError.connectionTimeout)
                 return
             }
-            guard !negotiationKey.didNegotiationTimeOut(link: link!) else {
+            guard !negotiationKey.didNegotiationTimeOut(link: link) else {
                 doShutdown(error: SessionError.connectionTimeout)
                 return
             }
@@ -918,8 +921,13 @@ public class SessionProxy: NSObject {
     
     // Ruby: q_ctrl
     private func enqueueControlPackets(code: PacketCode, key: UInt8, payload: Data) {
+        guard let link = link else {
+            log.warning("Not writing to LINK, interface is down")
+            return
+        }
+        
         let oldIdOut = controlPacketIdOut
-        let maxCount = link!.mtu
+        let maxCount = link.mtu
         var queuedCount = 0
         var offset = 0
         

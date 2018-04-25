@@ -1048,7 +1048,10 @@ public class SessionProxy: NSObject {
                 log.warning("Could not decrypt packets, is data path set?")
                 return
             }
-            
+            guard !decryptedPackets.isEmpty else {
+                return
+            }
+
             tunnel?.writePackets(decryptedPackets, completionHandler: nil)
         } catch let e {
             deferStop(.reconnect, e)
@@ -1063,6 +1066,9 @@ public class SessionProxy: NSObject {
         do {
             guard let encryptedPackets = try key.encrypt(packets: packets) else {
                 log.warning("Could not encrypt packets, is data path set?")
+                return
+            }
+            guard !encryptedPackets.isEmpty else {
                 return
             }
             

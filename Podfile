@@ -3,7 +3,7 @@ use_frameworks!
 
 abstract_target 'PIATunnel' do
     pod 'SwiftyBeaver'
-    pod 'OpenSSL-Apple', '1.1.0g'
+    pod 'OpenSSL-Apple', '~> 1.1.0h'
 
     target 'PIATunnel-iOS' do
         platform :ios, '9.0'

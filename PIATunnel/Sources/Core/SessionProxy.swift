@@ -993,7 +993,7 @@ public class SessionProxy: NSObject {
             }
             controlPacket.sentDate = Date()
         }
-        log.debug("Packets now pending ack: \(controlPendingAcks)")
+//        log.verbose("Packets now pending ack: \(controlPendingAcks)")
     }
     
     // Ruby: setup_keys
@@ -1103,7 +1103,7 @@ public class SessionProxy: NSObject {
 
         // remove ack-ed packets from pending
         controlPendingAcks.subtract(packetIds)
-        log.debug("Packets still pending ack: \(controlPendingAcks)")
+//        log.verbose("Packets still pending ack: \(controlPendingAcks)")
 
         // retry PUSH_REQUEST if ack queue is empty (all sent packets were ack'ed)
         if (isReliableLink && controlPendingAcks.isEmpty) {

@@ -918,17 +918,8 @@ public class SessionProxy: NSObject {
     
     // Ruby: q_ctrl
     private func enqueueControlPackets(code: PacketCode, key: UInt8, payload: Data) {
-        if isReliableLink {
-            let packet = ControlPacket(controlPacketIdOut, code, key, sessionId, payload)
-            controlQueueOut.append(packet)
-            controlPacketIdOut += 1
-            log.debug("Enqueued 1 control packet (\(packet.packetId))")
-            flushControlQueue()
-            return
-        }
-
         let oldIdOut = controlPacketIdOut
-        let maxCount = Configuration.maxOutLength
+        let maxCount = link!.mtu
         var queuedCount = 0
         var offset = 0
         

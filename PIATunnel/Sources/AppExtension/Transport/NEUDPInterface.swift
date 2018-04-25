@@ -24,6 +24,10 @@ class NEUDPInterface: LinkInterface {
         }
         return endpoint.hostname
     }
+    
+    var mtu: Int {
+        return 1000
+    }
 
     var packetBufferSize: Int {
         return maxDatagrams

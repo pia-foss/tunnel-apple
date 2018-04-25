@@ -92,7 +92,7 @@ const NSInteger CryptoBoxMaxHMACLength = 100;
 
 void CryptoBoxEraseBytesSecurely(uint8_t *bytes, int length)
 {
-    memset(bytes, 0, length);
+    bzero(bytes, length);
 }
 
 @interface CryptoBox ()

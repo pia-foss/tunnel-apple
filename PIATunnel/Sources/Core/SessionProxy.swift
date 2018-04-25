@@ -922,7 +922,7 @@ public class SessionProxy: NSObject {
             let packet = ControlPacket(controlPacketIdOut, code, key, sessionId, payload)
             controlQueueOut.append(packet)
             controlPacketIdOut += 1
-            log.debug("Enqueued 1 control packet")
+            log.debug("Enqueued 1 control packet (\(packet.packetId))")
             flushControlQueue()
             return
         }
@@ -945,7 +945,12 @@ public class SessionProxy: NSObject {
         
         assert(queuedCount == payload.count)
         
-        log.debug("Enqueued \(controlPacketIdOut - oldIdOut) control packets")
+        let packetCount = controlPacketIdOut - oldIdOut
+        if (packetCount > 1) {
+            log.debug("Enqueued \(packetCount) control packets (\(oldIdOut)-\(controlPacketIdOut - 1))")
+        } else {
+            log.debug("Enqueued 1 control packet (\(oldIdOut))")
+        }
         
         flushControlQueue()
     }
@@ -1121,11 +1126,11 @@ public class SessionProxy: NSObject {
         link?.writePacket(raw) { (error) in
             self.queue.sync {
                 if let error = error {
-                    log.error("Failed LINK write during send ack: \(error)")
+                    log.error("Failed LINK write during send ack for packetId \(packetId): \(error)")
                     self.deferStop(.reconnect, SessionError.failedLinkWrite)
                     return
                 }
-                log.debug("Ack successfully written to LINK")
+                log.debug("Ack successfully written to LINK for packetId \(packetId)")
             }
         }
     }

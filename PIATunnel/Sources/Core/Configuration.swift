@@ -29,8 +29,6 @@ struct Configuration {
     static let softResetDelay = 5.0
     
     static let softNegotiationTimeout = 120.0
-    
-    static let maxOutLength = 1000
 
     // MARK: Authentication
     

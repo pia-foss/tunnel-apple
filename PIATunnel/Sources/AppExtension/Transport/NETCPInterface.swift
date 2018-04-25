@@ -25,6 +25,10 @@ class NETCPInterface: LinkInterface {
         return endpoint.hostname
     }
     
+    var mtu: Int {
+        return .max
+    }
+    
     var packetBufferSize: Int {
         return maxPacketSize
     }

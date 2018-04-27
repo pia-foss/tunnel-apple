@@ -6,7 +6,7 @@ Private Internet Access is the world's leading consumer VPN service. At Private 
 
 # Tunnel for Apple platforms
 
-This library provides a simplified Swift/Obj-C implementation of the OpenVPN® protocol for the Apple platforms, while also taking advantage of the Private Internet Access [client patch customizations](https://www.privateinternetaccess.com/forum/discussion/9093/pia-openvpn-client-encryption-patch). The crypto layer is built on top of [OpenSSL][dep-openssl] 1.1.0g, which in turn enables support for a certain range of encryption and digest algorithms.
+This library provides a simplified Swift/Obj-C implementation of the OpenVPN® protocol for the Apple platforms, while also taking advantage of the Private Internet Access [client patch customizations](https://www.privateinternetaccess.com/forum/discussion/9093/pia-openvpn-client-encryption-patch). The crypto layer is built on top of [OpenSSL][dep-openssl] 1.1.0h, which in turn enables support for a certain range of encryption and digest algorithms.
 
 ## Getting started
 

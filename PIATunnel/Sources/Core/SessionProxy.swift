@@ -166,6 +166,10 @@ public class SessionProxy: NSObject {
     
     private var tunnel: TunnelInterface?
     
+    private var isReliableLink: Bool {
+        return link?.isReliable ?? false
+    }
+
     private var sessionId: Data?
     
     private var remoteSessionId: Data?
@@ -193,6 +197,8 @@ public class SessionProxy: NSObject {
 
     private var controlQueueIn: [ControlPacket]
 
+    private var controlPendingAcks: Set<UInt32>
+    
     private var controlPacketIdOut: UInt32
 
     private var controlPacketIdIn: UInt32
@@ -227,6 +233,7 @@ public class SessionProxy: NSObject {
         controlPlainBuffer = Z(count: TLSBoxMaxBufferLength)
         controlQueueOut = []
         controlQueueIn = []
+        controlPendingAcks = []
         controlPacketIdOut = 0
         controlPacketIdIn = 0
     }
@@ -353,17 +360,21 @@ public class SessionProxy: NSObject {
         loop()
     }
     
+    // TODO: convert quasi-busy-waiting loop to DispatchQueue blocks (may improve battery usage)
     private func loop() {
+        guard let link = link else {
+            return
+        }
         guard !keys.isEmpty else {
             return
         }
-        
+
         autoreleasepool {
-            if negotiationKey.didHardResetTimeOut() {
+            guard !negotiationKey.didHardResetTimeOut(link: link) else {
                 doReconnect(error: SessionError.connectionTimeout)
                 return
             }
-            if negotiationKey.didNegotiationTimeOut() {
+            guard !negotiationKey.didNegotiationTimeOut(link: link) else {
                 doShutdown(error: SessionError.connectionTimeout)
                 return
             }
@@ -372,17 +383,18 @@ public class SessionProxy: NSObject {
                 switch stopMethod {
                 case .shutdown:
                     doShutdown(error: stopError)
-                    return
 
                 case .reconnect:
                     doReconnect(error: stopError)
-                    return
                 }
+                return
             }
         
             maybeRenegotiate()
-            pushRequest()
-            flushControlQueue()
+            if !isReliableLink {
+                pushRequest()
+                flushControlQueue()
+            }
             ping()
             
             let nextTime = DispatchTime.now() + Configuration.tickInterval
@@ -396,7 +408,7 @@ public class SessionProxy: NSObject {
     private func loopLink() {
 
         // WARNING: runs in Network.framework queue
-        link?.setReadHandler({ (newPackets, error) in
+        link?.setReadHandler { (newPackets, error) in
             if let error = error {
                 log.error("Failed LINK read: \(error)")
                 return
@@ -408,7 +420,7 @@ public class SessionProxy: NSObject {
                     self.receiveLink(packets: packets)
                 }
             }
-        })
+        }
     }
 
     // Ruby: tun_loop
@@ -562,11 +574,11 @@ public class SessionProxy: NSObject {
         }
         
         let now = Date()
-        if (now.timeIntervalSince(lastPingIn) > Configuration.pingTimeout) {
+        guard (now.timeIntervalSince(lastPingIn) <= Configuration.pingTimeout) else {
             deferStop(.shutdown, SessionError.pingTimeout)
             return
         }
-        if (now.timeIntervalSince(lastPingOut) < Configuration.pingInterval) {
+        guard (now.timeIntervalSince(lastPingOut) >= Configuration.pingInterval) else {
             return
         }
     
@@ -583,6 +595,7 @@ public class SessionProxy: NSObject {
         controlPlainBuffer.zero()
         controlQueueOut.removeAll()
         controlQueueIn.removeAll()
+        controlPendingAcks.removeAll()
         controlPacketIdOut = 0
         controlPacketIdIn = 0
         authenticator = nil
@@ -649,8 +662,10 @@ public class SessionProxy: NSObject {
         guard (negotiationKey.controlState == .preIfConfig) else {
             return
         }
-        guard let targetDate = nextPushRequestDate, (Date() > targetDate) else {
-            return
+        if !isReliableLink {
+            guard let targetDate = nextPushRequestDate, (Date() > targetDate) else {
+                return
+            }
         }
         
         log.debug("TLS.ifconfig: Put plaintext (PUSH_REQUEST)")
@@ -810,6 +825,7 @@ public class SessionProxy: NSObject {
 
             negotiationKey.controlState = .preIfConfig
             nextPushRequestDate = Date().addingTimeInterval(negotiationKey.softReset ? Configuration.softResetDelay : Configuration.retransmissionLimit)
+            pushRequest()
         }
         
         for message in auth.parseMessages() {
@@ -905,8 +921,13 @@ public class SessionProxy: NSObject {
     
     // Ruby: q_ctrl
     private func enqueueControlPackets(code: PacketCode, key: UInt8, payload: Data) {
+        guard let link = link else {
+            log.warning("Not writing to LINK, interface is down")
+            return
+        }
+        
         let oldIdOut = controlPacketIdOut
-        let maxCount = Configuration.maxOutLength
+        let maxCount = link.mtu
         var queuedCount = 0
         var offset = 0
         
@@ -923,7 +944,12 @@ public class SessionProxy: NSObject {
         
         assert(queuedCount == payload.count)
         
-        log.debug("Enqueued \(controlPacketIdOut - oldIdOut) control packets")
+        let packetCount = controlPacketIdOut - oldIdOut
+        if (packetCount > 1) {
+            log.debug("Enqueued \(packetCount) control packets (\(oldIdOut)-\(controlPacketIdOut - 1))")
+        } else {
+            log.debug("Enqueued 1 control packet (\(oldIdOut))")
+        }
         
         flushControlQueue()
     }
@@ -933,7 +959,7 @@ public class SessionProxy: NSObject {
         for controlPacket in controlQueueOut {
             if let sentDate = controlPacket.sentDate {
                 let timeAgo = -sentDate.timeIntervalSinceNow
-                if (timeAgo < Configuration.retransmissionLimit) {
+                guard (timeAgo >= Configuration.retransmissionLimit) else {
                     log.debug("Skip control packet with id \(controlPacket.packetId) (sent on \(sentDate), \(timeAgo) seconds ago)")
                     continue
                 }
@@ -952,6 +978,9 @@ public class SessionProxy: NSObject {
             let raw = controlPacket.toBuffer()
             log.debug("Send control packet (\(raw.count) bytes): \(raw.toHex())")
             
+            // track pending acks for sent packets
+            controlPendingAcks.insert(controlPacket.packetId)
+
             // WARNING: runs in Network.framework queue
             link?.writePacket(raw) { (error) in
                 self.queue.sync {
@@ -964,6 +993,7 @@ public class SessionProxy: NSObject {
             }
             controlPacket.sentDate = Date()
         }
+//        log.verbose("Packets now pending ack: \(controlPendingAcks)")
     }
     
     // Ruby: setup_keys
@@ -1018,7 +1048,10 @@ public class SessionProxy: NSObject {
                 log.warning("Could not decrypt packets, is data path set?")
                 return
             }
-            
+            guard !decryptedPackets.isEmpty else {
+                return
+            }
+
             tunnel?.writePackets(decryptedPackets, completionHandler: nil)
         } catch let e {
             deferStop(.reconnect, e)
@@ -1033,6 +1066,9 @@ public class SessionProxy: NSObject {
         do {
             guard let encryptedPackets = try key.encrypt(packets: packets) else {
                 log.warning("Could not encrypt packets, is data path set?")
+                return
+            }
+            guard !encryptedPackets.isEmpty else {
                 return
             }
             
@@ -1070,6 +1106,15 @@ public class SessionProxy: NSObject {
                 controlQueueOut.remove(at: i)
             }
         }
+
+        // remove ack-ed packets from pending
+        controlPendingAcks.subtract(packetIds)
+//        log.verbose("Packets still pending ack: \(controlPendingAcks)")
+
+        // retry PUSH_REQUEST if ack queue is empty (all sent packets were ack'ed)
+        if (isReliableLink && controlPendingAcks.isEmpty) {
+            pushRequest()
+        }
     }
     
     // Ruby: send_ack
@@ -1086,11 +1131,11 @@ public class SessionProxy: NSObject {
         link?.writePacket(raw) { (error) in
             self.queue.sync {
                 if let error = error {
-                    log.error("Failed LINK write during send ack: \(error)")
+                    log.error("Failed LINK write during send ack for packetId \(packetId): \(error)")
                     self.deferStop(.reconnect, SessionError.failedLinkWrite)
                     return
                 }
-                log.debug("Ack successfully written to LINK")
+                log.debug("Ack successfully written to LINK for packetId \(packetId)")
             }
         }
     }

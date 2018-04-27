@@ -49,8 +49,8 @@ extension PIATunnelProvider {
         /// The TLS certificate could not be serialized.
         case certificateSerialization
         
-        /// An UDP error occurred.
-        case udpError
+        /// An error occurred at the link level.
+        case linkError
         
         /// The current network changed (e.g. switched from WiFi to data connection).
         case networkChanged

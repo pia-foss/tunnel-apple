@@ -31,7 +31,7 @@
     if ((self = [super init])) {
         self.highestPacketId = 0;
         self.bitmap =  allocate_safely(BITMAP_LEN * sizeof(uint32_t));
-        memset(self.bitmap, 0, BITMAP_LEN * sizeof(uint32_t));
+        bzero(self.bitmap, BITMAP_LEN * sizeof(uint32_t));
     }
     return self;
 }

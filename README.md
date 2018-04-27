@@ -12,7 +12,7 @@ This library provides a simplified Swift/Obj-C implementation of the OpenVPN® p
 
 The client is known to work with [OpenVPN®][openvpn] 2.3+ servers. Key renegotiation and replay protection are also included, but full-fledged configuration files (.ovpn) are not currently supported.
 
-- [x] Handshake and tunneling over UDP
+- [x] Handshake and tunneling over UDP or TCP
 - [x] Client-initiated renegotiation
 - [x] Replay protection (hardcoded window)
 - [x] Data encryption
@@ -94,7 +94,7 @@ The entry point is the `SessionProxy` class. The networking layer is fully abstr
 
 The goal of this module is packaging up a black box implementation of a [NEPacketTunnelProvider][ne-ptp], which is the essential part of a Packet Tunnel Provider app extension. You will find the main implementation in the `PIATunnelProvider` class.
 
-Currently, the extension supports VPN over [UDP sockets only][ne-udp]. A debug log snapshot is optionally maintained and shared to host apps via `UserDefaults` in a shared App Group.
+Currently, the extension supports VPN over both [UDP][ne-udp] and [TCP][ne-tcp] sockets. A debug log snapshot is optionally maintained and shared to host apps via `UserDefaults` in a shared App Group.
 
 ## Known issues
 
@@ -146,3 +146,4 @@ This product includes software developed by the OpenSSL Project for use in the O
 [ne-home]: https://developer.apple.com/documentation/networkextension
 [ne-ptp]: https://developer.apple.com/documentation/networkextension/nepackettunnelprovider
 [ne-udp]: https://developer.apple.com/documentation/networkextension/nwudpsession
+[ne-tcp]: https://developer.apple.com/documentation/networkextension/nwtcpconnection

@@ -205,6 +205,7 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
         observer.stop()
         NotificationCenter.default.removeObserver(self, name: .__InterfaceObserverDidDetectWifiChange, object: nil)
         
+        socket?.delegate = nil
         socket?.unobserve()
         socket = nil
         

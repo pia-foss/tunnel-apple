@@ -257,7 +257,7 @@ extension PIATunnelProvider: GenericSocketDelegate {
     
     func socket(_ socket: GenericSocket, didShutdownWithFailure failure: Bool) {
         guard let proxy = proxy else {
-            fatalError("Observing socket events without initializing a SessionProxy before")
+            return
         }
         
         var shutdownError: Error?

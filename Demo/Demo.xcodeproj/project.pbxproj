@@ -420,6 +420,9 @@
 							com.apple.ApplicationGroups.Mac = {
 								enabled = 0;
 							};
+							com.apple.Keychain = {
+								enabled = 0;
+							};
 							com.apple.NetworkExtensions = {
 								enabled = 1;
 							};

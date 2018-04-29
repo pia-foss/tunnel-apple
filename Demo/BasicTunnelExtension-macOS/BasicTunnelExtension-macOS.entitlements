@@ -6,9 +6,5 @@
 	<array>
 		<string>packet-tunnel-provider</string>
 	</array>
-	<key>keychain-access-groups</key>
-	<array>
-		<string>com.apple.managed.vpn.shared</string>
-	</array>
 </dict>
 </plist>

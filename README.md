@@ -96,18 +96,6 @@ The goal of this module is packaging up a black box implementation of a [NEPacke
 
 Currently, the extension supports VPN over both [UDP][ne-udp] and [TCP][ne-tcp] sockets. A debug log snapshot is optionally maintained and shared to host apps via `UserDefaults` in a shared App Group.
 
-## Known issues
-
-### macOS support
-
-As seen when creating an Xcode target, Packet Tunnel Provider extensions are available for iOS 9+ and macOS 10.11+. The library was initially written for iOS and relies on the use of a shared keychain between the host app and the extension.
-
-Even though the `BasicTunnel` demo will compile and run on macOS, it won't connect to the VPN because of the following error:
-
-> Failed to create an NSExtension with type com.privateinternetaccess.macos.demo.BasicTunnel.BasicTunnelExtension: (null)
-
-Needless to say, any help on that would be warmly appreciated.
-
 ## Contributing
 
 By contributing to this project you are agreeing to the terms stated in the Contributor License Agreement (CLA) [here](/CLA.rst).

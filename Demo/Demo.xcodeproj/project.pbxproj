@@ -411,6 +411,9 @@
 							com.apple.NetworkExtensions = {
 								enabled = 1;
 							};
+							com.apple.Sandbox = {
+								enabled = 1;
+							};
 						};
 					};
 					0EB6EECA1F92D43D005F6221 = {
@@ -424,6 +427,9 @@
 								enabled = 0;
 							};
 							com.apple.NetworkExtensions = {
+								enabled = 1;
+							};
+							com.apple.Sandbox = {
 								enabled = 1;
 							};
 						};

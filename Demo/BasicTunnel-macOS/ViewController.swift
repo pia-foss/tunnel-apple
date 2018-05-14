@@ -56,8 +56,8 @@ class ViewController: NSViewController {
 //        textDomain.text = ""
         textPort.stringValue = "1194"
 //        textPort.text = "8080"
-        textUsername.stringValue = "p5553679"
-        textPassword.stringValue = "UnaFacil3"
+        textUsername.stringValue = "myusername"
+        textPassword.stringValue = "mypassword"
         
         NotificationCenter.default.addObserver(self,
                                                selector: #selector(VPNStatusDidChange(notification:)),

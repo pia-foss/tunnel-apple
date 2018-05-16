@@ -408,16 +408,16 @@ public class SessionProxy: NSObject {
     private func loopLink() {
 
         // WARNING: runs in Network.framework queue
-        link?.setReadHandler { (newPackets, error) in
+        link?.setReadHandler { [weak self] (newPackets, error) in
             if let error = error {
                 log.error("Failed LINK read: \(error)")
                 return
             }
             
             if let packets = newPackets, !packets.isEmpty {
-                self.queue.sync {
+                self?.queue.sync {
 //                    log.verbose("Received \(packets.count) packets from \(self.linkName)")
-                    self.receiveLink(packets: packets)
+                    self?.receiveLink(packets: packets)
                 }
             }
         }
@@ -427,16 +427,16 @@ public class SessionProxy: NSObject {
     private func loopTunnel() {
         
         // WARNING: runs in NEPacketTunnelFlow queue
-        tunnel?.setReadHandler { (newPackets, error) in
+        tunnel?.setReadHandler { [weak self] (newPackets, error) in
             if let error = error {
                 log.error("Failed TUN read: \(error)")
                 return
             }
 
             if let packets = newPackets, !packets.isEmpty {
-                self.queue.sync {
+                self?.queue.sync {
 //                    log.verbose("Received \(packets.count) packets from \(self.tunnelName)")
-                    self.receiveTunnel(packets: packets)
+                    self?.receiveTunnel(packets: packets)
                 }
             }
         }
@@ -982,11 +982,11 @@ public class SessionProxy: NSObject {
             controlPendingAcks.insert(controlPacket.packetId)
 
             // WARNING: runs in Network.framework queue
-            link?.writePacket(raw) { (error) in
-                self.queue.sync {
+            link?.writePacket(raw) { [weak self] (error) in
+                self?.queue.sync {
                     if let error = error {
                         log.error("Failed LINK write during control flush: \(error)")
-                        self.deferStop(.reconnect, SessionError.failedLinkWrite)
+                        self?.deferStop(.reconnect, SessionError.failedLinkWrite)
                         return
                     }
                 }
@@ -1073,11 +1073,11 @@ public class SessionProxy: NSObject {
             }
             
             // WARNING: runs in Network.framework queue
-            link?.writePackets(encryptedPackets) { (error) in
-                self.queue.sync {
+            link?.writePackets(encryptedPackets) { [weak self] (error) in
+                self?.queue.sync {
                     if let error = error {
                         log.error("Data: Failed LINK write during send data: \(error)")
-                        self.deferStop(.reconnect, SessionError.failedLinkWrite)
+                        self?.deferStop(.reconnect, SessionError.failedLinkWrite)
                         return
                     }
 //                    log.verbose("Data: \(encryptedPackets.count) packets successfully written to \(self.linkName)")
@@ -1128,11 +1128,11 @@ public class SessionProxy: NSObject {
         raw.append(remoteSessionId)
         
         // WARNING: runs in Network.framework queue
-        link?.writePacket(raw) { (error) in
-            self.queue.sync {
+        link?.writePacket(raw) { [weak self] (error) in
+            self?.queue.sync {
                 if let error = error {
                     log.error("Failed LINK write during send ack for packetId \(packetId): \(error)")
-                    self.deferStop(.reconnect, SessionError.failedLinkWrite)
+                    self?.deferStop(.reconnect, SessionError.failedLinkWrite)
                     return
                 }
                 log.debug("Ack successfully written to LINK for packetId \(packetId)")

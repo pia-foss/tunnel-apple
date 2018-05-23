@@ -45,7 +45,7 @@ internal class Keychain {
         setScope(query: &query)
         query[kSecClass as String] = kSecClassGenericPassword
         query[kSecAttrAccount as String] = username
-        query[kSecAttrAccessible as String] = kSecAttrAccessibleAlways
+        query[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlock
         query[kSecValueData as String] = password.data(using: .utf8)
     
         let status = SecItemAdd(query as CFDictionary, nil)
@@ -91,7 +91,7 @@ internal class Keychain {
         query[kSecClass as String] = kSecClassGenericPassword
         setScope(query: &query)
         query[kSecAttrAccount as String] = username
-        query[kSecAttrAccessible as String] = kSecAttrAccessibleAlways
+        query[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlock
         query[kSecMatchLimit as String] = kSecMatchLimitOne
         query[kSecReturnPersistentRef as String] = true
         

@@ -30,7 +30,7 @@ protocol GenericSocket: LinkProducer {
     
     var delegate: GenericSocketDelegate? { get set }
 
-    func observe(queue: DispatchQueue)
+    func observe(queue: DispatchQueue, activeTimeout: Int)
 
     func unobserve()
     

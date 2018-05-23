@@ -41,6 +41,8 @@
 		0EBBF2FE2085123200E36B40 /* NETCPSocket.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EBBF2FC2085123200E36B40 /* NETCPSocket.swift */; };
 		0EBBF3002085196000E36B40 /* NWTCPConnectionState+Description.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EBBF2FF2085196000E36B40 /* NWTCPConnectionState+Description.swift */; };
 		0EBBF3012085196000E36B40 /* NWTCPConnectionState+Description.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EBBF2FF2085196000E36B40 /* NWTCPConnectionState+Description.swift */; };
+		0EEC49DC20B5E732008FEB91 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EEC49DB20B5E732008FEB91 /* Utils.swift */; };
+		0EEC49DD20B5E732008FEB91 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EEC49DB20B5E732008FEB91 /* Utils.swift */; };
 		0EFEB4552006D3C800F81029 /* EncryptionProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EFEB42A2006D3C800F81029 /* EncryptionProxy.swift */; };
 		0EFEB4562006D3C800F81029 /* SessionKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EFEB42B2006D3C800F81029 /* SessionKey.swift */; };
 		0EFEB4572006D3C800F81029 /* HighLevelDataPath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EFEB42C2006D3C800F81029 /* HighLevelDataPath.swift */; };
@@ -170,6 +172,7 @@
 		0EBBF2F92085061600E36B40 /* NETCPInterface.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NETCPInterface.swift; sourceTree = "<group>"; };
 		0EBBF2FC2085123200E36B40 /* NETCPSocket.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NETCPSocket.swift; sourceTree = "<group>"; };
 		0EBBF2FF2085196000E36B40 /* NWTCPConnectionState+Description.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NWTCPConnectionState+Description.swift"; sourceTree = "<group>"; };
+		0EEC49DB20B5E732008FEB91 /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 		0EFEB42A2006D3C800F81029 /* EncryptionProxy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EncryptionProxy.swift; sourceTree = "<group>"; };
 		0EFEB42B2006D3C800F81029 /* SessionKey.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SessionKey.swift; sourceTree = "<group>"; };
 		0EFEB42C2006D3C800F81029 /* HighLevelDataPath.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HighLevelDataPath.swift; sourceTree = "<group>"; };
@@ -331,7 +334,6 @@
 		0EBBF2E32084FDF400E36B40 /* Transport */ = {
 			isa = PBXGroup;
 			children = (
-				0EBBF2E42084FE6F00E36B40 /* GenericSocket.swift */,
 				0EBBF2F92085061600E36B40 /* NETCPInterface.swift */,
 				0EBBF2FC2085123200E36B40 /* NETCPSocket.swift */,
 				0EBBF2EB2085055100E36B40 /* NETunnelInterface.swift */,
@@ -396,6 +398,7 @@
 				0EFEB4522006D3C800F81029 /* PIATunnelProvider.swift */,
 				0EFEB44F2006D3C800F81029 /* PIATunnelProvider+Configuration.swift */,
 				0EFEB4502006D3C800F81029 /* PIATunnelProvider+Interaction.swift */,
+				0EEC49DB20B5E732008FEB91 /* Utils.swift */,
 			);
 			path = AppExtension;
 			sourceTree = "<group>";
@@ -760,6 +763,7 @@
 				0EFEB4732006D3C800F81029 /* LinkInterface.swift in Sources */,
 				0EBBF2F8208505DD00E36B40 /* NWUDPSessionState+Description.swift in Sources */,
 				0EFEB4652006D3C800F81029 /* Authenticator.swift in Sources */,
+				0EEC49DC20B5E732008FEB91 /* Utils.swift in Sources */,
 				0EBBF2FD2085123200E36B40 /* NETCPSocket.swift in Sources */,
 				0EFEB4562006D3C800F81029 /* SessionKey.swift in Sources */,
 				0EFEB4AB200760EC00F81029 /* MemoryDestination.swift in Sources */,
@@ -805,6 +809,7 @@
 				0EFEB4872006D7C400F81029 /* PIATunnelProvider+Configuration.swift in Sources */,
 				0EBBF2F7208505DD00E36B40 /* NWUDPSessionState+Description.swift in Sources */,
 				0EFEB4882006D7C400F81029 /* PIATunnelProvider+Interaction.swift in Sources */,
+				0EEC49DD20B5E732008FEB91 /* Utils.swift in Sources */,
 				0EBBF2FE2085123200E36B40 /* NETCPSocket.swift in Sources */,
 				0EFEB4B12007627700F81029 /* MemoryDestination.swift in Sources */,
 				0EFEB4A02006D7F300F81029 /* ReplayProtector.m in Sources */,

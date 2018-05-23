@@ -166,7 +166,6 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
 
         tunnelQueue.schedule(after: .milliseconds(shutdownTimeout)) {
             log.warning("Tunnel not responding after \(self.shutdownTimeout) milliseconds, forcing stop")
-            self.flushLog()
             completionHandler()
         }
         pendingStopHandler = completionHandler
@@ -217,8 +216,6 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
         } else {
             log.info("Tunnel did stop on request")
         }
-        
-        flushLog()
     }
     
     private func disposeTunnel(error: Error?) {
@@ -385,7 +382,6 @@ extension PIATunnelProvider {
     
     private func flushLog() {
         log.debug("Flushing log...")
-        _ = log.flush(secondTimeout: 1)
         if let key = cfg.debugLogKey {
             let defaults = cfg.defaults
             defaults?.set(memoryLog.buffer, forKey: key)

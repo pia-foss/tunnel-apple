@@ -43,6 +43,16 @@
 		0EBBF3012085196000E36B40 /* NWTCPConnectionState+Description.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EBBF2FF2085196000E36B40 /* NWTCPConnectionState+Description.swift */; };
 		0EEC49DC20B5E732008FEB91 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EEC49DB20B5E732008FEB91 /* Utils.swift */; };
 		0EEC49DD20B5E732008FEB91 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EEC49DB20B5E732008FEB91 /* Utils.swift */; };
+		0EEC49E120B5F7EA008FEB91 /* Allocation.h in Headers */ = {isa = PBXBuildFile; fileRef = 0EFEB42E2006D3C800F81029 /* Allocation.h */; };
+		0EEC49E220B5F7F6008FEB91 /* CryptoBox.h in Headers */ = {isa = PBXBuildFile; fileRef = 0EFEB4402006D3C800F81029 /* CryptoBox.h */; };
+		0EEC49E320B5F7F6008FEB91 /* DataPath.h in Headers */ = {isa = PBXBuildFile; fileRef = 0EFEB4352006D3C800F81029 /* DataPath.h */; };
+		0EEC49E420B5F7F6008FEB91 /* Encryption.h in Headers */ = {isa = PBXBuildFile; fileRef = 0EFEB4342006D3C800F81029 /* Encryption.h */; };
+		0EEC49E520B5F7F6008FEB91 /* Errors.h in Headers */ = {isa = PBXBuildFile; fileRef = 0EFEB4362006D3C800F81029 /* Errors.h */; };
+		0EEC49E620B5F7F6008FEB91 /* MSS.h in Headers */ = {isa = PBXBuildFile; fileRef = 0EFEB42D2006D3C800F81029 /* MSS.h */; };
+		0EEC49E720B5F7F6008FEB91 /* PointerBasedDataPath.h in Headers */ = {isa = PBXBuildFile; fileRef = 0EFEB43F2006D3C800F81029 /* PointerBasedDataPath.h */; };
+		0EEC49E820B5F7F6008FEB91 /* ReplayProtector.h in Headers */ = {isa = PBXBuildFile; fileRef = 0EFEB4392006D3C800F81029 /* ReplayProtector.h */; };
+		0EEC49E920B5F7F6008FEB91 /* TLSBox.h in Headers */ = {isa = PBXBuildFile; fileRef = 0EFEB4442006D3C800F81029 /* TLSBox.h */; };
+		0EEC49EA20B5F7F6008FEB91 /* ZeroingData.h in Headers */ = {isa = PBXBuildFile; fileRef = 0EFEB4412006D3C800F81029 /* ZeroingData.h */; };
 		0EFEB4552006D3C800F81029 /* EncryptionProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EFEB42A2006D3C800F81029 /* EncryptionProxy.swift */; };
 		0EFEB4562006D3C800F81029 /* SessionKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EFEB42B2006D3C800F81029 /* SessionKey.swift */; };
 		0EFEB4572006D3C800F81029 /* HighLevelDataPath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EFEB42C2006D3C800F81029 /* HighLevelDataPath.swift */; };
@@ -471,6 +481,16 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0EEC49E620B5F7F6008FEB91 /* MSS.h in Headers */,
+				0EEC49E520B5F7F6008FEB91 /* Errors.h in Headers */,
+				0EEC49E720B5F7F6008FEB91 /* PointerBasedDataPath.h in Headers */,
+				0EEC49EA20B5F7F6008FEB91 /* ZeroingData.h in Headers */,
+				0EEC49E120B5F7EA008FEB91 /* Allocation.h in Headers */,
+				0EEC49E420B5F7F6008FEB91 /* Encryption.h in Headers */,
+				0EEC49E320B5F7F6008FEB91 /* DataPath.h in Headers */,
+				0EEC49E820B5F7F6008FEB91 /* ReplayProtector.h in Headers */,
+				0EEC49E920B5F7F6008FEB91 /* TLSBox.h in Headers */,
+				0EEC49E220B5F7F6008FEB91 /* CryptoBox.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

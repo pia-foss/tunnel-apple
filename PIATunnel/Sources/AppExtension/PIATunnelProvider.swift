@@ -25,6 +25,9 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
     /// The maximum number of lines in the log.
     public var maxLogLines = 1000
     
+    /// The number of milliseconds after which the tunnel gives up on a connection attempt.
+    public var connectionTimeout = 10000
+    
     /// The number of milliseconds after which the tunnel is shut down forcibly.
     public var shutdownTimeout = 2000
     
@@ -196,7 +199,7 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
         
         socket = genericSocket(endpoint: endpoint)
         socket?.delegate = self
-        socket?.observe(queue: tunnelQueue)
+        socket?.observe(queue: tunnelQueue, activeTimeout: connectionTimeout)
     }
     
     private func finishTunnelDisconnection(error: Error?) {

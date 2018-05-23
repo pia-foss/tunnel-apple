@@ -17,6 +17,8 @@ class NETCPSocket: NSObject, GenericSocket {
     
     private let impl: NWTCPConnection
     
+    private var isActive: Bool
+    
     private weak var queue: DispatchQueue?
     
     var endpoint: NWEndpoint {
@@ -35,10 +37,19 @@ class NETCPSocket: NSObject, GenericSocket {
     
     init(impl: NWTCPConnection) {
         self.impl = impl
+        isActive = false
     }
     
-    func observe(queue: DispatchQueue) {
+    func observe(queue: DispatchQueue, activeTimeout: Int) {
+        isActive = false
+
         self.queue = queue
+        queue.schedule(after: .milliseconds(activeTimeout)) { [weak self] in
+            guard self?.isActive ?? false else {
+                self?.impl.cancel()
+                return
+            }
+        }
         impl.addObserver(self, forKeyPath: #keyPath(NWTCPConnection.state), options: [.initial, .new], context: &NETCPSocket.linkContext)
         impl.addObserver(self, forKeyPath: #keyPath(NWTCPConnection.hasBetterPath), options: .new, context: &NETCPSocket.linkContext)
     }
@@ -92,6 +103,7 @@ class NETCPSocket: NSObject, GenericSocket {
             
             switch impl.state {
             case .connected:
+                isActive = true
                 delegate?.socketDidBecomeActive(self)
                 
             case .cancelled:

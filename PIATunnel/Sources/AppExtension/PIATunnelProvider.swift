@@ -161,7 +161,7 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
             return
         }
 
-        schedule(after: .milliseconds(shutdownTimeout)) {
+        tunnelQueue.schedule(after: .milliseconds(shutdownTimeout)) {
             log.warning("Tunnel not responding after \(self.shutdownTimeout) milliseconds, forcing stop")
             self.flushLog()
             completionHandler()
@@ -279,7 +279,7 @@ extension PIATunnelProvider: GenericSocketDelegate {
                 return
             }
             log.debug("Disconnection is recoverable, tunnel will reconnect in \(reconnectionDelay) milliseconds...")
-            schedule(after: .milliseconds(reconnectionDelay)) {
+            tunnelQueue.schedule(after: .milliseconds(reconnectionDelay)) {
                 self.connectTunnel(endpoint: socket.endpoint)
             }
             return
@@ -400,11 +400,6 @@ extension PIATunnelProvider {
             let impl = createTCPConnection(to: endpoint, enableTLS: false, tlsParameters: nil, delegate: nil)
             return NETCPSocket(impl: impl)
         }
-    }
-    
-    private func schedule(after: DispatchTimeInterval, block: @escaping () -> Void) {
-        let deadline = DispatchTime.now() + after
-        tunnelQueue.asyncAfter(deadline: deadline, execute: block)
     }
     
     private func logCurrentSSID() {

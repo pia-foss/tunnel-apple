@@ -72,7 +72,7 @@ public protocol SessionProxyDelegate {
 }
 
 /// Provides methods to set up and maintain an OpenVPN session.
-public class SessionProxy: NSObject {
+public class SessionProxy {
 
     /// Wraps the encryption parameters of the session.
     public struct EncryptionParameters {

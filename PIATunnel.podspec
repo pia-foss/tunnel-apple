@@ -18,6 +18,7 @@ Pod::Spec.new do |s|
         p.pod_target_xcconfig   = { "SWIFT_INCLUDE_PATHS" => "${PODS_TARGET_SRCROOT}/PIATunnel/Sources/Core",
                                     "APPLICATION_EXTENSION_API_ONLY" => "YES" }
         p.dependency "SwiftyBeaver"
+        p.dependency "SBObjectiveCWrapper"
         p.dependency "OpenSSL-Apple", "~> 1.1.0h"
     end
 

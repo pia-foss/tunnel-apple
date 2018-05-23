@@ -10,6 +10,8 @@ import Foundation
 import SwiftyBeaver
 
 class MemoryDestination: BaseDestination {
+    private let queue = DispatchQueue(label: "MemoryDestination")
+    
     var buffer: [String] = []
     
     var maxLines: Int?
@@ -18,7 +20,9 @@ class MemoryDestination: BaseDestination {
         guard let message = super.send(level, msg: msg, thread: thread, file: file, function: function, line: line) else {
             return nil
         }
-        buffer.append(message)
+        queue.sync {
+            buffer.append(message)
+        }
         if let maxLines = maxLines {
             while (buffer.count > maxLines) {
                 buffer.removeFirst()

@@ -46,6 +46,7 @@ class NETCPSocket: NSObject, GenericSocket {
         self.queue = queue
         queue.schedule(after: .milliseconds(activeTimeout)) { [weak self] in
             guard self?.isActive ?? false else {
+                log.debug("Socket timed out waiting for activity, cancelling...")
                 self?.impl.cancel()
                 return
             }

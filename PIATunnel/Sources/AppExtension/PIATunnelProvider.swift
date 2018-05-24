@@ -104,7 +104,7 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
             existingLog.append("")
             existingLog.append(logSeparator)
             existingLog.append("")
-            memoryLog.buffer = existingLog
+            memoryLog.start(with: existingLog)
         }
 
         configureLogging(debug: cfg.shouldDebug)
@@ -179,7 +179,7 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
         var response: Data?
         switch Message(messageData) {
         case .requestLog:
-            response = memoryLog.buffer.joined(separator: "\n").data(using: .utf8)
+            response = memoryLog.description.data(using: .utf8)
 
         default:
             break
@@ -382,10 +382,8 @@ extension PIATunnelProvider {
     
     private func flushLog() {
         log.debug("Flushing log...")
-        if let key = cfg.debugLogKey {
-            let defaults = cfg.defaults
-            defaults?.set(memoryLog.buffer, forKey: key)
-            defaults?.synchronize()
+        if let defaults = cfg.defaults, let key = cfg.debugLogKey {
+            memoryLog.flush(to: defaults, with: key)
         }
     }
     

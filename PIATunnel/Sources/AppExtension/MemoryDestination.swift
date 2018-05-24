@@ -9,12 +9,25 @@
 import Foundation
 import SwiftyBeaver
 
-class MemoryDestination: BaseDestination {
+class MemoryDestination: BaseDestination, CustomStringConvertible {
     private let queue = DispatchQueue(label: "MemoryDestination")
     
-    var buffer: [String] = []
+    private var buffer: [String] = []
     
     var maxLines: Int?
+    
+    func start(with existing: [String]) {
+        queue.sync {
+            buffer = existing
+        }
+    }
+    
+    func flush(to: UserDefaults, with key: String) {
+        queue.sync {
+            to.set(buffer, forKey: key)
+        }
+        to.synchronize()
+    }
     
     override func send(_ level: SwiftyBeaver.Level, msg: String, thread: String, file: String, function: String, line: Int, context: Any?) -> String? {
         guard let message = super.send(level, msg: msg, thread: thread, file: file, function: function, line: line) else {
@@ -29,5 +42,11 @@ class MemoryDestination: BaseDestination {
             }
         }
         return message
+    }
+
+    var description: String {
+        return queue.sync {
+            return buffer.joined(separator: "\n")
+        }
     }
 }

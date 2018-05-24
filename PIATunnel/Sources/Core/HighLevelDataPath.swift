@@ -115,7 +115,7 @@ class HighLevelDataPath: DataPath {
             
             var payload = decryptedPacket.subdata(in: offset..<decryptedPacket.count)
             guard (payload != ProtocolMacros.pingString) else {
-//                log.verbose("Data: Received ping, do nothing")
+                log.debug("Data: Received ping, do nothing")
                 continue
             }
             

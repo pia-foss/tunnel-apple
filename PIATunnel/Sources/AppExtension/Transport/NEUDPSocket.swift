@@ -17,6 +17,8 @@ class NEUDPSocket: NSObject, GenericSocket {
     
     private let impl: NWUDPSession
     
+    private var isActive: Bool
+    
     private weak var queue: DispatchQueue?
     
     var endpoint: NWEndpoint {
@@ -35,10 +37,20 @@ class NEUDPSocket: NSObject, GenericSocket {
     
     init(impl: NWUDPSession) {
         self.impl = impl
+        isActive = false
     }
     
-    func observe(queue: DispatchQueue) {
+    func observe(queue: DispatchQueue, activeTimeout: Int) {
+        isActive = false
+
         self.queue = queue
+        queue.schedule(after: .milliseconds(activeTimeout)) { [weak self] in
+            guard self?.isActive ?? false else {
+                log.debug("Socket timed out waiting for activity, cancelling...")
+                self?.impl.cancel()
+                return
+            }
+        }
         impl.addObserver(self, forKeyPath: #keyPath(NWUDPSession.state), options: [.initial, .new], context: &NEUDPSocket.linkContext)
         impl.addObserver(self, forKeyPath: #keyPath(NWUDPSession.hasBetterPath), options: .new, context: &NEUDPSocket.linkContext)
     }
@@ -92,6 +104,7 @@ class NEUDPSocket: NSObject, GenericSocket {
 
             switch impl.state {
             case .ready:
+                isActive = true
                 delegate?.socketDidBecomeActive(self)
 
             case .cancelled:

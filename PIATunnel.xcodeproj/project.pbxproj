@@ -41,6 +41,18 @@
 		0EBBF2FE2085123200E36B40 /* NETCPSocket.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EBBF2FC2085123200E36B40 /* NETCPSocket.swift */; };
 		0EBBF3002085196000E36B40 /* NWTCPConnectionState+Description.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EBBF2FF2085196000E36B40 /* NWTCPConnectionState+Description.swift */; };
 		0EBBF3012085196000E36B40 /* NWTCPConnectionState+Description.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EBBF2FF2085196000E36B40 /* NWTCPConnectionState+Description.swift */; };
+		0EEC49DC20B5E732008FEB91 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EEC49DB20B5E732008FEB91 /* Utils.swift */; };
+		0EEC49DD20B5E732008FEB91 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EEC49DB20B5E732008FEB91 /* Utils.swift */; };
+		0EEC49E120B5F7EA008FEB91 /* Allocation.h in Headers */ = {isa = PBXBuildFile; fileRef = 0EFEB42E2006D3C800F81029 /* Allocation.h */; };
+		0EEC49E220B5F7F6008FEB91 /* CryptoBox.h in Headers */ = {isa = PBXBuildFile; fileRef = 0EFEB4402006D3C800F81029 /* CryptoBox.h */; };
+		0EEC49E320B5F7F6008FEB91 /* DataPath.h in Headers */ = {isa = PBXBuildFile; fileRef = 0EFEB4352006D3C800F81029 /* DataPath.h */; };
+		0EEC49E420B5F7F6008FEB91 /* Encryption.h in Headers */ = {isa = PBXBuildFile; fileRef = 0EFEB4342006D3C800F81029 /* Encryption.h */; };
+		0EEC49E520B5F7F6008FEB91 /* Errors.h in Headers */ = {isa = PBXBuildFile; fileRef = 0EFEB4362006D3C800F81029 /* Errors.h */; };
+		0EEC49E620B5F7F6008FEB91 /* MSS.h in Headers */ = {isa = PBXBuildFile; fileRef = 0EFEB42D2006D3C800F81029 /* MSS.h */; };
+		0EEC49E720B5F7F6008FEB91 /* PointerBasedDataPath.h in Headers */ = {isa = PBXBuildFile; fileRef = 0EFEB43F2006D3C800F81029 /* PointerBasedDataPath.h */; };
+		0EEC49E820B5F7F6008FEB91 /* ReplayProtector.h in Headers */ = {isa = PBXBuildFile; fileRef = 0EFEB4392006D3C800F81029 /* ReplayProtector.h */; };
+		0EEC49E920B5F7F6008FEB91 /* TLSBox.h in Headers */ = {isa = PBXBuildFile; fileRef = 0EFEB4442006D3C800F81029 /* TLSBox.h */; };
+		0EEC49EA20B5F7F6008FEB91 /* ZeroingData.h in Headers */ = {isa = PBXBuildFile; fileRef = 0EFEB4412006D3C800F81029 /* ZeroingData.h */; };
 		0EFEB4552006D3C800F81029 /* EncryptionProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EFEB42A2006D3C800F81029 /* EncryptionProxy.swift */; };
 		0EFEB4562006D3C800F81029 /* SessionKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EFEB42B2006D3C800F81029 /* SessionKey.swift */; };
 		0EFEB4572006D3C800F81029 /* HighLevelDataPath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EFEB42C2006D3C800F81029 /* HighLevelDataPath.swift */; };
@@ -170,6 +182,7 @@
 		0EBBF2F92085061600E36B40 /* NETCPInterface.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NETCPInterface.swift; sourceTree = "<group>"; };
 		0EBBF2FC2085123200E36B40 /* NETCPSocket.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NETCPSocket.swift; sourceTree = "<group>"; };
 		0EBBF2FF2085196000E36B40 /* NWTCPConnectionState+Description.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NWTCPConnectionState+Description.swift"; sourceTree = "<group>"; };
+		0EEC49DB20B5E732008FEB91 /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 		0EFEB42A2006D3C800F81029 /* EncryptionProxy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EncryptionProxy.swift; sourceTree = "<group>"; };
 		0EFEB42B2006D3C800F81029 /* SessionKey.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SessionKey.swift; sourceTree = "<group>"; };
 		0EFEB42C2006D3C800F81029 /* HighLevelDataPath.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HighLevelDataPath.swift; sourceTree = "<group>"; };
@@ -331,7 +344,6 @@
 		0EBBF2E32084FDF400E36B40 /* Transport */ = {
 			isa = PBXGroup;
 			children = (
-				0EBBF2E42084FE6F00E36B40 /* GenericSocket.swift */,
 				0EBBF2F92085061600E36B40 /* NETCPInterface.swift */,
 				0EBBF2FC2085123200E36B40 /* NETCPSocket.swift */,
 				0EBBF2EB2085055100E36B40 /* NETunnelInterface.swift */,
@@ -396,6 +408,7 @@
 				0EFEB4522006D3C800F81029 /* PIATunnelProvider.swift */,
 				0EFEB44F2006D3C800F81029 /* PIATunnelProvider+Configuration.swift */,
 				0EFEB4502006D3C800F81029 /* PIATunnelProvider+Interaction.swift */,
+				0EEC49DB20B5E732008FEB91 /* Utils.swift */,
 			);
 			path = AppExtension;
 			sourceTree = "<group>";
@@ -468,6 +481,16 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0EEC49E620B5F7F6008FEB91 /* MSS.h in Headers */,
+				0EEC49E520B5F7F6008FEB91 /* Errors.h in Headers */,
+				0EEC49E720B5F7F6008FEB91 /* PointerBasedDataPath.h in Headers */,
+				0EEC49EA20B5F7F6008FEB91 /* ZeroingData.h in Headers */,
+				0EEC49E120B5F7EA008FEB91 /* Allocation.h in Headers */,
+				0EEC49E420B5F7F6008FEB91 /* Encryption.h in Headers */,
+				0EEC49E320B5F7F6008FEB91 /* DataPath.h in Headers */,
+				0EEC49E820B5F7F6008FEB91 /* ReplayProtector.h in Headers */,
+				0EEC49E920B5F7F6008FEB91 /* TLSBox.h in Headers */,
+				0EEC49E220B5F7F6008FEB91 /* CryptoBox.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -700,11 +723,13 @@
 			inputPaths = (
 				"${SRCROOT}/Pods/Target Support Files/Pods-PIATunnel-PIATunnelHost/Pods-PIATunnel-PIATunnelHost-frameworks.sh",
 				"${PODS_ROOT}/OpenSSL-Apple/frameworks/iPhone/openssl.framework",
+				"${BUILT_PRODUCTS_DIR}/SBObjectiveCWrapper-iOS/SBObjectiveCWrapper.framework",
 				"${BUILT_PRODUCTS_DIR}/SwiftyBeaver-iOS/SwiftyBeaver.framework",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/openssl.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SBObjectiveCWrapper.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SwiftyBeaver.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -760,6 +785,7 @@
 				0EFEB4732006D3C800F81029 /* LinkInterface.swift in Sources */,
 				0EBBF2F8208505DD00E36B40 /* NWUDPSessionState+Description.swift in Sources */,
 				0EFEB4652006D3C800F81029 /* Authenticator.swift in Sources */,
+				0EEC49DC20B5E732008FEB91 /* Utils.swift in Sources */,
 				0EBBF2FD2085123200E36B40 /* NETCPSocket.swift in Sources */,
 				0EFEB4562006D3C800F81029 /* SessionKey.swift in Sources */,
 				0EFEB4AB200760EC00F81029 /* MemoryDestination.swift in Sources */,
@@ -805,6 +831,7 @@
 				0EFEB4872006D7C400F81029 /* PIATunnelProvider+Configuration.swift in Sources */,
 				0EBBF2F7208505DD00E36B40 /* NWUDPSessionState+Description.swift in Sources */,
 				0EFEB4882006D7C400F81029 /* PIATunnelProvider+Interaction.swift in Sources */,
+				0EEC49DD20B5E732008FEB91 /* Utils.swift in Sources */,
 				0EBBF2FE2085123200E36B40 /* NETCPSocket.swift in Sources */,
 				0EFEB4B12007627700F81029 /* MemoryDestination.swift in Sources */,
 				0EFEB4A02006D7F300F81029 /* ReplayProtector.m in Sources */,

@@ -25,6 +25,9 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
     /// The maximum number of lines in the log.
     public var maxLogLines = 1000
     
+    /// The number of milliseconds after which the tunnel gives up on a connection attempt.
+    public var socketTimeout = 5000
+    
     /// The number of milliseconds after which the tunnel is shut down forcibly.
     public var shutdownTimeout = 2000
     
@@ -101,7 +104,7 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
             existingLog.append("")
             existingLog.append(logSeparator)
             existingLog.append("")
-            memoryLog.buffer = existingLog
+            memoryLog.start(with: existingLog)
         }
 
         configureLogging(debug: cfg.shouldDebug)
@@ -161,9 +164,8 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
             return
         }
 
-        schedule(after: .milliseconds(shutdownTimeout)) {
+        tunnelQueue.schedule(after: .milliseconds(shutdownTimeout)) {
             log.warning("Tunnel not responding after \(self.shutdownTimeout) milliseconds, forcing stop")
-            self.flushLog()
             completionHandler()
         }
         pendingStopHandler = completionHandler
@@ -177,7 +179,7 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
         var response: Data?
         switch Message(messageData) {
         case .requestLog:
-            response = memoryLog.buffer.joined(separator: "\n").data(using: .utf8)
+            response = memoryLog.description.data(using: .utf8)
 
         default:
             break
@@ -196,7 +198,7 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
         
         socket = genericSocket(endpoint: endpoint)
         socket?.delegate = self
-        socket?.observe(queue: tunnelQueue)
+        socket?.observe(queue: tunnelQueue, activeTimeout: socketTimeout)
     }
     
     private func finishTunnelDisconnection(error: Error?) {
@@ -214,8 +216,6 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
         } else {
             log.info("Tunnel did stop on request")
         }
-        
-        flushLog()
     }
     
     private func disposeTunnel(error: Error?) {
@@ -279,7 +279,7 @@ extension PIATunnelProvider: GenericSocketDelegate {
                 return
             }
             log.debug("Disconnection is recoverable, tunnel will reconnect in \(reconnectionDelay) milliseconds...")
-            schedule(after: .milliseconds(reconnectionDelay)) {
+            tunnelQueue.schedule(after: .milliseconds(reconnectionDelay)) {
                 self.connectTunnel(endpoint: socket.endpoint)
             }
             return
@@ -382,11 +382,8 @@ extension PIATunnelProvider {
     
     private func flushLog() {
         log.debug("Flushing log...")
-        _ = log.flush(secondTimeout: 1)
-        if let key = cfg.debugLogKey {
-            let defaults = cfg.defaults
-            defaults?.set(memoryLog.buffer, forKey: key)
-            defaults?.synchronize()
+        if let defaults = cfg.defaults, let key = cfg.debugLogKey {
+            memoryLog.flush(to: defaults, with: key)
         }
     }
     
@@ -400,11 +397,6 @@ extension PIATunnelProvider {
             let impl = createTCPConnection(to: endpoint, enableTLS: false, tlsParameters: nil, delegate: nil)
             return NETCPSocket(impl: impl)
         }
-    }
-    
-    private func schedule(after: DispatchTimeInterval, block: @escaping () -> Void) {
-        let deadline = DispatchTime.now() + after
-        tunnelQueue.asyncAfter(deadline: deadline, execute: block)
     }
     
     private func logCurrentSSID() {

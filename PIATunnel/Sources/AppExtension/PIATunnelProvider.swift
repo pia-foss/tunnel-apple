@@ -227,7 +227,24 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
         
         // failed to start
         if (pendingStartHandler != nil) {
-            pendingStartHandler?(error)
+            
+            //
+            // CAUTION
+            //
+            // passing nil to this callback will result in an extremely undesired situation,
+            // because NetworkExtension would interpret it as "successfully connected to VPN"
+            //
+            // if we end up here disposing the tunnel with a pending start handled, we are
+            // 100% sure that something wrong happened while starting the tunnel. in such
+            // case, here we then must also make sure that an error object is ALWAYS
+            // provided, so we do this with optional fallback to .socketActivity
+            //
+            // socketActivity makes sense, given that any other error would normally come
+            // from SessionProxy.stopError. other paths to disposeTunnel() are only coming
+            // from stopTunnel(), in which case we don't need feed an error parameter to
+            // the stop completion handler
+            //
+            pendingStartHandler?(error ?? TunnelError.socketActivity)
             pendingStartHandler = nil
         }
         // stopped intentionally

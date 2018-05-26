@@ -52,13 +52,11 @@ class NEUDPInterface: NSObject, GenericSocket, LinkInterface {
         
         self.queue = queue
         queue.schedule(after: .milliseconds(activeTimeout)) { [weak self] in
-            guard let isActive = self?.isActive else {
+            guard let _self = self else {
                 return
             }
-            guard isActive else {
-                log.debug("Socket timed out waiting for activity, cancelling...")
-                self?.impl.cancel()
-//                self?.impl.tryNextResolvedEndpoint()
+            guard _self.isActive else {
+                _self.delegate?.socketDidTimeout(_self)
                 return
             }
         }

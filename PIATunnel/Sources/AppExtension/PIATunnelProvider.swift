@@ -295,6 +295,12 @@ extension PIATunnelProvider: GenericSocketDelegate {
     
     // MARK: GenericSocketDelegate (tunnel queue)
     
+    func socketDidTimeout(_ socket: GenericSocket) {
+        log.debug("Socket timed out waiting for activity, cancelling...")
+        reasserting = true
+        socket.shutdown()
+    }
+    
     func socketDidBecomeActive(_ socket: GenericSocket) {
         proxy?.setLink(link: socket.link())
     }

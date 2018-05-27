@@ -39,6 +39,14 @@ Theoretically, any custom CA can be fed to the client for TLS validation. When u
 
 It's highly recommended to use the Git and Ruby packages provided by [Homebrew][dep-brew].
 
+### CocoaPods
+
+To use with CocoaPods just add this to your Podfile:
+
+```ruby
+pod 'PIATunnel'
+```
+
 ### Testing
 
 Download the library codebase locally:
@@ -65,10 +73,6 @@ For the VPN to work properly, the `BasicTunnel` demo requires:
 - App IDs with _Packet Tunnel_ entitlements
 
 both in the main app and the tunnel extension target.
-
-### Deployment
-
-We plan to submit the library to the master CocoaPods repository, hence the presence of a `.podspec` file in the root.
 
 ## Documentation
 

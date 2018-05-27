@@ -35,10 +35,10 @@ class MemoryDestination: BaseDestination, CustomStringConvertible {
         }
         queue.sync {
             buffer.append(message)
-        }
-        if let maxLines = maxLines {
-            while (buffer.count > maxLines) {
-                buffer.removeFirst()
+            if let maxLines = maxLines {
+                while (buffer.count > maxLines) {
+                    buffer.removeFirst()
+                }
             }
         }
         return message

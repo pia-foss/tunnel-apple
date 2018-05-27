@@ -41,10 +41,10 @@ extension PIATunnelProvider {
     public enum TunnelError: Error {
 
         /// The `PIATunnelProvider.Configuration` provided is incorrect or incomplete.
-        case configuration
+        case configuration(field: String)
         
         /// Credentials are missing or protected (e.g. device locked).
-        case credentials
+        case credentials(field: String)
         
         /// The pseudo-random number generator could not be initialized.
         case prngInitialization

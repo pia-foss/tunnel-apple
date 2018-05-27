@@ -83,25 +83,32 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
     open override func startTunnel(options: [String : NSObject]? = nil, completionHandler: @escaping (Error?) -> Void) {
         do {
             guard let tunnelProtocol = protocolConfiguration as? NETunnelProviderProtocol else {
-                throw TunnelError.configuration
+                throw TunnelError.configuration(field: "protocolConfiguration")
             }
             guard let bundleIdentifier = tunnelProtocol.providerBundleIdentifier else {
-                throw TunnelError.configuration
+                throw TunnelError.configuration(field: "protocolConfiguration.bundleIdentifier")
             }
             guard let providerConfiguration = tunnelProtocol.providerConfiguration else {
-                throw TunnelError.configuration
+                throw TunnelError.configuration(field: "protocolConfiguration.providerConfiguration")
             }
             try endpoint = AuthenticatedEndpoint(protocolConfiguration: tunnelProtocol)
             try cfg = Configuration.parsed(from: providerConfiguration)
             self.bundleIdentifier = bundleIdentifier
         } catch let e {
-            switch e {
-            case TunnelError.credentials:
-                NSLog("Tunnel credentials unavailable!")
-                
-            default:
-                NSLog("Tunnel configuration incomplete!")
+            var message: String?
+            if let te = e as? TunnelError {
+                switch te {
+                case .credentials(let field):
+                    message = "Tunnel credentials unavailable: \(field)"
+                    
+                case .configuration(let field):
+                    message = "Tunnel configuration incomplete: \(field)"
+                    
+                default:
+                    break
+                }
             }
+            NSLog(message ?? "Unexpected error in tunnel configuration: \(e)")
             cancelTunnelWithError(e)
             return
         }

@@ -125,20 +125,20 @@ extension PIATunnelProvider {
         
         init(protocolConfiguration: NEVPNProtocol) throws {
             guard let address = protocolConfiguration.serverAddress else {
-                throw TunnelError.configuration
+                throw TunnelError.configuration(field: "protocolConfiguration.serverAddress")
             }
             let addressComponents = address.components(separatedBy: ":")
             guard (addressComponents.count == 2) else {
-                throw TunnelError.configuration
+                throw TunnelError.configuration(field: "protocolConfiguration.serverAddress (hostname:port)")
             }
             guard let username = protocolConfiguration.username else {
-                throw TunnelError.credentials
+                throw TunnelError.credentials(field: "protocolConfiguration.username")
             }
             guard let passwordReference = protocolConfiguration.passwordReference else {
-                throw TunnelError.credentials
+                throw TunnelError.credentials(field: "protocolConfiguration.passwordReference")
             }
             guard let password = try? Keychain.password(for: username, reference: passwordReference) else {
-                throw TunnelError.credentials
+                throw TunnelError.credentials(field: "protocolConfiguration.passwordReference (keychain)")
             }
             
             hostname = addressComponents[0]
@@ -207,13 +207,13 @@ extension PIATunnelProvider {
             let S = Configuration.Keys.self
 
             guard let appGroup = providerConfiguration[S.appGroup] as? String else {
-                throw TunnelError.configuration
+                throw TunnelError.configuration(field: "protocolConfiguration.providerConfiguration[\(S.appGroup)]")
             }
             guard let cipherAlgorithm = providerConfiguration[S.cipherAlgorithm] as? String, let cipher = Cipher(rawValue: cipherAlgorithm) else {
-                throw TunnelError.configuration
+                throw TunnelError.configuration(field: "protocolConfiguration.providerConfiguration[\(S.cipherAlgorithm)]")
             }
             guard let digestAlgorithm = providerConfiguration[S.digestAlgorithm] as? String, let digest = Digest(rawValue: digestAlgorithm) else {
-                throw TunnelError.configuration
+                throw TunnelError.configuration(field: "protocolConfiguration.providerConfiguration[\(S.digestAlgorithm)]")
             }
 
             // fallback to .rsa2048 in < 0.7 configurations (ca/caDigest)
@@ -239,7 +239,7 @@ extension PIATunnelProvider {
             shouldDebug = providerConfiguration[S.debug] as? Bool ?? false
             if shouldDebug {
                 guard let debugLogKey = providerConfiguration[S.debugLogKey] as? String else {
-                    throw TunnelError.configuration
+                    throw TunnelError.configuration(field: "protocolConfiguration.providerConfiguration[\(S.debugLogKey)]")
                 }
                 self.debugLogKey = debugLogKey
             } else {
@@ -384,7 +384,7 @@ extension PIATunnelProvider {
             do {
                 try keychain.set(password: endpoint.password, for: endpoint.username)
             } catch _ {
-                throw TunnelError.configuration
+                throw TunnelError.credentials(field: "keychain.set()")
             }
             
             protocolConfiguration.providerBundleIdentifier = bundleIdentifier

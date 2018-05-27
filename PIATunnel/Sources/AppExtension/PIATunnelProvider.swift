@@ -272,9 +272,9 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
     }
     
     @objc private func handleWifiChange() {
-        log.info("Stopping tunnel due to network change (will reconnect)")
+        log.info("Stopping tunnel due to network change")
         logCurrentSSID()
-        proxy?.reconnect(error: ProviderError.networkChanged)
+        proxy?.shutdown(error: ProviderError.networkChanged)
     }
 }
 
@@ -318,9 +318,9 @@ extension PIATunnelProvider: GenericSocketDelegate {
     }
     
     func socketHasBetterPath(_ socket: GenericSocket) {
-        log.info("Stopping tunnel due to a new better path (will reconnect)")
+        log.info("Stopping tunnel due to a new better path")
         logCurrentSSID()
-        proxy?.reconnect(error: ProviderError.networkChanged)
+        proxy?.shutdown(error: ProviderError.networkChanged)
     }
 }
 

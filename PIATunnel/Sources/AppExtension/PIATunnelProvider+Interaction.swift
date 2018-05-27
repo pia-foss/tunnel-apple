@@ -43,6 +43,9 @@ extension PIATunnelProvider {
         /// The `PIATunnelProvider.Configuration` provided is incorrect or incomplete.
         case configuration
         
+        /// Credentials are missing or protected (e.g. device locked).
+        case credentials
+        
         /// The pseudo-random number generator could not be initialized.
         case prngInitialization
         

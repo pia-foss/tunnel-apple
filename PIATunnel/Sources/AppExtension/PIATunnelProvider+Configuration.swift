@@ -132,13 +132,13 @@ extension PIATunnelProvider {
                 throw TunnelError.configuration
             }
             guard let username = protocolConfiguration.username else {
-                throw TunnelError.configuration
+                throw TunnelError.credentials
             }
             guard let passwordReference = protocolConfiguration.passwordReference else {
-                throw TunnelError.configuration
+                throw TunnelError.credentials
             }
             guard let password = try? Keychain.password(for: username, reference: passwordReference) else {
-                throw TunnelError.configuration
+                throw TunnelError.credentials
             }
             
             hostname = addressComponents[0]

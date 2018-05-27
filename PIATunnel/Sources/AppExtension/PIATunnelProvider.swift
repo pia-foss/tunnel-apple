@@ -95,7 +95,13 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
             try cfg = Configuration.parsed(from: providerConfiguration)
             self.bundleIdentifier = bundleIdentifier
         } catch let e {
-            NSLog("Tunnel configuration incomplete!")
+            switch e {
+            case TunnelError.credentials:
+                NSLog("Tunnel credentials unavailable!")
+                
+            default:
+                NSLog("Tunnel configuration incomplete!")
+            }
             cancelTunnelWithError(e)
             return
         }

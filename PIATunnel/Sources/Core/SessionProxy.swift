@@ -184,7 +184,7 @@ public class SessionProxy {
     
     private var lastPingIn: Date
     
-    private var stopMethod: StopMethod?
+    private var isStopping: Bool
     
     /// The optional reason why the session stopped.
     public private(set) var stopError: Error?
@@ -229,6 +229,7 @@ public class SessionProxy {
         negotiationKeyIdx = 0
         lastPingOut = Date.distantPast
         lastPingIn = Date.distantPast
+        isStopping = false
         
         controlPlainBuffer = Z(count: TLSBoxMaxBufferLength)
         controlQueueOut = []
@@ -292,7 +293,7 @@ public class SessionProxy {
      - Parameter error: An optional `Error` being the reason of the shutdown.
      */
     public func shutdown(error: Error?) {
-        guard (stopMethod == nil) else {
+        guard !isStopping else {
             log.warning("Ignore stop request, already stopping!")
             return
         }
@@ -306,7 +307,7 @@ public class SessionProxy {
      - Seealso: `SessionProxyDelegate.sessionDidStop(...)`
      */
     public func reconnect(error: Error?) {
-        guard (stopMethod == nil) else {
+        guard !isStopping else {
             log.warning("Ignore stop request, already stopping!")
             return
         }
@@ -342,7 +343,7 @@ public class SessionProxy {
         link = nil
         tunnel = nil
         
-        stopMethod = nil
+        isStopping = false
         stopError = nil
     }
 
@@ -378,16 +379,16 @@ public class SessionProxy {
             return
         }
             
-        if let stopMethod = stopMethod {
-            switch stopMethod {
-            case .shutdown:
-                doShutdown(error: stopError)
-
-            case .reconnect:
-                doReconnect(error: stopError)
-            }
-            return
-        }
+//        if let stopMethod = stopMethod {
+//            switch stopMethod {
+//            case .shutdown:
+//                doShutdown(error: stopError)
+//
+//            case .reconnect:
+//                doReconnect(error: stopError)
+//            }
+//            return
+//        }
         
         maybeRenegotiate()
         if !isReliableLink {
@@ -1141,12 +1142,19 @@ public class SessionProxy {
     // MARK: Stop
     
     private func shouldHandlePackets() -> Bool {
-        return ((stopMethod == nil) && !keys.isEmpty)
+        return (!isStopping && !keys.isEmpty)
     }
     
     private func deferStop(_ method: StopMethod, _ error: Error?) {
-        stopMethod = method
-        stopError = error
+        isStopping = true
+        
+        switch method {
+        case .shutdown:
+            doShutdown(error: error)
+        
+        case .reconnect:
+            doReconnect(error: error)
+        }
     }
     
     private func doShutdown(error: Error?) {
@@ -1155,8 +1163,6 @@ public class SessionProxy {
         } else {
             log.info("Trigger shutdown on request")
         }
-        
-        stopMethod = .shutdown
         stopError = error
         delegate?.sessionDidStop(self, shouldReconnect: false)
     }
@@ -1167,8 +1173,6 @@ public class SessionProxy {
         } else {
             log.info("Trigger reconnection on request")
         }
-        
-        stopMethod = .reconnect
         stopError = error
         delegate?.sessionDidStop(self, shouldReconnect: true)
     }

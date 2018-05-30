@@ -38,7 +38,7 @@ extension PIATunnelProvider {
     }
 
     /// The errors raised by `PIATunnelProvider`.
-    public enum TunnelError: Error {
+    public enum ProviderError: Error {
 
         /// The `PIATunnelProvider.Configuration` provided is incorrect or incomplete.
         case configuration(field: String)

@@ -83,20 +83,20 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
     open override func startTunnel(options: [String : NSObject]? = nil, completionHandler: @escaping (Error?) -> Void) {
         do {
             guard let tunnelProtocol = protocolConfiguration as? NETunnelProviderProtocol else {
-                throw TunnelError.configuration(field: "protocolConfiguration")
+                throw ProviderError.configuration(field: "protocolConfiguration")
             }
             guard let bundleIdentifier = tunnelProtocol.providerBundleIdentifier else {
-                throw TunnelError.configuration(field: "protocolConfiguration.bundleIdentifier")
+                throw ProviderError.configuration(field: "protocolConfiguration.bundleIdentifier")
             }
             guard let providerConfiguration = tunnelProtocol.providerConfiguration else {
-                throw TunnelError.configuration(field: "protocolConfiguration.providerConfiguration")
+                throw ProviderError.configuration(field: "protocolConfiguration.providerConfiguration")
             }
             try endpoint = AuthenticatedEndpoint(protocolConfiguration: tunnelProtocol)
             try cfg = Configuration.parsed(from: providerConfiguration)
             self.bundleIdentifier = bundleIdentifier
         } catch let e {
             var message: String?
-            if let te = e as? TunnelError {
+            if let te = e as? ProviderError {
                 switch te {
                 case .credentials(let field):
                     message = "Tunnel credentials unavailable: \(field)"
@@ -125,14 +125,14 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
         log.info("Starting tunnel...")
         
         guard EncryptionProxy.prepareRandomNumberGenerator(seedLength: prngSeedLength) else {
-            cancelTunnelWithError(TunnelError.prngInitialization)
+            cancelTunnelWithError(ProviderError.prngInitialization)
             return
         }
         
         do {
             try cfg.handshake.write(to: tmpCaURL)
         } catch {
-            cancelTunnelWithError(TunnelError.certificateSerialization)
+            cancelTunnelWithError(ProviderError.certificateSerialization)
             return
         }
 
@@ -257,7 +257,7 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
             // from stopTunnel(), in which case we don't need feed an error parameter to
             // the stop completion handler
             //
-            pendingStartHandler?(error ?? TunnelError.socketActivity)
+            pendingStartHandler?(error ?? ProviderError.socketActivity)
             pendingStartHandler = nil
         }
         // stopped intentionally
@@ -274,7 +274,7 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
     @objc private func handleWifiChange() {
         log.info("Stopping tunnel due to network change (will reconnect)")
         logCurrentSSID()
-        proxy?.reconnect(error: TunnelError.networkChanged)
+        proxy?.reconnect(error: ProviderError.networkChanged)
     }
 }
 
@@ -295,7 +295,7 @@ extension PIATunnelProvider: GenericSocketDelegate {
         if !failure {
             shutdownError = proxy.stopError
         } else {
-            shutdownError = proxy.stopError ?? TunnelError.linkError
+            shutdownError = proxy.stopError ?? ProviderError.linkError
             linkFailures += 1
             log.debug("Link failures so far: \(linkFailures) (max = \(maxLinkFailures))")
         }
@@ -320,7 +320,7 @@ extension PIATunnelProvider: GenericSocketDelegate {
     func socketHasBetterPath(_ socket: GenericSocket) {
         log.info("Stopping tunnel due to a new better path (will reconnect)")
         logCurrentSSID()
-        proxy?.reconnect(error: TunnelError.networkChanged)
+        proxy?.reconnect(error: ProviderError.networkChanged)
     }
 }
 

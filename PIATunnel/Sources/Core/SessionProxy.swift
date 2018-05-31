@@ -361,7 +361,6 @@ public class SessionProxy {
         loopNegotiation()
     }
     
-    // TODO: convert quasi-busy-waiting loop to DispatchQueue blocks (may improve battery usage)
     private func loopNegotiation() {
         guard let link = link else {
             return
@@ -379,23 +378,10 @@ public class SessionProxy {
             return
         }
             
-//        if let stopMethod = stopMethod {
-//            switch stopMethod {
-//            case .shutdown:
-//                doShutdown(error: stopError)
-//
-//            case .reconnect:
-//                doReconnect(error: stopError)
-//            }
-//            return
-//        }
-        
-//        maybeRenegotiate()
         if !isReliableLink {
             pushRequest()
             flushControlQueue()
         }
-//        ping()
         
         guard (negotiationKey.controlState == .connected) else {
             queue.asyncAfter(deadline: .now() + Configuration.tickInterval) { [weak self] in

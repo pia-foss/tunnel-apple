@@ -395,7 +395,7 @@ public class SessionProxy {
             pushRequest()
             flushControlQueue()
         }
-        ping()
+//        ping()
         
         guard (negotiationKey.controlState == .connected) else {
             queue.asyncAfter(deadline: .now() + Configuration.tickInterval) { [weak self] in
@@ -570,6 +570,7 @@ public class SessionProxy {
             return
         }
         sendDataPackets(packets)
+        lastPingOut = Date()
     }
     
     // Ruby: ping
@@ -583,7 +584,16 @@ public class SessionProxy {
             deferStop(.shutdown, SessionError.pingTimeout)
             return
         }
-        guard (now.timeIntervalSince(lastPingOut) >= Configuration.pingInterval) else {
+
+        let elapsed = now.timeIntervalSince(lastPingOut)
+        defer {
+            let remaining = min(Configuration.pingInterval, Configuration.pingInterval - elapsed)
+            queue.asyncAfter(deadline: .now() + remaining) { [weak self] in
+                self?.ping()
+            }
+        }
+
+        guard (elapsed >= Configuration.pingInterval) else {
             return
         }
     
@@ -904,6 +914,10 @@ public class SessionProxy {
                 fatalError("Could not resolve link remote address")
             }
             delegate?.sessionDidStart(self, remoteAddress: remoteAddress, address: address, gatewayAddress: gatewayAddress, dnsServers: dnsServers)
+
+            queue.asyncAfter(deadline: .now() + Configuration.pingInterval) { [weak self] in
+                self?.ping()
+            }
         }
     }
     

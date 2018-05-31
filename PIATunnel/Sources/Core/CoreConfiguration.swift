@@ -20,8 +20,6 @@ struct CoreConfiguration {
 
     static let tickInterval = 0.2
     
-    static let pingInterval = 10.0
-    
     static let pingTimeout = 120.0
     
     static let retransmissionLimit = 0.1

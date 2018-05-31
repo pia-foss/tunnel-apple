@@ -396,11 +396,11 @@ public class SessionProxy {
                 flushControlQueue()
             }
             ping()
-            
-            let nextTime = DispatchTime.now() + Configuration.tickInterval
-            queue.asyncAfter(deadline: nextTime) {
-                self.loop()
-            }
+        }
+
+        let nextTime = DispatchTime.now() + Configuration.tickInterval
+        queue.asyncAfter(deadline: nextTime) {
+            self.loop()
         }
     }
 

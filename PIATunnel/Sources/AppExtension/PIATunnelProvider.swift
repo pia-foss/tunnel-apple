@@ -234,10 +234,6 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
     private func disposeTunnel(error: Error?) {
         flushLog()
         
-        proxy = nil
-        let fm = FileManager.default
-        try? fm.removeItem(at: tmpCaURL)
-        
         // failed to start
         if (pendingStartHandler != nil) {
             
@@ -267,6 +263,8 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
         }
         // stopped externally, unrecoverable
         else {
+            let fm = FileManager.default
+            try? fm.removeItem(at: tmpCaURL)
             cancelTunnelWithError(error)
         }
     }

@@ -358,11 +358,11 @@ public class SessionProxy {
             fatalError("Main loop must follow hard reset, keys are empty!")
         }
 
-        loop()
+        loopNegotiation()
     }
     
     // TODO: convert quasi-busy-waiting loop to DispatchQueue blocks (may improve battery usage)
-    private func loop() {
+    private func loopNegotiation() {
         guard let link = link else {
             return
         }
@@ -390,17 +390,22 @@ public class SessionProxy {
 //            return
 //        }
         
-        maybeRenegotiate()
+//        maybeRenegotiate()
         if !isReliableLink {
             pushRequest()
             flushControlQueue()
         }
         ping()
-
-        let nextTime = DispatchTime.now() + Configuration.tickInterval
-        queue.asyncAfter(deadline: nextTime) {
-            self.loop()
+        
+        guard (negotiationKey.controlState == .connected) else {
+            let nextTime = DispatchTime.now() + Configuration.tickInterval
+            queue.asyncAfter(deadline: nextTime) { [weak self] in
+                self?.loopNegotiation()
+            }
+            return
         }
+
+        // let loop die when negotiation is complete
     }
 
     // Ruby: udp_loop
@@ -415,6 +420,8 @@ public class SessionProxy {
             
             if let packets = newPackets, !packets.isEmpty {
                 self?.queue.sync {
+                    self?.maybeRenegotiate()
+
 //                    log.verbose("Received \(packets.count) packets from \(self.linkName)")
                     self?.receiveLink(packets: packets)
                 }
@@ -630,6 +637,7 @@ public class SessionProxy {
 
         negotiationKey.state = .softReset
         negotiationKey.softReset = true
+        loopNegotiation()
         enqueueControlPackets(code: .softResetV1, key: UInt8(negotiationKeyIdx), payload: Data())
     }
     

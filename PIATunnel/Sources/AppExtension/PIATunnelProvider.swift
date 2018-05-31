@@ -338,7 +338,7 @@ extension PIATunnelProvider: SessionProxyDelegate {
         log.info("\tGateway: \(gatewayAddress)")
         log.info("\tDNS: \(dnsServers)")
         
-        updateNetwork(tunnel: remoteAddress, vpn: address, gateway: gatewayAddress, dnsServers: dnsServers) { (error) in
+        bringNetworkUp(tunnel: remoteAddress, vpn: address, gateway: gatewayAddress, dnsServers: dnsServers) { (error) in
             if let error = error {
                 log.error("Failed to configure tunnel: \(error)")
                 self.pendingStartHandler?(error)
@@ -346,7 +346,7 @@ extension PIATunnelProvider: SessionProxyDelegate {
                 return
             }
             
-            log.info("Finished configuring tunnel!")
+            log.info("Tunnel interface is now UP")
             self.tunnelQueue.sync {
                 proxy.setTunnel(tunnel: NETunnelInterface(impl: self.packetFlow))
             }
@@ -361,10 +361,15 @@ extension PIATunnelProvider: SessionProxyDelegate {
         if shouldReconnect {
             reasserting = true
         }
-        socket?.shutdown()
+        bringNetworkDown {
+            log.info("Tunnel interface is now DOWN")
+            self.tunnelQueue.sync {
+                self.socket?.shutdown()
+            }
+        }
     }
     
-    private func updateNetwork(tunnel: String, vpn: String, gateway: String, dnsServers: [String], completionHandler: @escaping (Error?) -> Void) {
+    private func bringNetworkUp(tunnel: String, vpn: String, gateway: String, dnsServers: [String], completionHandler: @escaping (Error?) -> Void) {
         
         // route all traffic to VPN
         let defaultRoute = NEIPv4Route.default()
@@ -382,6 +387,12 @@ extension PIATunnelProvider: SessionProxyDelegate {
         newSettings.mtu = cfg.mtu
         
         setTunnelNetworkSettings(newSettings, completionHandler: completionHandler)
+    }
+    
+    private func bringNetworkDown(completionHandler: @escaping () -> Void) {
+        setTunnelNetworkSettings(nil) { (error) in
+            completionHandler()
+        }
     }
 }
 

@@ -186,6 +186,8 @@ public class SessionProxy {
     
     private var isStopping: Bool
     
+    private var isSuspended: Bool
+    
     /// The optional reason why the session stopped.
     public private(set) var stopError: Error?
     
@@ -230,6 +232,7 @@ public class SessionProxy {
         lastPingOut = Date.distantPast
         lastPingIn = Date.distantPast
         isStopping = false
+        isSuspended = false
         
         controlPlainBuffer = Z(count: TLSBoxMaxBufferLength)
         controlQueueOut = []
@@ -314,6 +317,25 @@ public class SessionProxy {
         deferStop(.reconnect, error)
     }
     
+    /**
+     Suspends activity.
+     */
+    public func suspend() {
+        log.info("Suspending...")
+
+        isSuspended = true
+    }
+
+    /**
+     Resumes activity and sends a packet to wake up link or trigger an early failure.
+     */
+    public func resume() {
+        log.info("Resuming...")
+
+        isSuspended = false
+        ping()
+    }
+
     // Ruby: cleanup
     /**
      Cleans up the session resources.

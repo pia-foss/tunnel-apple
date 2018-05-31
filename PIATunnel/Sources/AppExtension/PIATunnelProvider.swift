@@ -34,6 +34,9 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
     /// The number of milliseconds after which a reconnection attempt is issued.
     public var reconnectionDelay = 1000
     
+    /// The number of milliseconds of grace period after sleep before tunnel termination.
+    public var sleepGracePeriod = 60000
+    
     /// The number of link failures after which the tunnel is expected to die.
     public var maxLinkFailures = 3
 
@@ -70,6 +73,8 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
     private var proxy: SessionProxy?
     
     private var socket: GenericSocket?
+    
+    private var networkUpDate: Date?
 
     private var upgradedSocket: GenericSocket?
     
@@ -78,6 +83,10 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
     private var pendingStartHandler: ((Error?) -> Void)?
     
     private var pendingStopHandler: (() -> Void)?
+
+    private var sleepGraceTimer: DispatchSourceTimer?
+    
+    private var sleepEventHandler: (() -> Void)?
     
     // MARK: NEPacketTunnelProvider (XPC queue)
     
@@ -198,13 +207,71 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
         guard cfg.usesSleepHandlers else {
             return
         }
-        completionHandler()
+
+        pendingStartHandler = nil
+        log.info("Tunnel is going to sleep...")
+        defer {
+            flushLog()
+        }
+
+        guard let proxy = proxy else {
+            completionHandler()
+            return
+        }
+        guard let remaining: TimeInterval = tunnelQueue.sync(execute: {
+            guard let networkUpDate = networkUpDate else {
+                completionHandler()
+                return nil
+            }
+            let elapsed = -networkUpDate.timeIntervalSinceNow
+            let grace = TimeInterval(sleepGracePeriod) / 1000.0
+            let remaining = grace - elapsed
+            guard (remaining > 0.0) else {
+                log.info("Will disconnect now")
+                proxy.shutdown(error: nil)
+                return nil
+            }
+            return remaining
+        }) else {
+            return
+        }
+
+        log.info("Will disconnect after a grace period (\(Int(remaining)) seconds)")
+        tunnelQueue.sync { [weak self] in
+            proxy.suspend()
+            self?.sleepEventHandler = {
+                proxy.shutdown(error: nil)
+            }
+        }
+        sleepGraceTimer = DispatchSource.makeTimerSource(
+            flags: DispatchSource.TimerFlags(rawValue: UInt(0)),
+            queue: tunnelQueue
+        )
+        sleepGraceTimer?.schedule(deadline: .now() + remaining)
+        sleepGraceTimer?.setEventHandler { [weak self] in
+            self?.sleepEventHandler?()
+            self?.sleepGraceTimer = nil
+        }
+        sleepGraceTimer?.resume()
     }
     
     /// :nodoc:
     open override func wake() {
         guard cfg.usesSleepHandlers else {
             return
+        }
+
+        log.info("Tunnel will cancel sleeping...")
+        tunnelQueue.sync { [weak self] in
+            sleepEventHandler = nil
+            self?.proxy?.resume()
+            if let _ = networkUpDate {
+                networkUpDate = Date()
+            }
+        }
+        if let _ = sleepGraceTimer {
+            sleepGraceTimer?.cancel()
+            sleepGraceTimer = nil
         }
     }
     
@@ -306,6 +373,8 @@ extension PIATunnelProvider: GenericSocketDelegate {
     }
     
     func socket(_ socket: GenericSocket, didShutdownWithFailure failure: Bool) {
+        networkUpDate = nil
+
         guard let proxy = proxy else {
             return
         }
@@ -360,6 +429,8 @@ extension PIATunnelProvider: SessionProxyDelegate {
         log.info("\tGateway: \(gatewayAddress)")
         log.info("\tDNS: \(dnsServers)")
         
+        networkUpDate = Date()
+
         bringNetworkUp(tunnel: remoteAddress, vpn: address, gateway: gatewayAddress, dnsServers: dnsServers) { (error) in
             if let error = error {
                 log.error("Failed to configure tunnel: \(error)")

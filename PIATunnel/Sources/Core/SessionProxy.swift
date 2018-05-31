@@ -398,8 +398,7 @@ public class SessionProxy {
         ping()
         
         guard (negotiationKey.controlState == .connected) else {
-            let nextTime = DispatchTime.now() + Configuration.tickInterval
-            queue.asyncAfter(deadline: nextTime) { [weak self] in
+            queue.asyncAfter(deadline: .now() + Configuration.tickInterval) { [weak self] in
                 self?.loopNegotiation()
             }
             return

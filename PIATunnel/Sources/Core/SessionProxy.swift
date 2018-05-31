@@ -369,34 +369,32 @@ public class SessionProxy {
             return
         }
 
-        autoreleasepool {
-            guard !negotiationKey.didHardResetTimeOut(link: link) else {
-                doReconnect(error: SessionError.connectionTimeout)
-                return
-            }
-            guard !negotiationKey.didNegotiationTimeOut(link: link) else {
-                doShutdown(error: SessionError.connectionTimeout)
-                return
-            }
-            
-            if let stopMethod = stopMethod {
-                switch stopMethod {
-                case .shutdown:
-                    doShutdown(error: stopError)
-
-                case .reconnect:
-                    doReconnect(error: stopError)
-                }
-                return
-            }
-        
-            maybeRenegotiate()
-            if !isReliableLink {
-                pushRequest()
-                flushControlQueue()
-            }
-            ping()
+        guard !negotiationKey.didHardResetTimeOut(link: link) else {
+            doReconnect(error: SessionError.connectionTimeout)
+            return
         }
+        guard !negotiationKey.didNegotiationTimeOut(link: link) else {
+            doShutdown(error: SessionError.connectionTimeout)
+            return
+        }
+            
+        if let stopMethod = stopMethod {
+            switch stopMethod {
+            case .shutdown:
+                doShutdown(error: stopError)
+
+            case .reconnect:
+                doReconnect(error: stopError)
+            }
+            return
+        }
+        
+        maybeRenegotiate()
+        if !isReliableLink {
+            pushRequest()
+            flushControlQueue()
+        }
+        ping()
 
         let nextTime = DispatchTime.now() + Configuration.tickInterval
         queue.asyncAfter(deadline: nextTime) {

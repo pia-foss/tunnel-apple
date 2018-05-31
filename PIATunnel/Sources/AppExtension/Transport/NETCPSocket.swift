@@ -21,9 +21,7 @@ class NETCPSocket: NSObject, GenericSocket {
     
     private weak var queue: DispatchQueue?
     
-    var endpoint: NWEndpoint {
-        return impl.endpoint
-    }
+    let endpoint: NWEndpoint
     
     var remoteAddress: String? {
         return (impl.remoteAddress as? NWHostEndpoint)?.hostname
@@ -37,6 +35,7 @@ class NETCPSocket: NSObject, GenericSocket {
     
     init(impl: NWTCPConnection) {
         self.impl = impl
+        endpoint = impl.endpoint
         isActive = false
     }
     

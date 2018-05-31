@@ -146,6 +146,7 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
         let proxy: SessionProxy
         do {
             proxy = try SessionProxy(queue: tunnelQueue, encryption: encryption, credentials: credentials)
+            proxy.setTunnel(tunnel: NETunnelInterface(impl: packetFlow))
         } catch let e {
             cancelTunnelWithError(e)
             return
@@ -347,9 +348,6 @@ extension PIATunnelProvider: SessionProxyDelegate {
             }
             
             log.info("Tunnel interface is now UP")
-            self.tunnelQueue.sync {
-                proxy.setTunnel(tunnel: NETunnelInterface(impl: self.packetFlow))
-            }
             
             self.pendingStartHandler?(nil)
             self.pendingStartHandler = nil

@@ -341,7 +341,9 @@ public class SessionProxy {
         connectedDate = nil
         authenticator = nil
         link = nil
-        tunnel = nil
+        if !(tunnel?.isPersistent ?? false) {
+            tunnel = nil
+        }
         
         isStopping = false
         stopError = nil

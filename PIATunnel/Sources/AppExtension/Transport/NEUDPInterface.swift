@@ -53,7 +53,7 @@ class NEUDPInterface: NSObject, GenericSocket, LinkInterface {
                 return
             }
             guard isActive else {
-                log.debug("Socket timed out waiting for activity, fall back to next endpoint...")
+                log.debug("Socket timed out waiting for activity, cancelling...")
                 self?.impl.cancel()
 //                self?.impl.tryNextResolvedEndpoint()
                 return

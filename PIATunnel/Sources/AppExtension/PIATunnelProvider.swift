@@ -333,7 +333,7 @@ extension PIATunnelProvider: SessionProxyDelegate {
     public func sessionDidStart(_ proxy: SessionProxy, remoteAddress: String, address: String, gatewayAddress: String, dnsServers: [String]) {
         reasserting = false
         
-        log.info("Tunnel did start")
+        log.info("Session did start")
         
         log.info("Returned ifconfig parameters:")
         log.info("\tTunnel: \(remoteAddress)")
@@ -358,6 +358,8 @@ extension PIATunnelProvider: SessionProxyDelegate {
     
     /// :nodoc:
     public func sessionDidStop(_: SessionProxy, shouldReconnect: Bool) {
+        log.info("Session did stop")
+
         if shouldReconnect {
             reasserting = true
         }

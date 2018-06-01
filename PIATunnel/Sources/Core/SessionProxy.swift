@@ -954,9 +954,9 @@ public class SessionProxy {
         
         let packetCount = controlPacketIdOut - oldIdOut
         if (packetCount > 1) {
-            log.debug("Enqueued \(packetCount) control packets (\(oldIdOut)-\(controlPacketIdOut - 1))")
+            log.debug("Enqueued \(packetCount) control packets [\(oldIdOut)-\(controlPacketIdOut - 1)]")
         } else {
-            log.debug("Enqueued 1 control packet (\(oldIdOut))")
+            log.debug("Enqueued 1 control packet [\(oldIdOut)]")
         }
         
         flushControlQueue()

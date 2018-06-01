@@ -146,6 +146,7 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
         let proxy: SessionProxy
         do {
             proxy = try SessionProxy(queue: tunnelQueue, encryption: encryption, credentials: credentials)
+            proxy.setTunnel(tunnel: NETunnelInterface(impl: packetFlow))
         } catch let e {
             cancelTunnelWithError(e)
             return
@@ -234,10 +235,6 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
     private func disposeTunnel(error: Error?) {
         flushLog()
         
-        proxy = nil
-        let fm = FileManager.default
-        try? fm.removeItem(at: tmpCaURL)
-        
         // failed to start
         if (pendingStartHandler != nil) {
             
@@ -267,6 +264,8 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
         }
         // stopped externally, unrecoverable
         else {
+            let fm = FileManager.default
+            try? fm.removeItem(at: tmpCaURL)
             cancelTunnelWithError(error)
         }
     }
@@ -340,7 +339,7 @@ extension PIATunnelProvider: SessionProxyDelegate {
         log.info("\tGateway: \(gatewayAddress)")
         log.info("\tDNS: \(dnsServers)")
         
-        updateNetwork(tunnel: remoteAddress, vpn: address, gateway: gatewayAddress, dnsServers: dnsServers) { (error) in
+        bringNetworkUp(tunnel: remoteAddress, vpn: address, gateway: gatewayAddress, dnsServers: dnsServers) { (error) in
             if let error = error {
                 log.error("Failed to configure tunnel: \(error)")
                 self.pendingStartHandler?(error)
@@ -348,10 +347,7 @@ extension PIATunnelProvider: SessionProxyDelegate {
                 return
             }
             
-            log.info("Finished configuring tunnel!")
-            self.tunnelQueue.sync {
-                proxy.setTunnel(tunnel: NETunnelInterface(impl: self.packetFlow))
-            }
+            log.info("Tunnel interface is now UP")
             
             self.pendingStartHandler?(nil)
             self.pendingStartHandler = nil
@@ -363,10 +359,15 @@ extension PIATunnelProvider: SessionProxyDelegate {
         if shouldReconnect {
             reasserting = true
         }
-        socket?.shutdown()
+        bringNetworkDown {
+            log.info("Tunnel interface is now DOWN")
+            self.tunnelQueue.sync {
+                self.socket?.shutdown()
+            }
+        }
     }
     
-    private func updateNetwork(tunnel: String, vpn: String, gateway: String, dnsServers: [String], completionHandler: @escaping (Error?) -> Void) {
+    private func bringNetworkUp(tunnel: String, vpn: String, gateway: String, dnsServers: [String], completionHandler: @escaping (Error?) -> Void) {
         
         // route all traffic to VPN
         let defaultRoute = NEIPv4Route.default()
@@ -384,6 +385,12 @@ extension PIATunnelProvider: SessionProxyDelegate {
         newSettings.mtu = cfg.mtu
         
         setTunnelNetworkSettings(newSettings, completionHandler: completionHandler)
+    }
+    
+    private func bringNetworkDown(completionHandler: @escaping () -> Void) {
+        setTunnelNetworkSettings(nil) { (error) in
+            completionHandler()
+        }
     }
 }
 

@@ -21,9 +21,7 @@ class NEUDPSocket: NSObject, GenericSocket {
     
     private weak var queue: DispatchQueue?
     
-    var endpoint: NWEndpoint {
-        return impl.endpoint
-    }
+    let endpoint: NWEndpoint
     
     var remoteAddress: String? {
         return (impl.resolvedEndpoint as? NWHostEndpoint)?.hostname
@@ -37,6 +35,7 @@ class NEUDPSocket: NSObject, GenericSocket {
     
     init(impl: NWUDPSession) {
         self.impl = impl
+        endpoint = impl.endpoint
         isActive = false
     }
     

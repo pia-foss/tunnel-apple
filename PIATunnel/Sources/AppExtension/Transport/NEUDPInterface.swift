@@ -156,7 +156,7 @@ class NEUDPInterface: NSObject, GenericSocket, LinkInterface {
 
     let negotiationTimeout: TimeInterval = 10.0
     
-    let hardResetTimeout: TimeInterval = 2.0
+    let hardResetTimeout: TimeInterval = 5.0
     
     func setReadHandler(_ handler: @escaping ([Data]?, Error?) -> Void) {
         impl.setReadHandler(handler, maxDatagrams: maxDatagrams)

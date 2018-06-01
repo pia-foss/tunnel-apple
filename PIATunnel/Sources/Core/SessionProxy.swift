@@ -809,9 +809,9 @@ public class SessionProxy {
         guard let auth = authenticator else { return }
 
         if Configuration.logsSensitiveData {
-            log.debug("Pulled plain control data (\(data.count)): \(data.toHex())")
+            log.debug("Pulled plain control data (\(data.count) bytes): \(data.toHex())")
         } else {
-            log.debug("Pulled plain control data (\(data.count))")
+            log.debug("Pulled plain control data (\(data.count) bytes)")
         }
 
         auth.appendControlData(data)
@@ -834,9 +834,9 @@ public class SessionProxy {
         
         for message in auth.parseMessages() {
             if Configuration.logsSensitiveData {
-                log.debug("Parsed control message (\(message.count)): \"\(message)\"")
+                log.debug("Parsed control message (\(message.count) bytes): \"\(message)\"")
             } else {
-                log.debug("Parsed control message (\(message.count))")
+                log.debug("Parsed control message (\(message.count) bytes)")
             }
             handleControlMessage(message)
         }
@@ -954,9 +954,9 @@ public class SessionProxy {
         
         let packetCount = controlPacketIdOut - oldIdOut
         if (packetCount > 1) {
-            log.debug("Enqueued \(packetCount) control packets (\(oldIdOut)-\(controlPacketIdOut - 1))")
+            log.debug("Enqueued \(packetCount) control packets [\(oldIdOut)-\(controlPacketIdOut - 1)]")
         } else {
-            log.debug("Enqueued 1 control packet (\(oldIdOut))")
+            log.debug("Enqueued 1 control packet [\(oldIdOut)]")
         }
         
         flushControlQueue()

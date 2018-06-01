@@ -71,6 +71,8 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
     
     private var socket: GenericSocket?
 
+    private var upgradedSocket: GenericSocket?
+    
     private var linkFailures = 0
 
     private var pendingStartHandler: ((Error?) -> Void)?
@@ -210,9 +212,13 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
         NotificationCenter.default.addObserver(self, selector: #selector(handleWifiChange), name: .__InterfaceObserverDidDetectWifiChange, object: nil)
         observer.start(queue: tunnelQueue)
         
-        let targetSocket = genericSocket(endpoint: endpoint)
-        socket = targetSocket
+        let targetSocket = upgradedSocket ?? genericSocket(endpoint: endpoint)
         log.info("Socket type is \(type(of: targetSocket))")
+        if let _ = upgradedSocket {
+            log.info("Socket follows a path upgrade")
+        }
+        socket = targetSocket
+        upgradedSocket = nil
         socket?.delegate = self
         socket?.observe(queue: tunnelQueue, activeTimeout: socketTimeout)
     }
@@ -321,7 +327,8 @@ extension PIATunnelProvider: GenericSocketDelegate {
     func socketHasBetterPath(_ socket: GenericSocket) {
         log.info("Stopping tunnel due to a new better path")
         logCurrentSSID()
-        proxy?.shutdown(error: ProviderError.networkChanged)
+        upgradedSocket = socket.upgraded()
+        proxy?.reconnect(error: ProviderError.networkChanged)
     }
 }
 

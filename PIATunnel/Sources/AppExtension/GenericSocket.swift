@@ -35,4 +35,6 @@ protocol GenericSocket: LinkProducer {
     func unobserve()
     
     func shutdown()
+    
+    func upgraded() -> GenericSocket?
 }

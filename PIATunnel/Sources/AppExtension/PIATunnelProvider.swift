@@ -210,7 +210,9 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
         NotificationCenter.default.addObserver(self, selector: #selector(handleWifiChange), name: .__InterfaceObserverDidDetectWifiChange, object: nil)
         observer.start(queue: tunnelQueue)
         
-        socket = genericSocket(endpoint: endpoint)
+        let targetSocket = genericSocket(endpoint: endpoint)
+        socket = targetSocket
+        log.info("Socket type is \(type(of: targetSocket))")
         socket?.delegate = self
         socket?.observe(queue: tunnelQueue, activeTimeout: socketTimeout)
     }

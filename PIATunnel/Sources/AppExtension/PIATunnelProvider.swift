@@ -254,7 +254,7 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
             //
             // socketActivity makes sense, given that any other error would normally come
             // from SessionProxy.stopError. other paths to disposeTunnel() are only coming
-            // from stopTunnel(), in which case we don't need feed an error parameter to
+            // from stopTunnel(), in which case we don't need to feed an error parameter to
             // the stop completion handler
             //
             pendingStartHandler?(error ?? ProviderError.socketActivity)

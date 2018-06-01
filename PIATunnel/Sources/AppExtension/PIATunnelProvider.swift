@@ -171,20 +171,23 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
     open override func stopTunnel(with reason: NEProviderStopReason, completionHandler: @escaping () -> Void) {
         pendingStartHandler = nil
         log.info("Stopping tunnel...")
-        
-        // flush a first time early, possibly before kill
-        flushLog()
+        defer {
+            flushLog()
+        }
 
         guard let proxy = proxy else {
             completionHandler()
             return
         }
 
-        tunnelQueue.schedule(after: .milliseconds(shutdownTimeout)) {
-            log.warning("Tunnel not responding after \(self.shutdownTimeout) milliseconds, forcing stop")
-            completionHandler()
-        }
         pendingStopHandler = completionHandler
+        tunnelQueue.schedule(after: .milliseconds(shutdownTimeout)) {
+            guard let pendingHandler = self.pendingStopHandler else {
+                return
+            }
+            log.warning("Tunnel not responding after \(self.shutdownTimeout) milliseconds, forcing stop")
+            pendingHandler()
+        }
         tunnelQueue.sync {
             proxy.shutdown(error: nil)
         }

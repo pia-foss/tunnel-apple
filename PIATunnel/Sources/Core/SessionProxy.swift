@@ -42,8 +42,11 @@ public enum SessionError: Error {
     /// The reply to PUSH_REQUEST is malformed.
     case malformedPushReply
 
-    /// A write operation failed at the link layer (e.g. network unreachable).
-    case failedLinkWrite
+    /// An operation failed at the link layer (e.g. network unreachable).
+    case failedLink
+    
+    /// An operation failed at the tunnel layer (e.g. interface is down).
+    case failedTunnel
     
     /// The server couldn't ping back before timeout.
     case pingTimeout
@@ -402,6 +405,9 @@ public class SessionProxy {
         link?.setReadHandler { [weak self] (newPackets, error) in
             if let error = error {
                 log.error("Failed LINK read: \(error)")
+                self?.queue.sync {
+                    self?.deferStop(.reconnect, SessionError.failedLink)
+                }
                 return
             }
             
@@ -423,6 +429,9 @@ public class SessionProxy {
         tunnel?.setReadHandler { [weak self] (newPackets, error) in
             if let error = error {
                 log.error("Failed TUN read: \(error)")
+                self?.queue.sync {
+                    self?.deferStop(.reconnect, SessionError.failedTunnel)
+                }
                 return
             }
 
@@ -994,7 +1003,7 @@ public class SessionProxy {
                 self?.queue.sync {
                     if let error = error {
                         log.error("Failed LINK write during control flush: \(error)")
-                        self?.deferStop(.reconnect, SessionError.failedLinkWrite)
+                        self?.deferStop(.reconnect, SessionError.failedLink)
                         return
                     }
                 }
@@ -1085,7 +1094,7 @@ public class SessionProxy {
                 self?.queue.sync {
                     if let error = error {
                         log.error("Data: Failed LINK write during send data: \(error)")
-                        self?.deferStop(.reconnect, SessionError.failedLinkWrite)
+                        self?.deferStop(.reconnect, SessionError.failedLink)
                         return
                     }
 //                    log.verbose("Data: \(encryptedPackets.count) packets successfully written to \(self.linkName)")
@@ -1140,7 +1149,7 @@ public class SessionProxy {
             self?.queue.sync {
                 if let error = error {
                     log.error("Failed LINK write during send ack for packetId \(packetId): \(error)")
-                    self?.deferStop(.reconnect, SessionError.failedLinkWrite)
+                    self?.deferStop(.reconnect, SessionError.failedLink)
                     return
                 }
                 log.debug("Ack successfully written to LINK for packetId \(packetId)")

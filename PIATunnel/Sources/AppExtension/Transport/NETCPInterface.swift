@@ -146,25 +146,17 @@ class NETCPInterface: NSObject, GenericSocket, LinkInterface {
 
     // MARK: LinkInterface
     
-    var isReliable: Bool {
-        return true
-    }
+    let isReliable: Bool = true
 
-    var mtu: Int {
-        return .max
-    }
+    let mtu: Int = .max
     
     var packetBufferSize: Int {
         return maxPacketSize
     }
     
-    var negotiationTimeout: TimeInterval {
-        return 10.0
-    }
+    let negotiationTimeout: TimeInterval = 10.0
     
-    var hardResetTimeout: TimeInterval {
-        return 5.0
-    }
+    let hardResetTimeout: TimeInterval = 5.0
     
     func setReadHandler(_ handler: @escaping ([Data]?, Error?) -> Void) {
         loopReadPackets(Data(), handler)

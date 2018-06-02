@@ -146,25 +146,17 @@ class NEUDPInterface: NSObject, GenericSocket, LinkInterface {
 
     // MARK: LinkInterface
     
-    var isReliable: Bool {
-        return false
-    }
+    let isReliable: Bool = false
     
-    var mtu: Int {
-        return 1000
-    }
+    let mtu: Int = 1000
 
     var packetBufferSize: Int {
         return maxDatagrams
     }
 
-    var negotiationTimeout: TimeInterval {
-        return 10.0
-    }
+    let negotiationTimeout: TimeInterval = 10.0
     
-    var hardResetTimeout: TimeInterval {
-        return 2.0
-    }
+    let hardResetTimeout: TimeInterval = 2.0
     
     func setReadHandler(_ handler: @escaping ([Data]?, Error?) -> Void) {
         impl.setReadHandler(handler, maxDatagrams: maxDatagrams)

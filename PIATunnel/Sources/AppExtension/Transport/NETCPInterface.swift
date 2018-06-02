@@ -52,7 +52,7 @@ class NETCPInterface: LinkInterface {
     
     private func loopReadPackets(_ buffer: Data, _ handler: @escaping ([Data]?, Error?) -> Void) {
         impl.readMinimumLength(2, maximumLength: packetBufferSize) { [weak self] (data, error) in
-            guard let data = data else {
+            guard (error == nil), let data = data else {
                 handler(nil, error)
                 return
             }

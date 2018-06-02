@@ -128,6 +128,9 @@ public class SessionProxy {
     
     private let encodedSettings: Data
     
+    /// Sends periodical keep-alive packets.
+    public var sendsKeepAlive: Bool
+
     /// The number of seconds after which a renegotiation should be initiated. If `nil`, the client will never initiate a renegotiation.
     public var renegotiatesAfter: TimeInterval?
     
@@ -224,6 +227,7 @@ public class SessionProxy {
         encodedSettings = try TunnelSettings(caMd5Digest: encryption.caDigest,
                                              cipherName: encryption.cipherName,
                                              digestName: encryption.digestName).encodedData()
+        sendsKeepAlive = true
         renegotiatesAfter = nil
         
         keys = [:]
@@ -596,10 +600,12 @@ public class SessionProxy {
         }
 
         let elapsed = now.timeIntervalSince(lastPingOut)
-        defer {
-            let remaining = min(Configuration.pingInterval, Configuration.pingInterval - elapsed)
-            queue.asyncAfter(deadline: .now() + remaining) { [weak self] in
-                self?.ping()
+        if sendsKeepAlive {
+            defer {
+                let remaining = min(Configuration.pingInterval, Configuration.pingInterval - elapsed)
+                queue.asyncAfter(deadline: .now() + remaining) { [weak self] in
+                    self?.ping()
+                }
             }
         }
 
@@ -925,8 +931,10 @@ public class SessionProxy {
             }
             delegate?.sessionDidStart(self, remoteAddress: remoteAddress, address: address, gatewayAddress: gatewayAddress, dnsServers: dnsServers)
 
-            queue.asyncAfter(deadline: .now() + Configuration.pingInterval) { [weak self] in
-                self?.ping()
+            if sendsKeepAlive {
+                queue.asyncAfter(deadline: .now() + Configuration.pingInterval) { [weak self] in
+                    self?.ping()
+                }
             }
         }
     }

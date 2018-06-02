@@ -157,7 +157,6 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
         let proxy: SessionProxy
         do {
             proxy = try SessionProxy(queue: tunnelQueue, encryption: encryption, credentials: credentials)
-            proxy.setTunnel(tunnel: NETunnelInterface(impl: packetFlow))
         } catch let e {
             cancelTunnelWithError(e)
             return
@@ -165,6 +164,7 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
         if let renegotiatesAfterSeconds = cfg.renegotiatesAfterSeconds {
             proxy.renegotiatesAfter = Double(renegotiatesAfterSeconds)
         }
+        proxy.sendsKeepAlive = !cfg.usesSleepHandlers
         proxy.delegate = self
         self.proxy = proxy
 
@@ -172,6 +172,7 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
 
         pendingStartHandler = completionHandler
         tunnelQueue.sync {
+            proxy.setTunnel(tunnel: NETunnelInterface(impl: packetFlow))
             self.connectTunnel(endpoint: NWHostEndpoint(hostname: endpoint.hostname, port: endpoint.port))
         }
     }

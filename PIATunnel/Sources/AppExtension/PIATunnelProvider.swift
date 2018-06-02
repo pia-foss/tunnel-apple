@@ -361,12 +361,7 @@ extension PIATunnelProvider: SessionProxyDelegate {
         if shouldReconnect {
             reasserting = true
         }
-        bringNetworkDown {
-            log.info("Tunnel interface is now DOWN")
-            self.tunnelQueue.sync {
-                self.socket?.shutdown()
-            }
-        }
+        socket?.shutdown()
     }
     
     private func bringNetworkUp(tunnel: String, vpn: String, gateway: String, dnsServers: [String], completionHandler: @escaping (Error?) -> Void) {
@@ -387,12 +382,6 @@ extension PIATunnelProvider: SessionProxyDelegate {
         newSettings.mtu = cfg.mtu
         
         setTunnelNetworkSettings(newSettings, completionHandler: completionHandler)
-    }
-    
-    private func bringNetworkDown(completionHandler: @escaping () -> Void) {
-        setTunnelNetworkSettings(nil) { (error) in
-            completionHandler()
-        }
     }
 }
 

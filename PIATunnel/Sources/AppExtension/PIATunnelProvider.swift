@@ -419,11 +419,11 @@ extension PIATunnelProvider {
         switch cfg.socketType {
         case .udp:
             let impl = createUDPSession(to: endpoint, from: nil)
-            return NEUDPSocket(impl: impl)
+            return NEUDPInterface(impl: impl)
             
         case .tcp:
             let impl = createTCPConnection(to: endpoint, enableTLS: false, tlsParameters: nil, delegate: nil)
-            return NETCPSocket(impl: impl)
+            return NETCPInterface(impl: impl)
         }
     }
     

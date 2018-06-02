@@ -57,7 +57,7 @@ public enum SessionError: Error {
 }
 
 /// Observes major events notified by a `SessionProxy`.
-public protocol SessionProxyDelegate {
+public protocol SessionProxyDelegate: class {
 
     /**
      Called after starting a session.
@@ -137,7 +137,7 @@ public class SessionProxy {
     public var renegotiatesAfter: TimeInterval?
     
     /// An optional `SessionProxyDelegate` for receiving session events.
-    public var delegate: SessionProxyDelegate?
+    public weak var delegate: SessionProxyDelegate?
     
     // MARK: State
 

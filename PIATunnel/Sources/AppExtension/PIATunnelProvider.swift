@@ -35,7 +35,7 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
     public var reconnectionDelay = 1000
     
     /// The number of milliseconds of grace period after sleep before tunnel termination.
-    public var sleepGracePeriod = 60000
+    public var sleepGracePeriod = 30000
     
     /// The number of link failures after which the tunnel is expected to die.
     public var maxLinkFailures = 3

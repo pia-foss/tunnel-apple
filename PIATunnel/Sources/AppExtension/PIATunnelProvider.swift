@@ -209,9 +209,6 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
         log.info("Creating link session")
         log.info("Will connect to \(endpoint)")
         
-        NotificationCenter.default.addObserver(self, selector: #selector(handleWifiChange), name: .__InterfaceObserverDidDetectWifiChange, object: nil)
-        observer.start(queue: tunnelQueue)
-        
         let targetSocket = upgradedSocket ?? genericSocket(endpoint: endpoint)
         log.info("Socket type is \(type(of: targetSocket))")
         if let _ = upgradedSocket {
@@ -225,9 +222,6 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
     
     private func finishTunnelDisconnection(error: Error?) {
         proxy?.cleanup()
-        
-        observer.stop()
-        NotificationCenter.default.removeObserver(self, name: .__InterfaceObserverDidDetectWifiChange, object: nil)
         
         socket?.delegate = nil
         socket?.unobserve()

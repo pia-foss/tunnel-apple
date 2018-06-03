@@ -201,6 +201,21 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
     }
     
     /// :nodoc:
+    open override func sleep(completionHandler: @escaping () -> Void) {
+        guard cfg.usesSleepHandlers else {
+            return
+        }
+        completionHandler()
+    }
+    
+    /// :nodoc:
+    open override func wake() {
+        guard cfg.usesSleepHandlers else {
+            return
+        }
+    }
+    
+    /// :nodoc:
     open override func handleAppMessage(_ messageData: Data, completionHandler: ((Data?) -> Void)? = nil) {
         var response: Data?
         switch Message(messageData) {

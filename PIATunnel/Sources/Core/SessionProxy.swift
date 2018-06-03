@@ -50,7 +50,7 @@ public enum SessionError: Error {
 }
 
 /// Observes major events notified by a `SessionProxy`.
-public protocol SessionProxyDelegate {
+public protocol SessionProxyDelegate: class {
 
     /**
      Called after starting a session.
@@ -128,11 +128,14 @@ public class SessionProxy {
     
     private let encodedSettings: Data
     
+    /// Sends periodical keep-alive packets.
+    public var sendsKeepAlive: Bool
+
     /// The number of seconds after which a renegotiation should be initiated. If `nil`, the client will never initiate a renegotiation.
     public var renegotiatesAfter: TimeInterval?
     
     /// An optional `SessionProxyDelegate` for receiving session events.
-    public var delegate: SessionProxyDelegate?
+    public weak var delegate: SessionProxyDelegate?
     
     // MARK: State
 
@@ -186,6 +189,8 @@ public class SessionProxy {
     
     private var isStopping: Bool
     
+    private var isSuspended: Bool
+    
     /// The optional reason why the session stopped.
     public private(set) var stopError: Error?
     
@@ -222,6 +227,7 @@ public class SessionProxy {
         encodedSettings = try TunnelSettings(caMd5Digest: encryption.caDigest,
                                              cipherName: encryption.cipherName,
                                              digestName: encryption.digestName).encodedData()
+        sendsKeepAlive = true
         renegotiatesAfter = nil
         
         keys = [:]
@@ -230,6 +236,7 @@ public class SessionProxy {
         lastPingOut = Date.distantPast
         lastPingIn = Date.distantPast
         isStopping = false
+        isSuspended = false
         
         controlPlainBuffer = Z(count: TLSBoxMaxBufferLength)
         controlQueueOut = []
@@ -314,6 +321,25 @@ public class SessionProxy {
         deferStop(.reconnect, error)
     }
     
+    /**
+     Suspends activity.
+     */
+    public func suspend() {
+        log.info("Suspending...")
+
+        isSuspended = true
+    }
+
+    /**
+     Resumes activity and sends a packet to wake up link or trigger an early failure.
+     */
+    public func resume() {
+        log.info("Resuming...")
+
+        isSuspended = false
+        ping()
+    }
+
     // Ruby: cleanup
     /**
      Cleans up the session resources.
@@ -574,10 +600,12 @@ public class SessionProxy {
         }
 
         let elapsed = now.timeIntervalSince(lastPingOut)
-        defer {
-            let remaining = min(Configuration.pingInterval, Configuration.pingInterval - elapsed)
-            queue.asyncAfter(deadline: .now() + remaining) { [weak self] in
-                self?.ping()
+        if sendsKeepAlive {
+            defer {
+                let remaining = min(Configuration.pingInterval, Configuration.pingInterval - elapsed)
+                queue.asyncAfter(deadline: .now() + remaining) { [weak self] in
+                    self?.ping()
+                }
             }
         }
 
@@ -903,8 +931,10 @@ public class SessionProxy {
             }
             delegate?.sessionDidStart(self, remoteAddress: remoteAddress, address: address, gatewayAddress: gatewayAddress, dnsServers: dnsServers)
 
-            queue.asyncAfter(deadline: .now() + Configuration.pingInterval) { [weak self] in
-                self?.ping()
+            if sendsKeepAlive {
+                queue.asyncAfter(deadline: .now() + Configuration.pingInterval) { [weak self] in
+                    self?.ping()
+                }
             }
         }
     }

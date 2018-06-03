@@ -54,8 +54,8 @@ class NEUDPInterface: NSObject, GenericSocket, LinkInterface {
             }
             guard isActive else {
                 log.debug("Socket timed out waiting for activity, fall back to next endpoint...")
-//                self?.impl.cancel()
-                self?.impl.tryNextResolvedEndpoint()
+                self?.impl.cancel()
+//                self?.impl.tryNextResolvedEndpoint()
                 return
             }
         }

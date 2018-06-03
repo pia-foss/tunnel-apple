@@ -280,7 +280,7 @@ public class SessionProxy {
      */
     public func setTunnel(tunnel: TunnelInterface) {
         guard (self.tunnel == nil) else {
-            log.warning("Ignore stop request, already stopping!")
+            log.warning("Tunnel interface already set!")
             return
         }
         self.tunnel = tunnel

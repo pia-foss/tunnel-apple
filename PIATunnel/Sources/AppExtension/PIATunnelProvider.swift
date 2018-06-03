@@ -71,6 +71,8 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
     
     private var socket: GenericSocket?
 
+    private var upgradedSocket: GenericSocket?
+    
     private var linkFailures = 0
 
     private var pendingStartHandler: ((Error?) -> Void)?
@@ -207,21 +209,19 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
         log.info("Creating link session")
         log.info("Will connect to \(endpoint)")
         
-        NotificationCenter.default.addObserver(self, selector: #selector(handleWifiChange), name: .__InterfaceObserverDidDetectWifiChange, object: nil)
-        observer.start(queue: tunnelQueue)
-        
-        let targetSocket = genericSocket(endpoint: endpoint)
-        socket = targetSocket
+        let targetSocket = upgradedSocket ?? genericSocket(endpoint: endpoint)
         log.info("Socket type is \(type(of: targetSocket))")
+        if let _ = upgradedSocket {
+            log.info("Socket follows a path upgrade")
+        }
+        socket = targetSocket
+        upgradedSocket = nil
         socket?.delegate = self
         socket?.observe(queue: tunnelQueue, activeTimeout: socketTimeout)
     }
     
     private func finishTunnelDisconnection(error: Error?) {
         proxy?.cleanup()
-        
-        observer.stop()
-        NotificationCenter.default.removeObserver(self, name: .__InterfaceObserverDidDetectWifiChange, object: nil)
         
         socket?.delegate = nil
         socket?.unobserve()
@@ -321,7 +321,8 @@ extension PIATunnelProvider: GenericSocketDelegate {
     func socketHasBetterPath(_ socket: GenericSocket) {
         log.info("Stopping tunnel due to a new better path")
         logCurrentSSID()
-        proxy?.shutdown(error: ProviderError.networkChanged)
+        upgradedSocket = socket.upgraded()
+        proxy?.reconnect(error: ProviderError.networkChanged)
     }
 }
 
@@ -333,7 +334,7 @@ extension PIATunnelProvider: SessionProxyDelegate {
     public func sessionDidStart(_ proxy: SessionProxy, remoteAddress: String, address: String, gatewayAddress: String, dnsServers: [String]) {
         reasserting = false
         
-        log.info("Tunnel did start")
+        log.info("Session did start")
         
         log.info("Returned ifconfig parameters:")
         log.info("\tTunnel: \(remoteAddress)")
@@ -358,6 +359,8 @@ extension PIATunnelProvider: SessionProxyDelegate {
     
     /// :nodoc:
     public func sessionDidStop(_: SessionProxy, shouldReconnect: Bool) {
+        log.info("Session did stop")
+
         if shouldReconnect {
             reasserting = true
         }

@@ -31,7 +31,7 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
     /// The number of milliseconds after which the tunnel is shut down forcibly.
     public var shutdownTimeout = 2000
     
-    /// The number of milliseconds after a reconnection attempt is issued.
+    /// The number of milliseconds after which a reconnection attempt is issued.
     public var reconnectionDelay = 1000
     
     /// The number of link failures after which the tunnel is expected to die.
@@ -270,12 +270,6 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
             try? fm.removeItem(at: tmpCaURL)
             cancelTunnelWithError(error)
         }
-    }
-    
-    @objc private func handleWifiChange() {
-        log.info("Stopping tunnel due to network change")
-        logCurrentSSID()
-        proxy?.shutdown(error: ProviderError.networkChanged)
     }
 }
 

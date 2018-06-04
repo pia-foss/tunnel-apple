@@ -574,21 +574,21 @@ public class SessionProxy {
         }
 
         let elapsed = now.timeIntervalSince(lastPingOut)
-        defer {
+        guard (elapsed >= Configuration.pingInterval) else {
             let remaining = min(Configuration.pingInterval, Configuration.pingInterval - elapsed)
             queue.asyncAfter(deadline: .now() + remaining) { [weak self] in
                 self?.ping()
             }
-        }
-
-        guard (elapsed >= Configuration.pingInterval) else {
             return
         }
-    
+
         log.debug("Send ping")
         
         sendDataPackets([ProtocolMacros.pingString])
         lastPingOut = Date()
+        queue.asyncAfter(deadline: .now() + Configuration.pingInterval) { [weak self] in
+            self?.ping()
+        }
     }
     
     // MARK: Handshake

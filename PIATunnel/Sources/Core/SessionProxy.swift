@@ -133,6 +133,9 @@ public class SessionProxy {
     
     private let credentials: Credentials
     
+    /// Sends periodical keep-alive packets if set.
+    public var keepAliveInterval: TimeInterval?
+
     /// The number of seconds after which a renegotiation should be initiated. If `nil`, the client will never initiate a renegotiation.
     public var renegotiatesAfter: TimeInterval?
     
@@ -232,6 +235,7 @@ public class SessionProxy {
         self.encryption = encryption
         self.credentials = credentials
 
+        keepAliveInterval = nil
         renegotiatesAfter = nil
         
         keys = [:]
@@ -644,21 +648,25 @@ public class SessionProxy {
             return
         }
 
-        let elapsed = now.timeIntervalSince(lastPingOut)
-        guard (elapsed >= Configuration.pingInterval) else {
-            let remaining = min(Configuration.pingInterval, Configuration.pingInterval - elapsed)
-            queue.asyncAfter(deadline: .now() + remaining) { [weak self] in
-                self?.ping()
+        if let interval = keepAliveInterval {
+            let elapsed = now.timeIntervalSince(lastPingOut)
+            guard (elapsed >= interval) else {
+                let remaining = min(interval, interval - elapsed)
+                queue.asyncAfter(deadline: .now() + remaining) { [weak self] in
+                    self?.ping()
+                }
+                return
             }
-            return
         }
 
         log.debug("Send ping")
-        
         sendDataPackets([DataPacket.pingString])
         lastPingOut = Date()
-        queue.asyncAfter(deadline: .now() + Configuration.pingInterval) { [weak self] in
-            self?.ping()
+
+        if let interval = keepAliveInterval {
+            queue.asyncAfter(deadline: .now() + interval) { [weak self] in
+                self?.ping()
+            }
         }
     }
     
@@ -966,8 +974,10 @@ public class SessionProxy {
             dnsServers: reply.dnsServers
         )
 
-        queue.asyncAfter(deadline: .now() + Configuration.pingInterval) { [weak self] in
-            self?.ping()
+        if let interval = keepAliveInterval {
+            queue.asyncAfter(deadline: .now() + interval) { [weak self] in
+                self?.ping()
+            }
         }
     }
     

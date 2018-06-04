@@ -163,6 +163,7 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
         if let renegotiatesAfterSeconds = cfg.renegotiatesAfterSeconds {
             proxy.renegotiatesAfter = Double(renegotiatesAfterSeconds)
         }
+        proxy.keepAliveInterval = PIATunnel.Configuration.pingInterval
         proxy.delegate = self
         self.proxy = proxy
 

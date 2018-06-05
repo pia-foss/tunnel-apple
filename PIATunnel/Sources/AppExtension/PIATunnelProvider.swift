@@ -318,7 +318,7 @@ extension PIATunnelProvider: GenericSocketDelegate {
         log.info("Stopping tunnel due to a new better path")
         logCurrentSSID()
         upgradedSocket = socket.upgraded()
-        proxy?.reconnect(error: ProviderError.networkChanged)
+        proxy?.shutdown(error: ProviderError.networkChanged)
     }
 }
 

@@ -16,6 +16,11 @@ class MemoryDestination: BaseDestination, CustomStringConvertible {
     
     var maxLines: Int?
     
+    override init() {
+        super.init()
+        asynchronously = false
+    }
+    
     func start(with existing: [String]) {
         queue.sync {
             buffer = existing
@@ -29,6 +34,14 @@ class MemoryDestination: BaseDestination, CustomStringConvertible {
         to.synchronize()
     }
     
+    var description: String {
+        return queue.sync {
+            return buffer.joined(separator: "\n")
+        }
+    }
+    
+    // MARK: BaseDestination
+
     override func send(_ level: SwiftyBeaver.Level, msg: String, thread: String, file: String, function: String, line: Int, context: Any?) -> String? {
         guard let message = super.send(level, msg: msg, thread: thread, file: file, function: function, line: line) else {
             return nil
@@ -42,11 +55,5 @@ class MemoryDestination: BaseDestination, CustomStringConvertible {
             }
         }
         return message
-    }
-
-    var description: String {
-        return queue.sync {
-            return buffer.joined(separator: "\n")
-        }
     }
 }

@@ -31,7 +31,7 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
     /// The number of milliseconds after which the tunnel is shut down forcibly.
     public var shutdownTimeout = 2000
     
-    /// The number of milliseconds after a reconnection attempt is issued.
+    /// The number of milliseconds after which a reconnection attempt is issued.
     public var reconnectionDelay = 1000
     
     /// The number of link failures after which the tunnel is expected to die.
@@ -111,7 +111,7 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
                 }
             }
             NSLog(message ?? "Unexpected error in tunnel configuration: \(e)")
-            cancelTunnelWithError(e)
+            completionHandler(e)
             return
         }
 
@@ -127,14 +127,14 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
         log.info("Starting tunnel...")
         
         guard EncryptionProxy.prepareRandomNumberGenerator(seedLength: prngSeedLength) else {
-            cancelTunnelWithError(ProviderError.prngInitialization)
+            completionHandler(ProviderError.prngInitialization)
             return
         }
         
         do {
             try cfg.handshake.write(to: tmpCaURL)
         } catch {
-            cancelTunnelWithError(ProviderError.certificateSerialization)
+            completionHandler(ProviderError.certificateSerialization)
             return
         }
 
@@ -150,7 +150,7 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
             proxy = try SessionProxy(queue: tunnelQueue, encryption: encryption, credentials: credentials)
             proxy.setTunnel(tunnel: NETunnelInterface(impl: packetFlow))
         } catch let e {
-            cancelTunnelWithError(e)
+            completionHandler(e)
             return
         }
         if let renegotiatesAfterSeconds = cfg.renegotiatesAfterSeconds {
@@ -171,20 +171,22 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
     open override func stopTunnel(with reason: NEProviderStopReason, completionHandler: @escaping () -> Void) {
         pendingStartHandler = nil
         log.info("Stopping tunnel...")
-        
-        // flush a first time early, possibly before kill
-        flushLog()
 
         guard let proxy = proxy else {
+            flushLog()
             completionHandler()
             return
         }
 
-        tunnelQueue.schedule(after: .milliseconds(shutdownTimeout)) {
-            log.warning("Tunnel not responding after \(self.shutdownTimeout) milliseconds, forcing stop")
-            completionHandler()
-        }
         pendingStopHandler = completionHandler
+        tunnelQueue.schedule(after: .milliseconds(shutdownTimeout)) {
+            guard let pendingHandler = self.pendingStopHandler else {
+                return
+            }
+            log.warning("Tunnel not responding after \(self.shutdownTimeout) milliseconds, forcing stop")
+            self.flushLog()
+            pendingHandler()
+        }
         tunnelQueue.sync {
             proxy.shutdown(error: nil)
         }
@@ -270,12 +272,6 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
             try? fm.removeItem(at: tmpCaURL)
             cancelTunnelWithError(error)
         }
-    }
-    
-    @objc private func handleWifiChange() {
-        log.info("Stopping tunnel due to network change")
-        logCurrentSSID()
-        proxy?.shutdown(error: ProviderError.networkChanged)
     }
 }
 

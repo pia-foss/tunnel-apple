@@ -52,8 +52,9 @@ class HighLevelDataPath: DataPath {
             let packetId = outPacketId
             outPacketId += 1
             
+            let payloadCount = payload.count
             payload.withUnsafeMutableBytes { (payloadBytes: UnsafeMutablePointer<UInt8>) in
-                MSSFix(payloadBytes, Int32(payload.count))
+                MSSFix(payloadBytes, Int32(payloadCount))
             }
             
             var decryptedPacket = Data()
@@ -119,8 +120,9 @@ class HighLevelDataPath: DataPath {
                 continue
             }
             
+            let payloadCount = payload.count
             payload.withUnsafeMutableBytes { (payloadBytes: UnsafeMutablePointer<UInt8>) in
-                MSSFix(payloadBytes, Int32(payload.count))
+                MSSFix(payloadBytes, Int32(payloadCount))
             }
             
 //            log.verbose("Data: Enqueue decrypted payload for TUN (\(payload.count) bytes)")

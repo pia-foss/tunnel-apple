@@ -38,7 +38,7 @@ class HighLevelDataPath: DataPath {
         self.maxPacketId = maxPacketId
     }
     
-    func encryptPackets(_ packets: [Data]!, key: UInt8) throws -> [Data] {
+    func encryptPackets(_ packets: [Data], key: UInt8) throws -> [Data] {
         var outPackets = [Data]()
         
         for var payload in packets {
@@ -82,7 +82,7 @@ class HighLevelDataPath: DataPath {
         return outPackets
     }
     
-    func decryptPackets(_ packets: [Data]!) throws -> [Data] {
+    func decryptPackets(_ packets: [Data]) throws -> [Data] {
         var inPackets = [Data]()
         
         for encryptedPacket in packets {

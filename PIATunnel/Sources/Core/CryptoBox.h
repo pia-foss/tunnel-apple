@@ -34,7 +34,7 @@ extern const NSInteger CryptoBoxMaxHMACLength;
                       hmac:(uint8_t *)hmac
                 hmacLength:(NSInteger *)hmacLength;
 
-- (id<Encrypter>)encrypter;
-- (id<Decrypter>)decrypter;
+- (nonnull id<Encrypter>)encrypter;
+- (nonnull id<Decrypter>)decrypter;
 
 @end

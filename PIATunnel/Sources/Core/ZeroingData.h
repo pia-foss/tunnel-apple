@@ -28,12 +28,12 @@
 - (void)removeUntilOffset:(NSInteger)until;
 - (void)zero;
 
-- (ZeroingData *)appendingData:(ZeroingData *)other;
-- (ZeroingData *)withOffset:(NSInteger)offset count:(NSInteger)count;
+- (nonnull ZeroingData *)appendingData:(ZeroingData *)other;
+- (nonnull ZeroingData *)withOffset:(NSInteger)offset count:(NSInteger)count;
 - (uint16_t)uint16ValueFromOffset:(NSInteger)from;
 - (NSString *)nullTerminatedStringFromOffset:(NSInteger)from;
 
 - (BOOL)isEqualToData:(NSData *)data;
-- (NSString *)toHex;
+- (nonnull NSString *)toHex;
 
 @end

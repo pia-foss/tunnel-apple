@@ -301,8 +301,8 @@ class CoreTests: XCTestCase {
         let z1 = Z()
         z1.append(Z(Data(hex: "12345678")))
         z1.append(Z(Data(hex: "abcdef")))
-        let z2 = z1.withOffset(2, count: 3)! // 5678ab
-        let z3 = z2.appending(Z(Data(hex: "aaddcc")))! // 5678abaaddcc
+        let z2 = z1.withOffset(2, count: 3) // 5678ab
+        let z3 = z2.appending(Z(Data(hex: "aaddcc"))) // 5678abaaddcc
         
         XCTAssertEqual(z1.data, Data(hex: "12345678abcdef"))
         XCTAssertEqual(z2.data, Data(hex: "5678ab"))

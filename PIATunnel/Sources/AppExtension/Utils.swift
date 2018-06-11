@@ -10,7 +10,6 @@ import Foundation
 
 extension DispatchQueue {
     func schedule(after: DispatchTimeInterval, block: @escaping () -> Void) {
-        let deadline = DispatchTime.now() + after
-        asyncAfter(deadline: deadline, execute: block)
+        asyncAfter(deadline: .now() + after, execute: block)
     }
 }

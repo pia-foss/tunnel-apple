@@ -27,7 +27,7 @@ class InterfaceObserver: NSObject {
         self.queue = queue
 
         let timer = DispatchSource.makeTimerSource(flags: DispatchSource.TimerFlags(rawValue: UInt(0)), queue: queue)
-        timer.schedule(deadline: DispatchTime.now(), repeating: .seconds(1))
+        timer.schedule(deadline: .now(), repeating: .seconds(2))
         timer.setEventHandler {
             self.fireWifiChangeObserver()
         }

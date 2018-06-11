@@ -184,7 +184,7 @@ public class SessionProxy {
     
     private var lastPingIn: Date
     
-    private var stopMethod: StopMethod?
+    private var isStopping: Bool
     
     /// The optional reason why the session stopped.
     public private(set) var stopError: Error?
@@ -229,6 +229,7 @@ public class SessionProxy {
         negotiationKeyIdx = 0
         lastPingOut = Date.distantPast
         lastPingIn = Date.distantPast
+        isStopping = false
         
         controlPlainBuffer = Z(count: TLSBoxMaxBufferLength)
         controlQueueOut = []
@@ -279,7 +280,7 @@ public class SessionProxy {
      */
     public func setTunnel(tunnel: TunnelInterface) {
         guard (self.tunnel == nil) else {
-            log.warning("Ignore stop request, already stopping!")
+            log.warning("Tunnel interface already set!")
             return
         }
         self.tunnel = tunnel
@@ -292,7 +293,7 @@ public class SessionProxy {
      - Parameter error: An optional `Error` being the reason of the shutdown.
      */
     public func shutdown(error: Error?) {
-        guard (stopMethod == nil) else {
+        guard !isStopping else {
             log.warning("Ignore stop request, already stopping!")
             return
         }
@@ -306,7 +307,7 @@ public class SessionProxy {
      - Seealso: `SessionProxyDelegate.sessionDidStop(...)`
      */
     public func reconnect(error: Error?) {
-        guard (stopMethod == nil) else {
+        guard !isStopping else {
             log.warning("Ignore stop request, already stopping!")
             return
         }
@@ -340,9 +341,11 @@ public class SessionProxy {
         connectedDate = nil
         authenticator = nil
         link = nil
-        tunnel = nil
+        if !(tunnel?.isPersistent ?? false) {
+            tunnel = nil
+        }
         
-        stopMethod = nil
+        isStopping = false
         stopError = nil
     }
 
@@ -357,11 +360,10 @@ public class SessionProxy {
             fatalError("Main loop must follow hard reset, keys are empty!")
         }
 
-        loop()
+        loopNegotiation()
     }
     
-    // TODO: convert quasi-busy-waiting loop to DispatchQueue blocks (may improve battery usage)
-    private func loop() {
+    private func loopNegotiation() {
         guard let link = link else {
             return
         }
@@ -369,39 +371,28 @@ public class SessionProxy {
             return
         }
 
-        autoreleasepool {
-            guard !negotiationKey.didHardResetTimeOut(link: link) else {
-                doReconnect(error: SessionError.connectionTimeout)
-                return
-            }
-            guard !negotiationKey.didNegotiationTimeOut(link: link) else {
-                doShutdown(error: SessionError.connectionTimeout)
-                return
-            }
-            
-            if let stopMethod = stopMethod {
-                switch stopMethod {
-                case .shutdown:
-                    doShutdown(error: stopError)
-
-                case .reconnect:
-                    doReconnect(error: stopError)
-                }
-                return
-            }
-        
-            maybeRenegotiate()
-            if !isReliableLink {
-                pushRequest()
-                flushControlQueue()
-            }
-            ping()
-            
-            let nextTime = DispatchTime.now() + Configuration.tickInterval
-            queue.asyncAfter(deadline: nextTime) {
-                self.loop()
-            }
+        guard !negotiationKey.didHardResetTimeOut(link: link) else {
+            doReconnect(error: SessionError.connectionTimeout)
+            return
         }
+        guard !negotiationKey.didNegotiationTimeOut(link: link) else {
+            doShutdown(error: SessionError.connectionTimeout)
+            return
+        }
+            
+        if !isReliableLink {
+            pushRequest()
+            flushControlQueue()
+        }
+        
+        guard (negotiationKey.controlState == .connected) else {
+            queue.asyncAfter(deadline: .now() + Configuration.tickInterval) { [weak self] in
+                self?.loopNegotiation()
+            }
+            return
+        }
+
+        // let loop die when negotiation is complete
     }
 
     // Ruby: udp_loop
@@ -416,6 +407,8 @@ public class SessionProxy {
             
             if let packets = newPackets, !packets.isEmpty {
                 self?.queue.sync {
+                    self?.maybeRenegotiate()
+
 //                    log.verbose("Received \(packets.count) packets from \(self.linkName)")
                     self?.receiveLink(packets: packets)
                 }
@@ -565,6 +558,7 @@ public class SessionProxy {
             return
         }
         sendDataPackets(packets)
+        lastPingOut = Date()
     }
     
     // Ruby: ping
@@ -578,14 +572,23 @@ public class SessionProxy {
             deferStop(.shutdown, SessionError.pingTimeout)
             return
         }
-        guard (now.timeIntervalSince(lastPingOut) >= Configuration.pingInterval) else {
+
+        let elapsed = now.timeIntervalSince(lastPingOut)
+        guard (elapsed >= Configuration.pingInterval) else {
+            let remaining = min(Configuration.pingInterval, Configuration.pingInterval - elapsed)
+            queue.asyncAfter(deadline: .now() + remaining) { [weak self] in
+                self?.ping()
+            }
             return
         }
-    
+
         log.debug("Send ping")
         
         sendDataPackets([ProtocolMacros.pingString])
         lastPingOut = Date()
+        queue.asyncAfter(deadline: .now() + Configuration.pingInterval) { [weak self] in
+            self?.ping()
+        }
     }
     
     // MARK: Handshake
@@ -631,6 +634,7 @@ public class SessionProxy {
 
         negotiationKey.state = .softReset
         negotiationKey.softReset = true
+        loopNegotiation()
         enqueueControlPackets(code: .softResetV1, key: UInt8(negotiationKeyIdx), payload: Data())
     }
     
@@ -805,9 +809,9 @@ public class SessionProxy {
         guard let auth = authenticator else { return }
 
         if Configuration.logsSensitiveData {
-            log.debug("Pulled plain control data (\(data.count)): \(data.toHex())")
+            log.debug("Pulled plain control data (\(data.count) bytes): \(data.toHex())")
         } else {
-            log.debug("Pulled plain control data (\(data.count))")
+            log.debug("Pulled plain control data (\(data.count) bytes)")
         }
 
         auth.appendControlData(data)
@@ -830,9 +834,9 @@ public class SessionProxy {
         
         for message in auth.parseMessages() {
             if Configuration.logsSensitiveData {
-                log.debug("Parsed control message (\(message.count)): \"\(message)\"")
+                log.debug("Parsed control message (\(message.count) bytes): \"\(message)\"")
             } else {
-                log.debug("Parsed control message (\(message.count))")
+                log.debug("Parsed control message (\(message.count) bytes)")
             }
             handleControlMessage(message)
         }
@@ -898,6 +902,10 @@ public class SessionProxy {
                 fatalError("Could not resolve link remote address")
             }
             delegate?.sessionDidStart(self, remoteAddress: remoteAddress, address: address, gatewayAddress: gatewayAddress, dnsServers: dnsServers)
+
+            queue.asyncAfter(deadline: .now() + Configuration.pingInterval) { [weak self] in
+                self?.ping()
+            }
         }
     }
     
@@ -946,9 +954,9 @@ public class SessionProxy {
         
         let packetCount = controlPacketIdOut - oldIdOut
         if (packetCount > 1) {
-            log.debug("Enqueued \(packetCount) control packets (\(oldIdOut)-\(controlPacketIdOut - 1))")
+            log.debug("Enqueued \(packetCount) control packets [\(oldIdOut)-\(controlPacketIdOut - 1)]")
         } else {
-            log.debug("Enqueued 1 control packet (\(oldIdOut))")
+            log.debug("Enqueued 1 control packet [\(oldIdOut)]")
         }
         
         flushControlQueue()
@@ -1143,12 +1151,19 @@ public class SessionProxy {
     // MARK: Stop
     
     private func shouldHandlePackets() -> Bool {
-        return ((stopMethod == nil) && !keys.isEmpty)
+        return (!isStopping && !keys.isEmpty)
     }
     
     private func deferStop(_ method: StopMethod, _ error: Error?) {
-        stopMethod = method
-        stopError = error
+        isStopping = true
+        
+        switch method {
+        case .shutdown:
+            doShutdown(error: error)
+        
+        case .reconnect:
+            doReconnect(error: error)
+        }
     }
     
     private func doShutdown(error: Error?) {
@@ -1157,8 +1172,6 @@ public class SessionProxy {
         } else {
             log.info("Trigger shutdown on request")
         }
-        
-        stopMethod = .shutdown
         stopError = error
         delegate?.sessionDidStop(self, shouldReconnect: false)
     }
@@ -1169,8 +1182,6 @@ public class SessionProxy {
         } else {
             log.info("Trigger reconnection on request")
         }
-        
-        stopMethod = .reconnect
         stopError = error
         delegate?.sessionDidStop(self, shouldReconnect: true)
     }

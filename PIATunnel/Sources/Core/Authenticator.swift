@@ -92,7 +92,7 @@ class Authenticator {
     
     func parseAuthReply() -> Bool {
         let prefixLength = ProtocolMacros.tlsPrefix.count
-        let prefix = controlBuffer.withOffset(0, count: prefixLength)!
+        let prefix = controlBuffer.withOffset(0, count: prefixLength)
         
         guard prefix.isEqual(to: ProtocolMacros.tlsPrefix) else {
             return false
@@ -100,16 +100,16 @@ class Authenticator {
         
         var offset = ProtocolMacros.tlsPrefix.count
         
-        let serverRandom1 = controlBuffer.withOffset(offset, count: Configuration.randomLength)!
+        let serverRandom1 = controlBuffer.withOffset(offset, count: Configuration.randomLength)
         offset += Configuration.randomLength
         
-        let serverRandom2 = controlBuffer.withOffset(offset, count: Configuration.randomLength)!
+        let serverRandom2 = controlBuffer.withOffset(offset, count: Configuration.randomLength)
         offset += Configuration.randomLength
         
         let serverOptsLength = Int(CFSwapInt16BigToHost(controlBuffer.uint16Value(fromOffset: offset)))
         offset += 2
         
-        let serverOpts = controlBuffer.withOffset(offset, count: serverOptsLength)!
+        let serverOpts = controlBuffer.withOffset(offset, count: serverOptsLength)
         offset += serverOptsLength
 
         if Configuration.logsSensitiveData {

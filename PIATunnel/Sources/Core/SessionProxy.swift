@@ -797,7 +797,7 @@ public class SessionProxy {
                 var length = 0
                 try negotiationKey.tls.pullRawPlainText(controlPlainBuffer.mutableBytes, length: &length)
 
-                let controlData = controlPlainBuffer.withOffset(0, count: length)!
+                let controlData = controlPlainBuffer.withOffset(0, count: length)
                 handleControlData(controlData)
             } catch _ {
             }

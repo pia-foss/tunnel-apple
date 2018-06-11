@@ -38,7 +38,7 @@ class HighLevelDataPath: DataPath {
         self.maxPacketId = maxPacketId
     }
     
-    func encryptPackets(_ packets: [Data]!, key: UInt8) throws -> [Data] {
+    func encryptPackets(_ packets: [Data], key: UInt8) throws -> [Data] {
         var outPackets = [Data]()
         
         for var payload in packets {
@@ -52,8 +52,9 @@ class HighLevelDataPath: DataPath {
             let packetId = outPacketId
             outPacketId += 1
             
+            let payloadCount = payload.count
             payload.withUnsafeMutableBytes { (payloadBytes: UnsafeMutablePointer<UInt8>) in
-                MSSFix(payloadBytes, Int32(payload.count))
+                MSSFix(payloadBytes, Int32(payloadCount))
             }
             
             var decryptedPacket = Data()
@@ -82,7 +83,7 @@ class HighLevelDataPath: DataPath {
         return outPackets
     }
     
-    func decryptPackets(_ packets: [Data]!) throws -> [Data] {
+    func decryptPackets(_ packets: [Data]) throws -> [Data] {
         var inPackets = [Data]()
         
         for encryptedPacket in packets {
@@ -119,8 +120,9 @@ class HighLevelDataPath: DataPath {
                 continue
             }
             
+            let payloadCount = payload.count
             payload.withUnsafeMutableBytes { (payloadBytes: UnsafeMutablePointer<UInt8>) in
-                MSSFix(payloadBytes, Int32(payload.count))
+                MSSFix(payloadBytes, Int32(payloadCount))
             }
             
 //            log.verbose("Data: Enqueue decrypted payload for TUN (\(payload.count) bytes)")

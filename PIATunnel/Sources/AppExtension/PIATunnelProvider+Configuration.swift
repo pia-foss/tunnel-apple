@@ -184,6 +184,9 @@ extension PIATunnelProvider {
         /// The key in `defaults` where the latest debug log snapshot is stored. Ignored if `shouldDebug` is `false`.
         public var debugLogKey: String?
         
+        /// Optional debug log format (SwiftyBeaver format).
+        public var debugLogFormat: String?
+        
         // MARK: Building
         
         /**
@@ -201,6 +204,7 @@ extension PIATunnelProvider {
             renegotiatesAfterSeconds = nil
             shouldDebug = false
             debugLogKey = nil
+            debugLogFormat = nil
         }
         
         fileprivate init(providerConfiguration: [String: Any]) throws {
@@ -242,6 +246,7 @@ extension PIATunnelProvider {
                     throw ProviderError.configuration(field: "protocolConfiguration.providerConfiguration[\(S.debugLogKey)]")
                 }
                 self.debugLogKey = debugLogKey
+                debugLogFormat = providerConfiguration[S.debugLogFormat] as? String
             } else {
                 debugLogKey = nil
             }
@@ -262,7 +267,8 @@ extension PIATunnelProvider {
                 mtu: mtu,
                 renegotiatesAfterSeconds: renegotiatesAfterSeconds,
                 shouldDebug: shouldDebug,
-                debugLogKey: shouldDebug ? debugLogKey : nil
+                debugLogKey: shouldDebug ? debugLogKey : nil,
+                debugLogFormat: shouldDebug ? debugLogFormat : nil
             )
         }
     }
@@ -287,6 +293,8 @@ extension PIATunnelProvider {
             static let debug = "Debug"
             
             static let debugLogKey = "DebugLogKey"
+            
+            static let debugLogFormat = "DebugLogFormat"
         }
         
         /// - Seealso: `PIATunnelProvider.ConfigurationBuilder.appGroup`
@@ -315,6 +323,9 @@ extension PIATunnelProvider {
         
         /// - Seealso: `PIATunnelProvider.ConfigurationBuilder.debugLogKey`
         public let debugLogKey: String?
+        
+        /// - Seealso: `PIATunnelProvider.ConfigurationBuilder.debugLogFormat`
+        public let debugLogFormat: String?
         
         // MARK: Shortcuts
 
@@ -365,6 +376,9 @@ extension PIATunnelProvider {
             }
             if let debugLogKey = debugLogKey {
                 dict[S.debugLogKey] = debugLogKey
+            }
+            if let debugLogFormat = debugLogFormat {
+                dict[S.debugLogFormat] = debugLogFormat
             }
             return dict
         }

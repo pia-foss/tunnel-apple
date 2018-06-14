@@ -122,7 +122,10 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
             memoryLog.start(with: existingLog)
         }
 
-        configureLogging(debug: cfg.shouldDebug)
+        configureLogging(
+            debug: cfg.shouldDebug,
+            customFormat: cfg.debugLogFormat
+        )
         
         log.info("Starting tunnel...")
         
@@ -388,9 +391,9 @@ extension PIATunnelProvider {
     
     // MARK: Helpers
     
-    private func configureLogging(debug: Bool) {
+    private func configureLogging(debug: Bool, customFormat: String? = nil) {
         let logLevel: SwiftyBeaver.Level = (debug ? .debug : .info)
-        let logFormat = "$Dyyyy-MM-dd HH:mm:ss.SSS$d $L $N.$F:$l - $M"
+        let logFormat = customFormat ?? "$Dyyyy-MM-dd HH:mm:ss.SSS$d $L $N.$F:$l - $M"
         
         if debug {
             let console = ConsoleDestination()

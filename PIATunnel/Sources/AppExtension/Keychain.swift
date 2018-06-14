@@ -8,6 +8,7 @@
 
 import Foundation
 
+/// :nodoc:
 public enum KeychainError: Error {
     case add
     
@@ -16,6 +17,7 @@ public enum KeychainError: Error {
     case typeMismatch
 }
 
+/// :nodoc:
 public class Keychain {
     private let service: String?
 

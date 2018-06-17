@@ -22,7 +22,10 @@ class NEUDPInterface: NSObject, GenericSocket, LinkInterface {
     init(impl: NWUDPSession, maxDatagrams: Int = 200) {
         self.impl = impl
         self.maxDatagrams = maxDatagrams
-        endpoint = impl.endpoint
+        guard let hostEndpoint = impl.endpoint as? NWHostEndpoint else {
+            fatalError("Expected a NWHostEndpoint")
+        }
+        endpoint = hostEndpoint
         isActive = false
     }
     
@@ -32,7 +35,7 @@ class NEUDPInterface: NSObject, GenericSocket, LinkInterface {
     
     private var isActive: Bool
     
-    let endpoint: NWEndpoint
+    let endpoint: NWHostEndpoint
     
     var remoteAddress: String? {
         return (impl.resolvedEndpoint as? NWHostEndpoint)?.hostname

@@ -166,7 +166,7 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
 
         pendingStartHandler = completionHandler
         tunnelQueue.sync {
-            self.connectTunnel(endpoint: NWHostEndpoint(hostname: endpoint.hostname, port: endpoint.port))
+            self.connectTunnel(hostname: endpoint.hostname, port: endpoint.port)
         }
     }
     
@@ -210,8 +210,9 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
     
     // MARK: Connection (tunnel queue)
 
-    private func connectTunnel(endpoint: NWEndpoint) {
+    private func connectTunnel(hostname: String, port: String) {
         log.info("Creating link session")
+        let endpoint = NWHostEndpoint(hostname: hostname, port: port)
         log.info("Will connect to \(endpoint)")
         
         let targetSocket = upgradedSocket ?? genericSocket(endpoint: endpoint)
@@ -310,7 +311,7 @@ extension PIATunnelProvider: GenericSocketDelegate {
             }
             log.debug("Disconnection is recoverable, tunnel will reconnect in \(reconnectionDelay) milliseconds...")
             tunnelQueue.schedule(after: .milliseconds(reconnectionDelay)) {
-                self.connectTunnel(endpoint: socket.endpoint)
+                self.connectTunnel(hostname: socket.endpoint.hostname, port: socket.endpoint.port)
             }
             return
         }
@@ -417,7 +418,7 @@ extension PIATunnelProvider {
         }
     }
     
-    private func genericSocket(endpoint: NWEndpoint) -> GenericSocket {
+    private func genericSocket(endpoint: NWHostEndpoint) -> GenericSocket {
         switch cfg.socketType {
         case .udp:
             let impl = createUDPSession(to: endpoint, from: nil)

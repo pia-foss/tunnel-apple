@@ -22,7 +22,10 @@ class NETCPInterface: NSObject, GenericSocket, LinkInterface {
     init(impl: NWTCPConnection, maxPacketSize: Int = 32768) {
         self.impl = impl
         self.maxPacketSize = maxPacketSize
-        endpoint = impl.endpoint
+        guard let hostEndpoint = impl.endpoint as? NWHostEndpoint else {
+            fatalError("Expected a NWHostEndpoint")
+        }
+        endpoint = hostEndpoint
         isActive = false
     }
     
@@ -32,7 +35,7 @@ class NETCPInterface: NSObject, GenericSocket, LinkInterface {
     
     private var isActive: Bool
     
-    let endpoint: NWEndpoint
+    let endpoint: NWHostEndpoint
     
     var remoteAddress: String? {
         return (impl.remoteAddress as? NWHostEndpoint)?.hostname

@@ -209,10 +209,23 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
     }
     
     // MARK: Connection (tunnel queue)
+    
+    private func resolvedEndpoint(hostname: String, port: String) -> NWHostEndpoint {
+        guard cfg.prefersResolvedAddresses else {
+            return NWHostEndpoint(hostname: hostname, port: port)
+        }
+        guard let addresses = cfg.resolvedAddresses, !addresses.isEmpty else {
+            assertionFailure("Found unexpected empty resolvedAddresses in configuration")
+            return NWHostEndpoint(hostname: hostname, port: port)
+        }
+        let n = Int(arc4random() % UInt32(addresses.count))
+        let address = addresses[n]
+        return NWHostEndpoint(hostname: address, port: port)
+    }
 
     private func connectTunnel(hostname: String, port: String) {
         log.info("Creating link session")
-        let endpoint = NWHostEndpoint(hostname: hostname, port: port)
+        let endpoint = resolvedEndpoint(hostname: hostname, port: port)
         log.info("Will connect to \(endpoint)")
         
         let targetSocket = upgradedSocket ?? genericSocket(endpoint: endpoint)

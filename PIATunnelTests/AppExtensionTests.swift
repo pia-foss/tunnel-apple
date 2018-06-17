@@ -65,4 +65,19 @@ class AppExtensionTests: XCTestCase {
         XCTAssertEqual(proto?.providerConfiguration?[K.debug] as? Bool, cfg.shouldDebug)
         XCTAssertEqual(proto?.providerConfiguration?[K.debugLogKey] as? String, cfg.debugLogKey)
     }
+    
+    func testDNSResolver() {
+        let exp = expectation(description: "DNS")
+        DNSResolver.resolve("djsbjhcbjzhbxjnvsd.com", timeout: 1000) { (addrs, error) in
+            defer {
+                exp.fulfill()
+            }
+            guard let addrs = addrs else {
+                print("Can't resolve")
+                return
+            }
+            print("\(addrs)")
+        }
+        waitForExpectations(timeout: 5.0, handler: nil)
+    }
 }

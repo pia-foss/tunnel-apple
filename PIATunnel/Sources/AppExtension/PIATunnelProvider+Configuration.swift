@@ -136,9 +136,6 @@ extension PIATunnelProvider {
         /// The remote hostname or IP address.
         public let hostname: String
         
-        /// The remote port.
-        public let port: String
-        
         /// The username.
         public let username: String
         
@@ -146,20 +143,15 @@ extension PIATunnelProvider {
         public let password: String
         
         /// :nodoc:
-        public init(hostname: String, port: String, username: String, password: String) {
+        public init(hostname: String, username: String, password: String) {
             self.hostname = hostname
-            self.port = port
             self.username = username
             self.password = password
         }
         
         init(protocolConfiguration: NEVPNProtocol) throws {
-            guard let address = protocolConfiguration.serverAddress else {
+            guard let hostname = protocolConfiguration.serverAddress else {
                 throw ProviderError.configuration(field: "protocolConfiguration.serverAddress")
-            }
-            let addressComponents = address.components(separatedBy: ":")
-            guard (addressComponents.count == 2) else {
-                throw ProviderError.configuration(field: "protocolConfiguration.serverAddress (hostname:port)")
             }
             guard let username = protocolConfiguration.username else {
                 throw ProviderError.credentials(field: "protocolConfiguration.username")
@@ -171,8 +163,7 @@ extension PIATunnelProvider {
                 throw ProviderError.credentials(field: "protocolConfiguration.passwordReference (keychain)")
             }
             
-            hostname = addressComponents[0]
-            port = addressComponents[1]
+            self.hostname = hostname
             self.username = username
             self.password = password
         }
@@ -196,8 +187,8 @@ extension PIATunnelProvider {
         /// Resolved addresses in case DNS fails or `prefersResolvedAddresses` is `true`.
         public var resolvedAddresses: [String]?
         
-        /// The socket type.
-        public var socketType: SocketType
+        /// The accepted communication protocols. Must be non-empty.
+        public var endpointProtocols: [EndpointProtocol]
 
         /// The encryption algorithm.
         public var cipher: Cipher
@@ -236,7 +227,7 @@ extension PIATunnelProvider {
             self.appGroup = appGroup
             prefersResolvedAddresses = false
             resolvedAddresses = nil
-            socketType = .udp
+            endpointProtocols = [EndpointProtocol(.udp, "1194")]
             cipher = .aes128cbc
             digest = .sha1
             handshake = .rsa2048
@@ -271,11 +262,22 @@ extension PIATunnelProvider {
 
             prefersResolvedAddresses = providerConfiguration[S.prefersResolvedAddresses] as? Bool ?? false
             resolvedAddresses = providerConfiguration[S.resolvedAddresses] as? [String]
-            if let socketTypeString = providerConfiguration[S.socketType] as? String, let socketType = SocketType(rawValue: socketTypeString) {
-                self.socketType = socketType
-            } else {
-                socketType = .udp
+            guard let endpointProtocolsStrings = providerConfiguration[S.endpointProtocols] as? [String], !endpointProtocolsStrings.isEmpty else {
+                throw ProviderError.configuration(field: "protocolConfiguration.providerConfiguration[\(S.endpointProtocols)] is nil or empty")
             }
+            endpointProtocols = try endpointProtocolsStrings.map {
+                let components = $0.components(separatedBy: ":")
+                guard components.count == 2 else {
+                    throw ProviderError.configuration(field: "protocolConfiguration.providerConfiguration[\(S.endpointProtocols)] entries must be in the form 'socketType:port'")
+                }
+                let socketTypeString = components[0]
+                let port = components[1]
+                guard let socketType = SocketType(rawValue: socketTypeString) else {
+                    throw ProviderError.configuration(field: "protocolConfiguration.providerConfiguration[\(S.endpointProtocols)] unrecognized socketType '\(socketTypeString)'")
+                }
+                return EndpointProtocol(socketType, port)
+            }
+            
             self.cipher = cipher
             self.digest = digest
             self.handshake = handshake
@@ -308,7 +310,7 @@ extension PIATunnelProvider {
                 appGroup: appGroup,
                 prefersResolvedAddresses: prefersResolvedAddresses,
                 resolvedAddresses: resolvedAddresses,
-                socketType: socketType,
+                endpointProtocols: endpointProtocols,
                 cipher: cipher,
                 digest: digest,
                 handshake: handshake,
@@ -330,7 +332,7 @@ extension PIATunnelProvider {
 
             static let resolvedAddresses = "ResolvedAddresses"
 
-            static let socketType = "SocketType"
+            static let endpointProtocols = "EndpointProtocols"
             
             static let cipherAlgorithm = "CipherAlgorithm"
             
@@ -358,8 +360,8 @@ extension PIATunnelProvider {
         /// - Seealso: `PIATunnelProvider.ConfigurationBuilder.resolvedAddresses`
         public let resolvedAddresses: [String]?
 
-        /// - Seealso: `PIATunnelProvider.ConfigurationBuilder.socketType`
-        public let socketType: SocketType
+        /// - Seealso: `PIATunnelProvider.ConfigurationBuilder.endpointProtocols`
+        public let endpointProtocols: [EndpointProtocol]
         
         /// - Seealso: `PIATunnelProvider.ConfigurationBuilder.cipher`
         public let cipher: Cipher
@@ -423,7 +425,7 @@ extension PIATunnelProvider {
             var dict: [String: Any] = [
                 S.appGroup: appGroup,
                 S.prefersResolvedAddresses: prefersResolvedAddresses,
-                S.socketType: socketType.rawValue,
+                S.endpointProtocols: endpointProtocols.map { "\($0.socketType.rawValue):\($0.port)" },
                 S.cipherAlgorithm: cipher.rawValue,
                 S.digestAlgorithm: digest.rawValue,
                 S.handshakeCertificate: handshake.rawValue,
@@ -464,7 +466,7 @@ extension PIATunnelProvider {
             }
             
             protocolConfiguration.providerBundleIdentifier = bundleIdentifier
-            protocolConfiguration.serverAddress = "\(endpoint.hostname):\(endpoint.port)"
+            protocolConfiguration.serverAddress = endpoint.hostname
             protocolConfiguration.username = endpoint.username
             protocolConfiguration.passwordReference = try? keychain.passwordReference(for: endpoint.username)
             protocolConfiguration.providerConfiguration = generatedProviderConfiguration()
@@ -474,7 +476,7 @@ extension PIATunnelProvider {
         
         func print() {
 //            log.info("Address: \(endpoint.hostname):\(endpoint.port)")
-            log.info("Socket: \(socketType.rawValue)")
+            log.info("Protocols: \(endpointProtocols)")
             log.info("Cipher: \(cipher.rawValue)")
             log.info("Digest: \(digest.rawValue)")
             log.info("Handshake: \(handshake.rawValue)")
@@ -500,7 +502,7 @@ extension PIATunnelProvider.Configuration: Equatable {
      */
     public func builder() -> PIATunnelProvider.ConfigurationBuilder {
         var builder = PIATunnelProvider.ConfigurationBuilder(appGroup: appGroup)
-        builder.socketType = socketType
+        builder.endpointProtocols = endpointProtocols
         builder.cipher = cipher
         builder.digest = digest
         builder.handshake = handshake
@@ -514,7 +516,7 @@ extension PIATunnelProvider.Configuration: Equatable {
     /// :nodoc:
     public static func ==(lhs: PIATunnelProvider.Configuration, rhs: PIATunnelProvider.Configuration) -> Bool {
         return (
-            (lhs.socketType == rhs.socketType) &&
+            (lhs.endpointProtocols == rhs.endpointProtocols) &&
             (lhs.cipher == rhs.cipher) &&
             (lhs.digest == rhs.digest) &&
             (lhs.handshake == rhs.handshake) &&

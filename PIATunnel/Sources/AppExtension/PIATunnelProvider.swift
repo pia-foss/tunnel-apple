@@ -113,7 +113,7 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
             return
         }
 
-        strategy = ConnectionStrategy(hostname: endpoint.hostname, configuration: cfg, port: endpoint.port)
+        strategy = ConnectionStrategy(hostname: endpoint.hostname, configuration: cfg)
 
         if var existingLog = cfg.existingLog {
             existingLog.append("")

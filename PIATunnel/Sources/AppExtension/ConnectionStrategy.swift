@@ -23,13 +23,13 @@ class ConnectionStrategy {
     
     private var currentProtocolIndex = 0
 
-    init(hostname: String, configuration: PIATunnelProvider.Configuration, port: String) {
+    init(hostname: String, configuration: PIATunnelProvider.Configuration) {
         precondition(!configuration.prefersResolvedAddresses || !(configuration.resolvedAddresses?.isEmpty ?? true))
         
         self.hostname = hostname
-        self.prefersResolvedAddresses = configuration.prefersResolvedAddresses
-        self.resolvedAddresses = configuration.resolvedAddresses
-        self.endpointProtocols = [PIATunnelProvider.EndpointProtocol(configuration.socketType, port)]
+        prefersResolvedAddresses = configuration.prefersResolvedAddresses
+        resolvedAddresses = configuration.resolvedAddresses
+        endpointProtocols = configuration.endpointProtocols
     }
 
     func createSocket(from provider: NEProvider, timeout: Int, preferredAddress: String? = nil, completionHandler: @escaping (GenericSocket?, Error?) -> Void) {

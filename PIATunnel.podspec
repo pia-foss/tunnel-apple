@@ -9,7 +9,7 @@ Pod::Spec.new do |s|
     s.source            = { :git => "https://github.com/pia-foss/tunnel-apple.git", :tag => "v#{s.version}" }
 
     s.ios.deployment_target = "9.0"
-    #s.osx.deployment_target = "10.11"
+    s.osx.deployment_target = "10.11"
 
     s.subspec "Core" do |p|
         p.source_files          = "PIATunnel/Sources/Core/**/*.{h,m,swift}"

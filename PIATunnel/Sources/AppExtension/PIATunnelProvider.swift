@@ -25,6 +25,9 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
     /// The maximum number of lines in the log.
     public var maxLogLines = 1000
     
+    /// The number of milliseconds after which a DNS resolution fails.
+    public var dnsTimeout = 3000
+    
     /// The number of milliseconds after which the tunnel gives up on a connection attempt.
     public var socketTimeout = 5000
     
@@ -210,31 +213,47 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
     
     // MARK: Connection (tunnel queue)
     
-    private func resolvedEndpoint(hostname: String, port: String) -> NWHostEndpoint {
-        guard cfg.prefersResolvedAddresses else {
-            return NWHostEndpoint(hostname: hostname, port: port)
-        }
+    private func anyResolvedAddress() -> String? {
         guard let addresses = cfg.resolvedAddresses, !addresses.isEmpty else {
-            assertionFailure("Found unexpected empty resolvedAddresses in configuration")
-            return NWHostEndpoint(hostname: hostname, port: port)
+            return nil
         }
         let n = Int(arc4random() % UInt32(addresses.count))
-        let address = addresses[n]
-        return NWHostEndpoint(hostname: address, port: port)
+        return addresses[n]
     }
 
     private func connectTunnel(hostname: String, port: String) {
         log.info("Creating link session")
 
-        let targetSocket: GenericSocket
+        // ignore hostname, reuse upgraded socket when available
         if let upgradedSocket = upgradedSocket {
-            targetSocket = upgradedSocket
             log.info("Socket follows a path upgrade")
-        } else {
-            let endpoint = resolvedEndpoint(hostname: hostname, port: port)
-            targetSocket = genericSocket(endpoint: endpoint)
+            connectTunnel(via: upgradedSocket)
+            return
         }
-        connectTunnel(via: targetSocket)
+
+        // use any resolved address
+        if cfg.prefersResolvedAddresses, let address = anyResolvedAddress() {
+            let socket = genericSocket(endpoint: NWHostEndpoint(hostname: address, port: port))
+            connectTunnel(via: socket)
+            return
+        }
+
+        // fall back to DNS
+        DNSResolver.resolve(hostname, timeout: dnsTimeout) { (addresses, error) in
+            let address: String
+            if let resolvedAddress = addresses?.first {
+                address = resolvedAddress
+            } else {
+                guard let fallbackAddress = self.anyResolvedAddress() else {
+                    self.disposeTunnel(error: PIATunnelProvider.ProviderError.dnsFailure)
+                    return
+                }
+                address = fallbackAddress
+                log.info("DNS failed, fall back to resolved address: \(address)")
+            }
+            let socket = self.genericSocket(endpoint: NWHostEndpoint(hostname: address, port: port))
+            self.connectTunnel(via: socket)
+        }
     }
     
     private func connectTunnel(via targetSocket: GenericSocket) {

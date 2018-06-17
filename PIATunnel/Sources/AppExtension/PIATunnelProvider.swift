@@ -225,14 +225,22 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
 
     private func connectTunnel(hostname: String, port: String) {
         log.info("Creating link session")
-        let endpoint = resolvedEndpoint(hostname: hostname, port: port)
-        log.info("Will connect to \(endpoint)")
-        
-        let targetSocket = upgradedSocket ?? genericSocket(endpoint: endpoint)
-        log.info("Socket type is \(type(of: targetSocket))")
-        if let _ = upgradedSocket {
+
+        let targetSocket: GenericSocket
+        if let upgradedSocket = upgradedSocket {
+            targetSocket = upgradedSocket
             log.info("Socket follows a path upgrade")
+        } else {
+            let endpoint = resolvedEndpoint(hostname: hostname, port: port)
+            targetSocket = genericSocket(endpoint: endpoint)
         }
+        connectTunnel(via: targetSocket)
+    }
+    
+    private func connectTunnel(via targetSocket: GenericSocket) {
+        log.info("Will connect to \(targetSocket.endpoint)")
+
+        log.info("Socket type is \(type(of: targetSocket))")
         socket = targetSocket
         upgradedSocket = nil
         socket?.delegate = self

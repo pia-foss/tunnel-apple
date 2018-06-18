@@ -127,6 +127,9 @@ class NEUDPInterface: NSObject, GenericSocket, LinkInterface {
                 delegate?.socket(self, didShutdownWithFailure: false)
                 
             case .failed:
+//                if timedOut {
+//                    delegate?.socketShouldChangeProtocol(self)
+//                }
                 delegate?.socket(self, didShutdownWithFailure: true)
                 
             default:

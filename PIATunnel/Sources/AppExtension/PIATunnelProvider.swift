@@ -301,6 +301,13 @@ extension PIATunnelProvider: GenericSocketDelegate {
         socket.shutdown()
     }
     
+    func socketShouldChangeProtocol(_ socket: GenericSocket) {
+        guard strategy.tryNextProtocol() else {
+            disposeTunnel(error: ProviderError.exhaustedProtocols)
+            return
+        }
+    }
+    
     func socketDidBecomeActive(_ socket: GenericSocket) {
         proxy?.setLink(link: socket.link())
     }
@@ -319,6 +326,11 @@ extension PIATunnelProvider: GenericSocketDelegate {
             log.debug("Link failures so far: \(linkFailures) (max = \(maxLinkFailures))")
         }
         
+        // treat negotiation timeout as socket timeout, UDP is connection-less
+        if proxy.stopError as? SessionError == SessionError.negotiationTimeout {
+            socketShouldChangeProtocol(socket)
+        }
+
         finishTunnelDisconnection(error: shutdownError)
         if reasserting {
             guard (linkFailures < maxLinkFailures) else {

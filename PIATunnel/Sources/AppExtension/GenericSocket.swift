@@ -16,6 +16,8 @@ protocol LinkProducer {
 protocol GenericSocketDelegate: class {
     func socketDidTimeout(_ socket: GenericSocket)
 
+    func socketShouldChangeProtocol(_ socket: GenericSocket)
+    
     func socketDidBecomeActive(_ socket: GenericSocket)
 
     func socket(_ socket: GenericSocket, didShutdownWithFailure failure: Bool)

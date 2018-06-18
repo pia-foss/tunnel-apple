@@ -74,6 +74,17 @@ class ConnectionStrategy {
         }
     }
 
+    func tryNextProtocol() -> Bool {
+        let next = currentProtocolIndex + 1
+        guard next < endpointProtocols.count else {
+            log.debug("No more protocols available")
+            return false
+        }
+        currentProtocolIndex = next
+        log.debug("Fall back to next protocol: \(currentProtocol())")
+        return true
+    }
+    
     private func currentProtocol() -> PIATunnelProvider.EndpointProtocol {
         return endpointProtocols[currentProtocolIndex]
     }

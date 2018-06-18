@@ -56,6 +56,7 @@ class NETCPInterface: NSObject, GenericSocket, LinkInterface {
                 return
             }
             guard _self.isActive else {
+                _self.delegate?.socketShouldChangeProtocol(_self)
                 _self.delegate?.socketDidTimeout(_self)
                 return
             }

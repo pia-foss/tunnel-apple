@@ -39,6 +39,8 @@
 		0EBBF3012085196000E36B40 /* NWTCPConnectionState+Description.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EBBF2FF2085196000E36B40 /* NWTCPConnectionState+Description.swift */; };
 		0EC1BBA520D71190007C4C7B /* DNSResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EC1BBA420D71190007C4C7B /* DNSResolver.swift */; };
 		0EC1BBA620D712DE007C4C7B /* DNSResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EC1BBA420D71190007C4C7B /* DNSResolver.swift */; };
+		0EC1BBA820D7D803007C4C7B /* ConnectionStrategy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EC1BBA720D7D803007C4C7B /* ConnectionStrategy.swift */; };
+		0EC1BBA920D7D803007C4C7B /* ConnectionStrategy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EC1BBA720D7D803007C4C7B /* ConnectionStrategy.swift */; };
 		0EEC49DC20B5E732008FEB91 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EEC49DB20B5E732008FEB91 /* Utils.swift */; };
 		0EEC49DD20B5E732008FEB91 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EEC49DB20B5E732008FEB91 /* Utils.swift */; };
 		0EEC49E120B5F7EA008FEB91 /* Allocation.h in Headers */ = {isa = PBXBuildFile; fileRef = 0EFEB42E2006D3C800F81029 /* Allocation.h */; };
@@ -179,6 +181,7 @@
 		0EBBF2F92085061600E36B40 /* NETCPInterface.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NETCPInterface.swift; sourceTree = "<group>"; };
 		0EBBF2FF2085196000E36B40 /* NWTCPConnectionState+Description.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NWTCPConnectionState+Description.swift"; sourceTree = "<group>"; };
 		0EC1BBA420D71190007C4C7B /* DNSResolver.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DNSResolver.swift; sourceTree = "<group>"; };
+		0EC1BBA720D7D803007C4C7B /* ConnectionStrategy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionStrategy.swift; sourceTree = "<group>"; };
 		0EEC49DB20B5E732008FEB91 /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 		0EFEB42A2006D3C800F81029 /* EncryptionProxy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EncryptionProxy.swift; sourceTree = "<group>"; };
 		0EFEB42B2006D3C800F81029 /* SessionKey.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SessionKey.swift; sourceTree = "<group>"; };
@@ -396,6 +399,7 @@
 			isa = PBXGroup;
 			children = (
 				0EBBF2E32084FDF400E36B40 /* Transport */,
+				0EC1BBA720D7D803007C4C7B /* ConnectionStrategy.swift */,
 				0EC1BBA420D71190007C4C7B /* DNSResolver.swift */,
 				0EBBF2E42084FE6F00E36B40 /* GenericSocket.swift */,
 				0EFEB4AA200760EC00F81029 /* InterfaceObserver.swift */,
@@ -797,6 +801,7 @@
 				0EFEB46D2006D3C800F81029 /* Data+Manipulation.swift in Sources */,
 				0EFEB47B2006D3C800F81029 /* PIATunnelProvider.swift in Sources */,
 				0EFEB4742006D3C800F81029 /* Configuration.swift in Sources */,
+				0EC1BBA820D7D803007C4C7B /* ConnectionStrategy.swift in Sources */,
 				0EFEB46F2006D3C800F81029 /* IOInterface.swift in Sources */,
 				0EFEB4662006D3C800F81029 /* ZeroingData.swift in Sources */,
 				0EBBF2F3208505D300E36B40 /* NEUDPInterface.swift in Sources */,
@@ -842,6 +847,7 @@
 				0EFEB49A2006D7F300F81029 /* MSS.m in Sources */,
 				0EFEB48D2006D7F300F81029 /* EncryptionProxy.swift in Sources */,
 				0EFEB4922006D7F300F81029 /* ZeroingData.m in Sources */,
+				0EC1BBA920D7D803007C4C7B /* ConnectionStrategy.swift in Sources */,
 				0EFEB4932006D7F300F81029 /* CryptoBox.m in Sources */,
 				0EFEB49C2006D7F300F81029 /* Data+Manipulation.swift in Sources */,
 				0EBBF2F4208505D400E36B40 /* NEUDPInterface.swift in Sources */,

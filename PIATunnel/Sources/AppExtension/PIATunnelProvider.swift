@@ -62,11 +62,9 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
     
     // MARK: Tunnel configuration
 
-    private var bundleIdentifier: String!
-    
-    private var endpoint: AuthenticatedEndpoint!
-
     private var cfg: Configuration!
+    
+    private var strategy: ConnectionStrategy!
     
     // MARK: Internal state
 
@@ -86,19 +84,16 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
     
     /// :nodoc:
     open override func startTunnel(options: [String : NSObject]? = nil, completionHandler: @escaping (Error?) -> Void) {
+        let endpoint: AuthenticatedEndpoint
         do {
             guard let tunnelProtocol = protocolConfiguration as? NETunnelProviderProtocol else {
                 throw ProviderError.configuration(field: "protocolConfiguration")
-            }
-            guard let bundleIdentifier = tunnelProtocol.providerBundleIdentifier else {
-                throw ProviderError.configuration(field: "protocolConfiguration.bundleIdentifier")
             }
             guard let providerConfiguration = tunnelProtocol.providerConfiguration else {
                 throw ProviderError.configuration(field: "protocolConfiguration.providerConfiguration")
             }
             try endpoint = AuthenticatedEndpoint(protocolConfiguration: tunnelProtocol)
             try cfg = Configuration.parsed(from: providerConfiguration)
-            self.bundleIdentifier = bundleIdentifier
         } catch let e {
             var message: String?
             if let te = e as? ProviderError {
@@ -117,6 +112,8 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
             completionHandler(e)
             return
         }
+
+        strategy = ConnectionStrategy(hostname: endpoint.hostname, configuration: cfg, port: endpoint.port)
 
         if var existingLog = cfg.existingLog {
             existingLog.append("")
@@ -169,7 +166,7 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
 
         pendingStartHandler = completionHandler
         tunnelQueue.sync {
-            self.connectTunnel(hostname: endpoint.hostname, port: endpoint.port)
+            self.connectTunnel()
         }
     }
     
@@ -213,57 +210,33 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
     
     // MARK: Connection (tunnel queue)
     
-    private func anyResolvedAddress() -> String? {
-        guard let addresses = cfg.resolvedAddresses, !addresses.isEmpty else {
-            return nil
-        }
-        let n = Int(arc4random() % UInt32(addresses.count))
-        return addresses[n]
-    }
-
-    private func connectTunnel(hostname: String, port: String) {
+    private func connectTunnel(preferredAddress: String? = nil) {
         log.info("Creating link session")
-
-        // ignore hostname, reuse upgraded socket when available
+        
+        // reuse upgraded socket
         if let upgradedSocket = upgradedSocket {
             log.debug("Socket follows a path upgrade")
             connectTunnel(via: upgradedSocket)
             return
         }
-
-        // use any resolved address
-        if cfg.prefersResolvedAddresses, let address = anyResolvedAddress() {
-            let socket = genericSocket(endpoint: NWHostEndpoint(hostname: address, port: port))
-            connectTunnel(via: socket)
-            return
-        }
-
-        // fall back to DNS
-        DNSResolver.resolve(hostname, timeout: dnsTimeout) { (addresses, error) in
-            let address: String
-            if let resolvedAddress = addresses?.first {
-                address = resolvedAddress
-            } else {
-                guard let fallbackAddress = self.anyResolvedAddress() else {
-                    self.disposeTunnel(error: PIATunnelProvider.ProviderError.dnsFailure)
-                    return
-                }
-                address = fallbackAddress
-                log.info("DNS failed, fall back to resolved address: \(address)")
+        
+        strategy.createSocket(from: self, timeout: dnsTimeout, preferredAddress: preferredAddress) { (socket, error) in
+            guard let socket = socket else {
+                self.disposeTunnel(error: error)
+                return
             }
-            let socket = self.genericSocket(endpoint: NWHostEndpoint(hostname: address, port: port))
             self.connectTunnel(via: socket)
         }
     }
     
-    private func connectTunnel(via targetSocket: GenericSocket) {
-        log.info("Will connect to \(targetSocket.endpoint)")
+    private func connectTunnel(via socket: GenericSocket) {
+        log.info("Will connect to \(socket.endpoint)")
 
-        log.debug("Socket type is \(type(of: targetSocket))")
-        socket = targetSocket
+        log.debug("Socket type is \(type(of: socket))")
+        self.socket = socket
         upgradedSocket = nil
-        socket?.delegate = self
-        socket?.observe(queue: tunnelQueue, activeTimeout: socketTimeout)
+        self.socket?.delegate = self
+        self.socket?.observe(queue: tunnelQueue, activeTimeout: socketTimeout)
     }
     
     private func finishTunnelDisconnection(error: Error?) {
@@ -351,7 +324,7 @@ extension PIATunnelProvider: GenericSocketDelegate {
             }
             log.debug("Disconnection is recoverable, tunnel will reconnect in \(reconnectionDelay) milliseconds...")
             tunnelQueue.schedule(after: .milliseconds(reconnectionDelay)) {
-                self.connectTunnel(hostname: socket.endpoint.hostname, port: socket.endpoint.port)
+                self.connectTunnel(preferredAddress: socket.endpoint.hostname)
             }
             return
         }
@@ -455,18 +428,6 @@ extension PIATunnelProvider {
         log.debug("Flushing log...")
         if let defaults = cfg.defaults, let key = cfg.debugLogKey {
             memoryLog.flush(to: defaults, with: key)
-        }
-    }
-    
-    private func genericSocket(endpoint: NWHostEndpoint) -> GenericSocket {
-        switch cfg.socketType {
-        case .udp:
-            let impl = createUDPSession(to: endpoint, from: nil)
-            return NEUDPInterface(impl: impl)
-            
-        case .tcp:
-            let impl = createTCPConnection(to: endpoint, enableTLS: false, tlsParameters: nil, delegate: nil)
-            return NETCPInterface(impl: impl)
         }
     }
     

@@ -226,7 +226,7 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
 
         // ignore hostname, reuse upgraded socket when available
         if let upgradedSocket = upgradedSocket {
-            log.info("Socket follows a path upgrade")
+            log.debug("Socket follows a path upgrade")
             connectTunnel(via: upgradedSocket)
             return
         }
@@ -259,7 +259,7 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
     private func connectTunnel(via targetSocket: GenericSocket) {
         log.info("Will connect to \(targetSocket.endpoint)")
 
-        log.info("Socket type is \(type(of: targetSocket))")
+        log.debug("Socket type is \(type(of: targetSocket))")
         socket = targetSocket
         upgradedSocket = nil
         socket?.delegate = self
@@ -359,7 +359,7 @@ extension PIATunnelProvider: GenericSocketDelegate {
     }
     
     func socketHasBetterPath(_ socket: GenericSocket) {
-        log.info("Stopping tunnel due to a new better path")
+        log.debug("Stopping tunnel due to a new better path")
         logCurrentSSID()
         upgradedSocket = socket.upgraded()
         proxy?.shutdown(error: ProviderError.networkChanged)

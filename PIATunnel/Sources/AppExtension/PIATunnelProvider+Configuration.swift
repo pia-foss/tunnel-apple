@@ -158,9 +158,17 @@ extension PIATunnelProvider {
         
         // MARK: Tunnel parameters
         
+        /// Prefers resolved addresses over DNS resolution. `resolvedAddresses` must be set and non-empty. Default is `false`.
+        ///
+        /// - Seealso: `fallbackServerAddresses`
+        public var prefersResolvedAddresses: Bool
+        
+        /// Resolved addresses in case DNS fails or `prefersResolvedAddresses` is `true`.
+        public var resolvedAddresses: [String]?
+        
         /// The socket type.
         public var socketType: SocketType
-        
+
         /// The encryption algorithm.
         public var cipher: Cipher
         
@@ -196,6 +204,8 @@ extension PIATunnelProvider {
          */
         public init(appGroup: String) {
             self.appGroup = appGroup
+            prefersResolvedAddresses = false
+            resolvedAddresses = nil
             socketType = .udp
             cipher = .aes128cbc
             digest = .sha1
@@ -229,6 +239,8 @@ extension PIATunnelProvider {
 
             self.appGroup = appGroup
 
+            prefersResolvedAddresses = providerConfiguration[S.prefersResolvedAddresses] as? Bool ?? false
+            resolvedAddresses = providerConfiguration[S.resolvedAddresses] as? [String]
             if let socketTypeString = providerConfiguration[S.socketType] as? String, let socketType = SocketType(rawValue: socketTypeString) {
                 self.socketType = socketType
             } else {
@@ -250,6 +262,10 @@ extension PIATunnelProvider {
             } else {
                 debugLogKey = nil
             }
+
+            guard !prefersResolvedAddresses || !(resolvedAddresses?.isEmpty ?? true) else {
+                throw ProviderError.configuration(field: "protocolConfiguration.providerConfiguration[\(S.prefersResolvedAddresses)] is true but no [\(S.resolvedAddresses)]")
+            }
         }
         
         /**
@@ -260,6 +276,8 @@ extension PIATunnelProvider {
         public func build() -> Configuration {
             return Configuration(
                 appGroup: appGroup,
+                prefersResolvedAddresses: prefersResolvedAddresses,
+                resolvedAddresses: resolvedAddresses,
                 socketType: socketType,
                 cipher: cipher,
                 digest: digest,
@@ -278,6 +296,10 @@ extension PIATunnelProvider {
         struct Keys {
             static let appGroup = "AppGroup"
             
+            static let prefersResolvedAddresses = "PrefersResolvedAddresses"
+
+            static let resolvedAddresses = "ResolvedAddresses"
+
             static let socketType = "SocketType"
             
             static let cipherAlgorithm = "CipherAlgorithm"
@@ -299,6 +321,12 @@ extension PIATunnelProvider {
         
         /// - Seealso: `PIATunnelProvider.ConfigurationBuilder.appGroup`
         public let appGroup: String
+        
+        /// - Seealso: `PIATunnelProvider.ConfigurationBuilder.prefersResolvedAddresses`
+        public let prefersResolvedAddresses: Bool
+        
+        /// - Seealso: `PIATunnelProvider.ConfigurationBuilder.resolvedAddresses`
+        public let resolvedAddresses: [String]?
 
         /// - Seealso: `PIATunnelProvider.ConfigurationBuilder.socketType`
         public let socketType: SocketType
@@ -364,6 +392,7 @@ extension PIATunnelProvider {
             
             var dict: [String: Any] = [
                 S.appGroup: appGroup,
+                S.prefersResolvedAddresses: prefersResolvedAddresses,
                 S.socketType: socketType.rawValue,
                 S.cipherAlgorithm: cipher.rawValue,
                 S.digestAlgorithm: digest.rawValue,
@@ -371,6 +400,9 @@ extension PIATunnelProvider {
                 S.mtu: mtu,
                 S.debug: shouldDebug
             ]
+            if let resolvedAddresses = resolvedAddresses {
+                dict[S.resolvedAddresses] = resolvedAddresses
+            }
             if let renegotiatesAfterSeconds = renegotiatesAfterSeconds {
                 dict[S.renegotiatesAfter] = renegotiatesAfterSeconds
             }

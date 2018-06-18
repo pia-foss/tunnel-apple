@@ -25,6 +25,9 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
     /// The maximum number of lines in the log.
     public var maxLogLines = 1000
     
+    /// The number of milliseconds after which a DNS resolution fails.
+    public var dnsTimeout = 3000
+    
     /// The number of milliseconds after which the tunnel gives up on a connection attempt.
     public var socketTimeout = 5000
     
@@ -166,7 +169,7 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
 
         pendingStartHandler = completionHandler
         tunnelQueue.sync {
-            self.connectTunnel(endpoint: NWHostEndpoint(hostname: endpoint.hostname, port: endpoint.port))
+            self.connectTunnel(hostname: endpoint.hostname, port: endpoint.port)
         }
     }
     
@@ -209,16 +212,54 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
     }
     
     // MARK: Connection (tunnel queue)
-
-    private func connectTunnel(endpoint: NWEndpoint) {
-        log.info("Creating link session")
-        log.info("Will connect to \(endpoint)")
-        
-        let targetSocket = upgradedSocket ?? genericSocket(endpoint: endpoint)
-        log.info("Socket type is \(type(of: targetSocket))")
-        if let _ = upgradedSocket {
-            log.info("Socket follows a path upgrade")
+    
+    private func anyResolvedAddress() -> String? {
+        guard let addresses = cfg.resolvedAddresses, !addresses.isEmpty else {
+            return nil
         }
+        let n = Int(arc4random() % UInt32(addresses.count))
+        return addresses[n]
+    }
+
+    private func connectTunnel(hostname: String, port: String) {
+        log.info("Creating link session")
+
+        // ignore hostname, reuse upgraded socket when available
+        if let upgradedSocket = upgradedSocket {
+            log.info("Socket follows a path upgrade")
+            connectTunnel(via: upgradedSocket)
+            return
+        }
+
+        // use any resolved address
+        if cfg.prefersResolvedAddresses, let address = anyResolvedAddress() {
+            let socket = genericSocket(endpoint: NWHostEndpoint(hostname: address, port: port))
+            connectTunnel(via: socket)
+            return
+        }
+
+        // fall back to DNS
+        DNSResolver.resolve(hostname, timeout: dnsTimeout) { (addresses, error) in
+            let address: String
+            if let resolvedAddress = addresses?.first {
+                address = resolvedAddress
+            } else {
+                guard let fallbackAddress = self.anyResolvedAddress() else {
+                    self.disposeTunnel(error: PIATunnelProvider.ProviderError.dnsFailure)
+                    return
+                }
+                address = fallbackAddress
+                log.info("DNS failed, fall back to resolved address: \(address)")
+            }
+            let socket = self.genericSocket(endpoint: NWHostEndpoint(hostname: address, port: port))
+            self.connectTunnel(via: socket)
+        }
+    }
+    
+    private func connectTunnel(via targetSocket: GenericSocket) {
+        log.info("Will connect to \(targetSocket.endpoint)")
+
+        log.info("Socket type is \(type(of: targetSocket))")
         socket = targetSocket
         upgradedSocket = nil
         socket?.delegate = self
@@ -310,7 +351,7 @@ extension PIATunnelProvider: GenericSocketDelegate {
             }
             log.debug("Disconnection is recoverable, tunnel will reconnect in \(reconnectionDelay) milliseconds...")
             tunnelQueue.schedule(after: .milliseconds(reconnectionDelay)) {
-                self.connectTunnel(endpoint: socket.endpoint)
+                self.connectTunnel(hostname: socket.endpoint.hostname, port: socket.endpoint.port)
             }
             return
         }
@@ -417,7 +458,7 @@ extension PIATunnelProvider {
         }
     }
     
-    private func genericSocket(endpoint: NWEndpoint) -> GenericSocket {
+    private func genericSocket(endpoint: NWHostEndpoint) -> GenericSocket {
         switch cfg.socketType {
         case .udp:
             let impl = createUDPSession(to: endpoint, from: nil)

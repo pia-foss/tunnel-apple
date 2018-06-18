@@ -52,6 +52,9 @@ extension PIATunnelProvider {
         /// The TLS certificate could not be serialized.
         case certificateSerialization
         
+        /// Socket endpoint could not be resolved.
+        case dnsFailure
+        
         /// Socket failed to reach active state.
         case socketActivity
         

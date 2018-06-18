@@ -53,11 +53,16 @@ class ConnectionStrategy {
         // fall back to DNS
         log.debug("DNS resolve hostname: \(hostname)")
         DNSResolver.resolve(hostname, timeout: timeout) { (addresses, error) in
+
+            // refresh resolved addresses
             if let resolved = addresses, !resolved.isEmpty {
+                self.resolvedAddresses = resolved
+
                 log.debug("DNS resolved addresses: \(resolved)")
             } else {
                 log.error("DNS resolution failed!")
             }
+
             guard let targetAddress = self.resolvedAddress(from: addresses) else {
                 log.error("No resolved or fallback address available")
                 completionHandler(nil, PIATunnelProvider.ProviderError.dnsFailure)

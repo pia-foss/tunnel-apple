@@ -15,8 +15,8 @@ private let log = SwiftyBeaver.self
 /// The possible errors raised/thrown during `SessionProxy` operation.
 public enum SessionError: Error {
 
-    /// The connection attempt timed out.
-    case connectionTimeout
+    /// The negotiation timed out.
+    case negotiationTimeout
     
     /// The peer failed to verify.
     case peerVerification
@@ -372,11 +372,11 @@ public class SessionProxy {
         }
 
         guard !negotiationKey.didHardResetTimeOut(link: link) else {
-            doReconnect(error: SessionError.connectionTimeout)
+            doReconnect(error: SessionError.negotiationTimeout)
             return
         }
         guard !negotiationKey.didNegotiationTimeOut(link: link) else {
-            doShutdown(error: SessionError.connectionTimeout)
+            doShutdown(error: SessionError.negotiationTimeout)
             return
         }
             

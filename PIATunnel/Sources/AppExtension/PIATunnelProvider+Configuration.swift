@@ -100,6 +100,36 @@ extension PIATunnelProvider {
         case tcp = "TCP"
     }
     
+    /// Defines the communication protocol of an endpoint.
+    public struct EndpointProtocol: Equatable, CustomStringConvertible {
+
+        /// The socket type.
+        public let socketType: SocketType
+        
+        /// The remote port.
+        public let port: String
+
+        /// :nodoc:
+        public init(_ socketType: SocketType, _ port: String) {
+            self.socketType = socketType
+            self.port = port
+        }
+        
+        // MARK: Equatable
+        
+        /// :nodoc:
+        public static func ==(lhs: EndpointProtocol, rhs: EndpointProtocol) -> Bool {
+            return (lhs.socketType == rhs.socketType) && (lhs.port == rhs.port)
+        }
+        
+        // MARK: CustomStringConvertible
+        
+        /// :nodoc:
+        public var description: String {
+            return "\(socketType.rawValue):\(port)"
+        }
+    }
+
     /// Encapsulates an endpoint along with the authentication credentials.
     public struct AuthenticatedEndpoint {
         

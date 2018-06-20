@@ -7,7 +7,6 @@
 //
 
 #import <arpa/inet.h>
-@import SBObjectiveCWrapper;
 
 #import "PointerBasedDataPath.h"
 #import "MSS.h"
@@ -181,7 +180,8 @@ static const uint8_t DataPathPingData[]         = { 0x2a, 0x18, 0x7b, 0xf3, 0x64
     return self.outPackets;
 }
 
-- (NSArray<NSData *> *)decryptPackets:(NSArray<NSData *> *)packets error:(NSError *__autoreleasing *)error
+//- (NSArray<NSData *> *)decryptPackets:(NSArray<NSData *> *)packets error:(NSError *__autoreleasing *)error
+- (NSArray<NSData *> *)decryptPackets:(NSArray<NSData *> *)packets keepAlive:(bool *)keepAlive error:(NSError *__autoreleasing *)error
 {
     [self.inPackets removeAllObjects];
     
@@ -222,7 +222,7 @@ static const uint8_t DataPathPingData[]         = { 0x2a, 0x18, 0x7b, 0xf3, 0x64
         uint8_t *payloadPtr = decryptedPacketPtr;
         const int payloadLength = decryptedPacketLength - (int)(decryptedPacketPtr - decryptedPacketStart);
         if ((payloadLength == sizeof(DataPathPingData)) && !memcmp(payloadPtr, DataPathPingData, payloadLength)) {
-            SBLogDebug(@"Data: Received ping, do nothing");
+            *keepAlive = true;
             continue;
         }
         MSSFix(payloadPtr, payloadLength);

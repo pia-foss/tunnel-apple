@@ -13,7 +13,7 @@ class NETunnelInterface: TunnelInterface {
     private weak var impl: NEPacketTunnelFlow?
     
     var isPersistent: Bool {
-        return true
+        return false
     }
     
     init(impl: NEPacketTunnelFlow) {

@@ -29,8 +29,8 @@ class NETunnelInterface: TunnelInterface {
         // WARNING: runs in NEPacketTunnelFlow queue
         impl?.readPackets { [weak self] (packets, protocols) in
             queue.sync {
-                handler(packets, nil)
                 self?.loopReadPackets(queue, handler)
+                handler(packets, nil)
             }
         }
     }

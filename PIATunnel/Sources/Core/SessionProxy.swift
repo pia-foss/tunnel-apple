@@ -397,40 +397,32 @@ public class SessionProxy {
 
     // Ruby: udp_loop
     private func loopLink() {
-
-        // WARNING: runs in Network.framework queue
-        link?.setReadHandler { [weak self] (newPackets, error) in
+        link?.setReadHandler(queue: queue) { [weak self] (newPackets, error) in
             if let error = error {
                 log.error("Failed LINK read: \(error)")
                 return
             }
             
             if let packets = newPackets, !packets.isEmpty {
-                self?.queue.sync {
-                    self?.maybeRenegotiate()
+                self?.maybeRenegotiate()
 
-//                    log.verbose("Received \(packets.count) packets from \(self.linkName)")
-                    self?.receiveLink(packets: packets)
-                }
+//                log.verbose("Received \(packets.count) packets from \(self.linkName)")
+                self?.receiveLink(packets: packets)
             }
         }
     }
 
     // Ruby: tun_loop
     private func loopTunnel() {
-        
-        // WARNING: runs in NEPacketTunnelFlow queue
-        tunnel?.setReadHandler { [weak self] (newPackets, error) in
+        tunnel?.setReadHandler(queue: queue) { [weak self] (newPackets, error) in
             if let error = error {
                 log.error("Failed TUN read: \(error)")
                 return
             }
 
             if let packets = newPackets, !packets.isEmpty {
-                self?.queue.sync {
-//                    log.verbose("Received \(packets.count) packets from \(self.tunnelName)")
-                    self?.receiveTunnel(packets: packets)
-                }
+//                log.verbose("Received \(packets.count) packets from \(self.tunnelName)")
+                self?.receiveTunnel(packets: packets)
             }
         }
     }

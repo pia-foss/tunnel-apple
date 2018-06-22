@@ -16,18 +16,22 @@ class NETunnelInterface: TunnelInterface {
         return true
     }
     
-    init(impl: NEPacketTunnelFlow?) {
+    init(impl: NEPacketTunnelFlow) {
         self.impl = impl
     }
     
-    func setReadHandler(_ handler: @escaping ([Data]?, Error?) -> Void) {
-        loopReadPackets(handler)
+    func setReadHandler(queue: DispatchQueue, _ handler: @escaping ([Data]?, Error?) -> Void) {
+        loopReadPackets(queue, handler)
     }
     
-    private func loopReadPackets(_ handler: @escaping ([Data]?, Error?) -> Void) {
+    private func loopReadPackets(_ queue: DispatchQueue, _ handler: @escaping ([Data]?, Error?) -> Void) {
+
+        // WARNING: runs in NEPacketTunnelFlow queue
         impl?.readPackets { [weak self] (packets, protocols) in
-            handler(packets, nil)
-            self?.loopReadPackets(handler)
+            queue.sync {
+                handler(packets, nil)
+                self?.loopReadPackets(queue, handler)
+            }
         }
     }
     

@@ -161,24 +161,31 @@ class NETCPInterface: NSObject, GenericSocket, LinkInterface {
     
     let hardResetTimeout: TimeInterval = 5.0
     
-    func setReadHandler(_ handler: @escaping ([Data]?, Error?) -> Void) {
-        loopReadPackets(Data(), handler)
+    func setReadHandler(queue: DispatchQueue, _ handler: @escaping ([Data]?, Error?) -> Void) {
+        loopReadPackets(queue, Data(), handler)
     }
     
-    private func loopReadPackets(_ buffer: Data, _ handler: @escaping ([Data]?, Error?) -> Void) {
+    private func loopReadPackets(_ queue: DispatchQueue, _ buffer: Data, _ handler: @escaping ([Data]?, Error?) -> Void) {
+
+        // WARNING: runs in Network.framework queue
         impl.readMinimumLength(2, maximumLength: packetBufferSize) { [weak self] (data, error) in
-            guard (error == nil), let data = data else {
-                handler(nil, error)
+            guard let _ = self else {
                 return
             }
+            queue.sync {
+                guard (error == nil), let data = data else {
+                    handler(nil, error)
+                    return
+                }
 
-            var newBuffer = buffer
-            newBuffer.append(contentsOf: data)
-            let (until, packets) = ControlPacket.parsed(newBuffer)
-            newBuffer.removeSubrange(0..<until)
+                var newBuffer = buffer
+                newBuffer.append(contentsOf: data)
+                let (until, packets) = ControlPacket.parsed(newBuffer)
+                newBuffer.removeSubrange(0..<until)
 
-            handler(packets, nil)
-            self?.loopReadPackets(newBuffer, handler)
+                handler(packets, nil)
+                self?.loopReadPackets(queue, newBuffer, handler)
+            }
         }
     }
 

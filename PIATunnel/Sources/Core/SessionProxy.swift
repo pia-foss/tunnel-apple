@@ -126,7 +126,16 @@ public class SessionProxy {
     
     private let credentials: Credentials
     
-    private let encodedSettings: Data
+    /// Set to `true` if server is a PIA-patched server. Default `true`.
+    public var isPIAServer: Bool
+    
+    private var encodedSettings: Data {
+        guard isPIAServer else {
+            return Data()
+        }
+        let settings = TunnelSettings(caMd5Digest: encryption.caDigest, cipherName: encryption.cipherName, digestName: encryption.digestName)
+        return (try? settings.encodedData()) ?? Data()
+    }
     
     /// The number of seconds after which a renegotiation should be initiated. If `nil`, the client will never initiate a renegotiation.
     public var renegotiatesAfter: TimeInterval?
@@ -219,9 +228,7 @@ public class SessionProxy {
         self.encryption = encryption
         self.credentials = credentials
 
-        encodedSettings = try TunnelSettings(caMd5Digest: encryption.caDigest,
-                                             cipherName: encryption.cipherName,
-                                             digestName: encryption.digestName).encodedData()
+        isPIAServer = true
         renegotiatesAfter = nil
         
         keys = [:]

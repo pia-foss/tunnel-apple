@@ -161,8 +161,17 @@ class NEUDPInterface: NSObject, GenericSocket, LinkInterface {
     
     let hardResetTimeout: TimeInterval = 5.0
     
-    func setReadHandler(_ handler: @escaping ([Data]?, Error?) -> Void) {
-        impl.setReadHandler(handler, maxDatagrams: maxDatagrams)
+    func setReadHandler(queue: DispatchQueue, _ handler: @escaping ([Data]?, Error?) -> Void) {
+
+        // WARNING: runs in Network.framework queue
+        impl.setReadHandler({ [weak self] (packets, error) in
+            guard let _ = self else {
+                return
+            }
+            queue.sync {
+                handler(packets, error)
+            }
+        }, maxDatagrams: maxDatagrams)
     }
     
     func writePacket(_ packet: Data, completionHandler: ((Error?) -> Void)?) {

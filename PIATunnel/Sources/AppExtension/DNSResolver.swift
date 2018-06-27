@@ -22,13 +22,15 @@ class DNSResolver {
             DNSResolver.didResolve(host: host, completionHandler: handler)
             pendingHandler = nil
         }
-        DNSResolver.queue.asyncAfter(deadline: .now() + .milliseconds(timeout)) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(timeout)) {
             guard let handler = pendingHandler else {
                 return
             }
             CFHostCancelInfoResolution(host, .addresses)
-            handler(nil, nil)
-            pendingHandler = nil
+            DNSResolver.queue.sync {
+                handler(nil, nil)
+                pendingHandler = nil
+            }
         }
     }
     

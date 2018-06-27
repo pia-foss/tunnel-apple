@@ -15,8 +15,8 @@ private let log = SwiftyBeaver.self
 /// The possible errors raised/thrown during `SessionProxy` operation.
 public enum SessionError: Error {
 
-    /// The connection attempt timed out.
-    case connectionTimeout
+    /// The negotiation timed out.
+    case negotiationTimeout
     
     /// The peer failed to verify.
     case peerVerification
@@ -372,11 +372,11 @@ public class SessionProxy {
         }
 
         guard !negotiationKey.didHardResetTimeOut(link: link) else {
-            doReconnect(error: SessionError.connectionTimeout)
+            doReconnect(error: SessionError.negotiationTimeout)
             return
         }
         guard !negotiationKey.didNegotiationTimeOut(link: link) else {
-            doShutdown(error: SessionError.connectionTimeout)
+            doShutdown(error: SessionError.negotiationTimeout)
             return
         }
             
@@ -397,40 +397,32 @@ public class SessionProxy {
 
     // Ruby: udp_loop
     private func loopLink() {
-
-        // WARNING: runs in Network.framework queue
-        link?.setReadHandler { [weak self] (newPackets, error) in
+        link?.setReadHandler(queue: queue) { [weak self] (newPackets, error) in
             if let error = error {
                 log.error("Failed LINK read: \(error)")
                 return
             }
             
             if let packets = newPackets, !packets.isEmpty {
-                self?.queue.sync {
-                    self?.maybeRenegotiate()
+                self?.maybeRenegotiate()
 
-//                    log.verbose("Received \(packets.count) packets from \(self.linkName)")
-                    self?.receiveLink(packets: packets)
-                }
+//                log.verbose("Received \(packets.count) packets from \(self.linkName)")
+                self?.receiveLink(packets: packets)
             }
         }
     }
 
     // Ruby: tun_loop
     private func loopTunnel() {
-        
-        // WARNING: runs in NEPacketTunnelFlow queue
-        tunnel?.setReadHandler { [weak self] (newPackets, error) in
+        tunnel?.setReadHandler(queue: queue) { [weak self] (newPackets, error) in
             if let error = error {
                 log.error("Failed TUN read: \(error)")
                 return
             }
 
             if let packets = newPackets, !packets.isEmpty {
-                self?.queue.sync {
-//                    log.verbose("Received \(packets.count) packets from \(self.tunnelName)")
-                    self?.receiveTunnel(packets: packets)
-                }
+//                log.verbose("Received \(packets.count) packets from \(self.tunnelName)")
+                self?.receiveTunnel(packets: packets)
             }
         }
     }
@@ -797,7 +789,7 @@ public class SessionProxy {
                 var length = 0
                 try negotiationKey.tls.pullRawPlainText(controlPlainBuffer.mutableBytes, length: &length)
 
-                let controlData = controlPlainBuffer.withOffset(0, count: length)!
+                let controlData = controlPlainBuffer.withOffset(0, count: length)
                 handleControlData(controlData)
             } catch _ {
             }

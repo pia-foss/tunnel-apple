@@ -8,6 +8,9 @@
 
 import Foundation
 import __PIATunnelNative
+import SwiftyBeaver
+
+private let log = SwiftyBeaver.self
 
 class SessionKey {
     enum State {
@@ -78,7 +81,12 @@ class SessionKey {
     }
     
     func decrypt(packets: [Data]) throws -> [Data]? {
-        return try dataPath?.decryptPackets(packets)
+        var keepAlive = false
+        let decrypted = try dataPath?.decryptPackets(packets, keepAlive: &keepAlive)
+        if keepAlive {
+            log.debug("Data: Received ping, do nothing")
+        }
+        return decrypted
     }
     
 //    func dispose() {

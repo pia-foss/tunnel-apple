@@ -25,6 +25,9 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
     /// The maximum number of lines in the log.
     public var maxLogLines = 1000
     
+    /// The number of milliseconds after which a DNS resolution fails.
+    public var dnsTimeout = 3000
+    
     /// The number of milliseconds after which the tunnel gives up on a connection attempt.
     public var socketTimeout = 5000
     
@@ -59,11 +62,9 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
     
     // MARK: Tunnel configuration
 
-    private var bundleIdentifier: String!
-    
-    private var endpoint: AuthenticatedEndpoint!
-
     private var cfg: Configuration!
+    
+    private var strategy: ConnectionStrategy!
     
     // MARK: Internal state
 
@@ -83,19 +84,16 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
     
     /// :nodoc:
     open override func startTunnel(options: [String : NSObject]? = nil, completionHandler: @escaping (Error?) -> Void) {
+        let endpoint: AuthenticatedEndpoint
         do {
             guard let tunnelProtocol = protocolConfiguration as? NETunnelProviderProtocol else {
                 throw ProviderError.configuration(field: "protocolConfiguration")
-            }
-            guard let bundleIdentifier = tunnelProtocol.providerBundleIdentifier else {
-                throw ProviderError.configuration(field: "protocolConfiguration.bundleIdentifier")
             }
             guard let providerConfiguration = tunnelProtocol.providerConfiguration else {
                 throw ProviderError.configuration(field: "protocolConfiguration.providerConfiguration")
             }
             try endpoint = AuthenticatedEndpoint(protocolConfiguration: tunnelProtocol)
             try cfg = Configuration.parsed(from: providerConfiguration)
-            self.bundleIdentifier = bundleIdentifier
         } catch let e {
             var message: String?
             if let te = e as? ProviderError {
@@ -115,6 +113,8 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
             return
         }
 
+        strategy = ConnectionStrategy(hostname: endpoint.hostname, configuration: cfg, port: endpoint.port)
+
         if var existingLog = cfg.existingLog {
             existingLog.append("")
             existingLog.append(logSeparator)
@@ -122,7 +122,10 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
             memoryLog.start(with: existingLog)
         }
 
-        configureLogging(debug: cfg.shouldDebug)
+        configureLogging(
+            debug: cfg.shouldDebug,
+            customFormat: cfg.debugLogFormat
+        )
         
         log.info("Starting tunnel...")
         
@@ -148,7 +151,6 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
         let proxy: SessionProxy
         do {
             proxy = try SessionProxy(queue: tunnelQueue, encryption: encryption, credentials: credentials)
-            proxy.setTunnel(tunnel: NETunnelInterface(impl: packetFlow))
         } catch let e {
             completionHandler(e)
             return
@@ -163,7 +165,7 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
 
         pendingStartHandler = completionHandler
         tunnelQueue.sync {
-            self.connectTunnel(endpoint: NWHostEndpoint(hostname: endpoint.hostname, port: endpoint.port))
+            self.connectTunnel()
         }
     }
     
@@ -206,20 +208,34 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
     }
     
     // MARK: Connection (tunnel queue)
-
-    private func connectTunnel(endpoint: NWEndpoint) {
+    
+    private func connectTunnel(preferredAddress: String? = nil) {
         log.info("Creating link session")
-        log.info("Will connect to \(endpoint)")
         
-        let targetSocket = upgradedSocket ?? genericSocket(endpoint: endpoint)
-        log.info("Socket type is \(type(of: targetSocket))")
-        if let _ = upgradedSocket {
-            log.info("Socket follows a path upgrade")
+        // reuse upgraded socket
+        if let upgradedSocket = upgradedSocket {
+            log.debug("Socket follows a path upgrade")
+            connectTunnel(via: upgradedSocket)
+            return
         }
-        socket = targetSocket
+        
+        strategy.createSocket(from: self, timeout: dnsTimeout, preferredAddress: preferredAddress) { (socket, error) in
+            guard let socket = socket else {
+                self.disposeTunnel(error: error)
+                return
+            }
+            self.connectTunnel(via: socket)
+        }
+    }
+    
+    private func connectTunnel(via socket: GenericSocket) {
+        log.info("Will connect to \(socket.endpoint)")
+
+        log.debug("Socket type is \(type(of: socket))")
+        self.socket = socket
         upgradedSocket = nil
-        socket?.delegate = self
-        socket?.observe(queue: tunnelQueue, activeTimeout: socketTimeout)
+        self.socket?.delegate = self
+        self.socket?.observe(queue: tunnelQueue, activeTimeout: socketTimeout)
     }
     
     private func finishTunnelDisconnection(error: Error?) {
@@ -307,7 +323,7 @@ extension PIATunnelProvider: GenericSocketDelegate {
             }
             log.debug("Disconnection is recoverable, tunnel will reconnect in \(reconnectionDelay) milliseconds...")
             tunnelQueue.schedule(after: .milliseconds(reconnectionDelay)) {
-                self.connectTunnel(endpoint: socket.endpoint)
+                self.connectTunnel(preferredAddress: socket.endpoint.hostname)
             }
             return
         }
@@ -315,7 +331,7 @@ extension PIATunnelProvider: GenericSocketDelegate {
     }
     
     func socketHasBetterPath(_ socket: GenericSocket) {
-        log.info("Stopping tunnel due to a new better path")
+        log.debug("Stopping tunnel due to a new better path")
         logCurrentSSID()
         upgradedSocket = socket.upgraded()
         proxy?.shutdown(error: ProviderError.networkChanged)
@@ -348,6 +364,8 @@ extension PIATunnelProvider: SessionProxyDelegate {
             
             log.info("Tunnel interface is now UP")
             
+            proxy.setTunnel(tunnel: NETunnelInterface(impl: self.packetFlow))
+
             self.pendingStartHandler?(nil)
             self.pendingStartHandler = nil
         }
@@ -388,9 +406,9 @@ extension PIATunnelProvider {
     
     // MARK: Helpers
     
-    private func configureLogging(debug: Bool) {
+    private func configureLogging(debug: Bool, customFormat: String? = nil) {
         let logLevel: SwiftyBeaver.Level = (debug ? .debug : .info)
-        let logFormat = "$Dyyyy-MM-dd HH:mm:ss.SSS$d $L $N.$F:$l - $M"
+        let logFormat = customFormat ?? "$Dyyyy-MM-dd HH:mm:ss.SSS$d $L $N.$F:$l - $M"
         
         if debug {
             let console = ConsoleDestination()
@@ -411,18 +429,6 @@ extension PIATunnelProvider {
         log.debug("Flushing log...")
         if let defaults = cfg.defaults, let key = cfg.debugLogKey {
             memoryLog.flush(to: defaults, with: key)
-        }
-    }
-    
-    private func genericSocket(endpoint: NWEndpoint) -> GenericSocket {
-        switch cfg.socketType {
-        case .udp:
-            let impl = createUDPSession(to: endpoint, from: nil)
-            return NEUDPInterface(impl: impl)
-            
-        case .tcp:
-            let impl = createTCPConnection(to: endpoint, enableTLS: false, tlsParameters: nil, delegate: nil)
-            return NETCPInterface(impl: impl)
         }
     }
     

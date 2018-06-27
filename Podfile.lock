@@ -1,25 +1,20 @@
 PODS:
   - OpenSSL-Apple (1.1.0h)
-  - SBObjectiveCWrapper (1.4.0):
-    - SwiftyBeaver (~> 1.4.0)
-  - SwiftyBeaver (1.4.4)
+  - SwiftyBeaver (1.6.0)
 
 DEPENDENCIES:
   - OpenSSL-Apple (~> 1.1.0h)
-  - SBObjectiveCWrapper
   - SwiftyBeaver
 
 SPEC REPOS:
   https://github.com/cocoapods/specs.git:
     - OpenSSL-Apple
-    - SBObjectiveCWrapper
     - SwiftyBeaver
 
 SPEC CHECKSUMS:
   OpenSSL-Apple: cd153d705ef350eb834ae7ff5f21f792b51ed208
-  SBObjectiveCWrapper: 854ea56b37cd0031af2b1d6e12c2f965fc4ff86d
-  SwiftyBeaver: 25bd76281f49ca989ec2e3cbde9af89c15bc1432
+  SwiftyBeaver: e45759613e50b522b0e6f53b1f0f14389b45ca34
 
-PODFILE CHECKSUM: f831e2e7cc2458aa33d15ebd07496d14a06b4cc4
+PODFILE CHECKSUM: d93463e96c0da9f94811327c6e2b123c6453c591
 
 COCOAPODS: 1.5.3

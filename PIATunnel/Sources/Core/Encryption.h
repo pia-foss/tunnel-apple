@@ -11,19 +11,19 @@
 @protocol Encrypter
 
 - (int)overheadLength;
-- (NSData *)encryptData:(NSData *)data offset:(NSInteger)offset error:(NSError **)error;
+- (NSData *)encryptData:(nonnull NSData *)data offset:(NSInteger)offset error:(NSError **)error;
 
 // WARNING: dest must be able to hold ciphertext
-- (int)encryptBytes:(const uint8_t *)bytes length:(int)length dest:(uint8_t *)dest error:(NSError **)error;
+- (int)encryptBytes:(nonnull const uint8_t *)bytes length:(int)length dest:(nonnull uint8_t *)dest error:(NSError **)error;
 
 @end
 
 @protocol Decrypter
 
 - (int)overheadLength;
-- (NSData *)decryptData:(NSData *)data offset:(NSInteger)offset error:(NSError **)error;
+- (NSData *)decryptData:(nonnull NSData *)data offset:(NSInteger)offset error:(NSError **)error;
 
 // WARNING: dest must be able to hold plaintext
-- (int)decryptBytes:(const uint8_t *)bytes length:(int)length dest:(uint8_t *)dest error:(NSError **)error;
+- (int)decryptBytes:(nonnull const uint8_t *)bytes length:(int)length dest:(nonnull uint8_t *)dest error:(NSError **)error;
 
 @end

@@ -48,8 +48,8 @@ public class EncryptionProxy {
         }
         let len = secret.count / 2
         let lenx = len + (secret.count & 1)
-        let secret1 = secret.withOffset(0, count: lenx)!
-        let secret2 = secret.withOffset(len, count: lenx)!
+        let secret1 = secret.withOffset(0, count: lenx)
+        let secret2 = secret.withOffset(len, count: lenx)
         
         let hash1 = keysHash("md5", secret1, seed, size)
         let hash2 = keysHash("sha1", secret2, seed, size)
@@ -109,7 +109,7 @@ public class EncryptionProxy {
         var keysArray = [ZeroingData]()
         for i in 0..<Configuration.keysCount {
             let offset = i * Configuration.keyLength
-            let zbuf = keysData.withOffset(offset, count: Configuration.keyLength)!
+            let zbuf = keysData.withOffset(offset, count: Configuration.keyLength)
             keysArray.append(zbuf)
         }
         

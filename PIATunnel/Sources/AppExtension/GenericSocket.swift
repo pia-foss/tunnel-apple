@@ -22,7 +22,7 @@ protocol GenericSocketDelegate: class {
 }
 
 protocol GenericSocket: LinkProducer {
-    var endpoint: NWEndpoint { get }
+    var endpoint: NWHostEndpoint { get }
     
     var remoteAddress: String? { get }
     

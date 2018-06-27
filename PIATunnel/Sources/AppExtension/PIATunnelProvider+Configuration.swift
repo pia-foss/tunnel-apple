@@ -100,6 +100,36 @@ extension PIATunnelProvider {
         case tcp = "TCP"
     }
     
+    /// Defines the communication protocol of an endpoint.
+    public struct EndpointProtocol: Equatable, CustomStringConvertible {
+
+        /// The socket type.
+        public let socketType: SocketType
+        
+        /// The remote port.
+        public let port: String
+
+        /// :nodoc:
+        public init(_ socketType: SocketType, _ port: String) {
+            self.socketType = socketType
+            self.port = port
+        }
+        
+        // MARK: Equatable
+        
+        /// :nodoc:
+        public static func ==(lhs: EndpointProtocol, rhs: EndpointProtocol) -> Bool {
+            return (lhs.socketType == rhs.socketType) && (lhs.port == rhs.port)
+        }
+        
+        // MARK: CustomStringConvertible
+        
+        /// :nodoc:
+        public var description: String {
+            return "\(socketType.rawValue):\(port)"
+        }
+    }
+
     /// Encapsulates an endpoint along with the authentication credentials.
     public struct AuthenticatedEndpoint {
         
@@ -158,9 +188,17 @@ extension PIATunnelProvider {
         
         // MARK: Tunnel parameters
         
+        /// Prefers resolved addresses over DNS resolution. `resolvedAddresses` must be set and non-empty. Default is `false`.
+        ///
+        /// - Seealso: `fallbackServerAddresses`
+        public var prefersResolvedAddresses: Bool
+        
+        /// Resolved addresses in case DNS fails or `prefersResolvedAddresses` is `true`.
+        public var resolvedAddresses: [String]?
+        
         /// The socket type.
         public var socketType: SocketType
-        
+
         /// The encryption algorithm.
         public var cipher: Cipher
         
@@ -184,6 +222,9 @@ extension PIATunnelProvider {
         /// The key in `defaults` where the latest debug log snapshot is stored. Ignored if `shouldDebug` is `false`.
         public var debugLogKey: String?
         
+        /// Optional debug log format (SwiftyBeaver format).
+        public var debugLogFormat: String?
+        
         // MARK: Building
         
         /**
@@ -193,6 +234,8 @@ extension PIATunnelProvider {
          */
         public init(appGroup: String) {
             self.appGroup = appGroup
+            prefersResolvedAddresses = false
+            resolvedAddresses = nil
             socketType = .udp
             cipher = .aes128cbc
             digest = .sha1
@@ -201,6 +244,7 @@ extension PIATunnelProvider {
             renegotiatesAfterSeconds = nil
             shouldDebug = false
             debugLogKey = nil
+            debugLogFormat = nil
         }
         
         fileprivate init(providerConfiguration: [String: Any]) throws {
@@ -225,6 +269,8 @@ extension PIATunnelProvider {
 
             self.appGroup = appGroup
 
+            prefersResolvedAddresses = providerConfiguration[S.prefersResolvedAddresses] as? Bool ?? false
+            resolvedAddresses = providerConfiguration[S.resolvedAddresses] as? [String]
             if let socketTypeString = providerConfiguration[S.socketType] as? String, let socketType = SocketType(rawValue: socketTypeString) {
                 self.socketType = socketType
             } else {
@@ -242,8 +288,13 @@ extension PIATunnelProvider {
                     throw ProviderError.configuration(field: "protocolConfiguration.providerConfiguration[\(S.debugLogKey)]")
                 }
                 self.debugLogKey = debugLogKey
+                debugLogFormat = providerConfiguration[S.debugLogFormat] as? String
             } else {
                 debugLogKey = nil
+            }
+
+            guard !prefersResolvedAddresses || !(resolvedAddresses?.isEmpty ?? true) else {
+                throw ProviderError.configuration(field: "protocolConfiguration.providerConfiguration[\(S.prefersResolvedAddresses)] is true but no [\(S.resolvedAddresses)]")
             }
         }
         
@@ -255,6 +306,8 @@ extension PIATunnelProvider {
         public func build() -> Configuration {
             return Configuration(
                 appGroup: appGroup,
+                prefersResolvedAddresses: prefersResolvedAddresses,
+                resolvedAddresses: resolvedAddresses,
                 socketType: socketType,
                 cipher: cipher,
                 digest: digest,
@@ -262,7 +315,8 @@ extension PIATunnelProvider {
                 mtu: mtu,
                 renegotiatesAfterSeconds: renegotiatesAfterSeconds,
                 shouldDebug: shouldDebug,
-                debugLogKey: shouldDebug ? debugLogKey : nil
+                debugLogKey: shouldDebug ? debugLogKey : nil,
+                debugLogFormat: shouldDebug ? debugLogFormat : nil
             )
         }
     }
@@ -272,6 +326,10 @@ extension PIATunnelProvider {
         struct Keys {
             static let appGroup = "AppGroup"
             
+            static let prefersResolvedAddresses = "PrefersResolvedAddresses"
+
+            static let resolvedAddresses = "ResolvedAddresses"
+
             static let socketType = "SocketType"
             
             static let cipherAlgorithm = "CipherAlgorithm"
@@ -287,10 +345,18 @@ extension PIATunnelProvider {
             static let debug = "Debug"
             
             static let debugLogKey = "DebugLogKey"
+            
+            static let debugLogFormat = "DebugLogFormat"
         }
         
         /// - Seealso: `PIATunnelProvider.ConfigurationBuilder.appGroup`
         public let appGroup: String
+        
+        /// - Seealso: `PIATunnelProvider.ConfigurationBuilder.prefersResolvedAddresses`
+        public let prefersResolvedAddresses: Bool
+        
+        /// - Seealso: `PIATunnelProvider.ConfigurationBuilder.resolvedAddresses`
+        public let resolvedAddresses: [String]?
 
         /// - Seealso: `PIATunnelProvider.ConfigurationBuilder.socketType`
         public let socketType: SocketType
@@ -315,6 +381,9 @@ extension PIATunnelProvider {
         
         /// - Seealso: `PIATunnelProvider.ConfigurationBuilder.debugLogKey`
         public let debugLogKey: String?
+        
+        /// - Seealso: `PIATunnelProvider.ConfigurationBuilder.debugLogFormat`
+        public let debugLogFormat: String?
         
         // MARK: Shortcuts
 
@@ -353,6 +422,7 @@ extension PIATunnelProvider {
             
             var dict: [String: Any] = [
                 S.appGroup: appGroup,
+                S.prefersResolvedAddresses: prefersResolvedAddresses,
                 S.socketType: socketType.rawValue,
                 S.cipherAlgorithm: cipher.rawValue,
                 S.digestAlgorithm: digest.rawValue,
@@ -360,11 +430,17 @@ extension PIATunnelProvider {
                 S.mtu: mtu,
                 S.debug: shouldDebug
             ]
+            if let resolvedAddresses = resolvedAddresses {
+                dict[S.resolvedAddresses] = resolvedAddresses
+            }
             if let renegotiatesAfterSeconds = renegotiatesAfterSeconds {
                 dict[S.renegotiatesAfter] = renegotiatesAfterSeconds
             }
             if let debugLogKey = debugLogKey {
                 dict[S.debugLogKey] = debugLogKey
+            }
+            if let debugLogFormat = debugLogFormat {
+                dict[S.debugLogFormat] = debugLogFormat
             }
             return dict
         }

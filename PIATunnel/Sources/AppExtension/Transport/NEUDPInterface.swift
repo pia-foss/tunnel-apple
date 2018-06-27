@@ -22,7 +22,10 @@ class NEUDPInterface: NSObject, GenericSocket, LinkInterface {
     init(impl: NWUDPSession, maxDatagrams: Int = 200) {
         self.impl = impl
         self.maxDatagrams = maxDatagrams
-        endpoint = impl.endpoint
+        guard let hostEndpoint = impl.endpoint as? NWHostEndpoint else {
+            fatalError("Expected a NWHostEndpoint")
+        }
+        endpoint = hostEndpoint
         isActive = false
     }
     
@@ -32,7 +35,7 @@ class NEUDPInterface: NSObject, GenericSocket, LinkInterface {
     
     private var isActive: Bool
     
-    let endpoint: NWEndpoint
+    let endpoint: NWHostEndpoint
     
     var remoteAddress: String? {
         return (impl.resolvedEndpoint as? NWHostEndpoint)?.hostname
@@ -158,8 +161,17 @@ class NEUDPInterface: NSObject, GenericSocket, LinkInterface {
     
     let hardResetTimeout: TimeInterval = 5.0
     
-    func setReadHandler(_ handler: @escaping ([Data]?, Error?) -> Void) {
-        impl.setReadHandler(handler, maxDatagrams: maxDatagrams)
+    func setReadHandler(queue: DispatchQueue, _ handler: @escaping ([Data]?, Error?) -> Void) {
+
+        // WARNING: runs in Network.framework queue
+        impl.setReadHandler({ [weak self] (packets, error) in
+            guard let _ = self else {
+                return
+            }
+            queue.sync {
+                handler(packets, error)
+            }
+        }, maxDatagrams: maxDatagrams)
     }
     
     func writePacket(_ packet: Data, completionHandler: ((Error?) -> Void)?) {

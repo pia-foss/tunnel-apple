@@ -1,15 +1,18 @@
 PODS:
   - OpenSSL-Apple (1.1.0h)
-  - PIATunnel (1.1):
-    - PIATunnel/AppExtension (= 1.1)
-    - PIATunnel/Core (= 1.1)
-  - PIATunnel/AppExtension (1.1):
+  - PIATunnel (1.1.1):
+    - PIATunnel/AppExtension (= 1.1.1)
+    - PIATunnel/Core (= 1.1.1)
+  - PIATunnel/AppExtension (1.1.1):
     - PIATunnel/Core
     - SwiftyBeaver
-  - PIATunnel/Core (1.1):
+  - PIATunnel/Core (1.1.1):
     - OpenSSL-Apple (~> 1.1.0h)
+    - SBObjectiveCWrapper
     - SwiftyBeaver
-  - SwiftyBeaver (1.5.2)
+  - SBObjectiveCWrapper (1.4.0):
+    - SwiftyBeaver (~> 1.4.0)
+  - SwiftyBeaver (1.4.4)
 
 DEPENDENCIES:
   - PIATunnel (from `..`)
@@ -17,6 +20,7 @@ DEPENDENCIES:
 SPEC REPOS:
   https://github.com/cocoapods/specs.git:
     - OpenSSL-Apple
+    - SBObjectiveCWrapper
     - SwiftyBeaver
 
 EXTERNAL SOURCES:
@@ -25,9 +29,10 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   OpenSSL-Apple: cd153d705ef350eb834ae7ff5f21f792b51ed208
-  PIATunnel: d083f9c6e8c1114996b518e0a7f030f348dc3221
-  SwiftyBeaver: 85daaaa2b3ae6e31b7b55c99430e8b91dac088af
+  PIATunnel: ffe6a515ac98979ea5b69b6345b7af5035271f92
+  SBObjectiveCWrapper: 854ea56b37cd0031af2b1d6e12c2f965fc4ff86d
+  SwiftyBeaver: 25bd76281f49ca989ec2e3cbde9af89c15bc1432
 
-PODFILE CHECKSUM: 1199e89f72f37e986463243abe5442ffdc81274c
+PODFILE CHECKSUM: 371da118c4fd5937763c16ea185815a848d982b6
 
-COCOAPODS: 1.5.2
+COCOAPODS: 1.5.3

@@ -8,7 +8,8 @@
 
 import Foundation
 
-internal enum KeychainError: Error {
+/// :nodoc:
+public enum KeychainError: Error {
     case add
     
     case notFound
@@ -16,29 +17,30 @@ internal enum KeychainError: Error {
     case typeMismatch
 }
 
-internal class Keychain {
+/// :nodoc:
+public class Keychain {
     private let service: String?
 
     private let accessGroup: String?
 
-    internal init() {
+    public init() {
         service = Bundle.main.bundleIdentifier
         accessGroup = nil
     }
 
-    internal init(group: String) {
+    public init(group: String) {
         service = nil
         accessGroup = group
     }
     
-    internal init(team: String, group: String) {
+    public init(team: String, group: String) {
         service = nil
         accessGroup = "\(team).\(group)"
     }
     
     // MARK: Password
     
-    internal func set(password: String, for username: String) throws {
+    public func set(password: String, for username: String) throws {
         removePassword(for: username)
         
         var query = [String: Any]()
@@ -54,7 +56,7 @@ internal class Keychain {
         }
     }
     
-    @discardableResult internal func removePassword(for username: String) -> Bool {
+    @discardableResult public func removePassword(for username: String) -> Bool {
         var query = [String: Any]()
         setScope(query: &query)
         query[kSecClass as String] = kSecClassGenericPassword
@@ -64,7 +66,7 @@ internal class Keychain {
         return (status == errSecSuccess)
     }
 
-    internal func password(for username: String) throws -> String {
+    public func password(for username: String) throws -> String {
         var query = [String: Any]()
         setScope(query: &query)
         query[kSecClass as String] = kSecClassGenericPassword
@@ -86,7 +88,7 @@ internal class Keychain {
         return password
     }
 
-    internal func passwordReference(for username: String) throws -> Data {
+    public func passwordReference(for username: String) throws -> Data {
         var query = [String: Any]()
         query[kSecClass as String] = kSecClassGenericPassword
         setScope(query: &query)
@@ -106,7 +108,7 @@ internal class Keychain {
         return data
     }
     
-    internal static func password(for username: String, reference: Data) throws -> String {
+    public static func password(for username: String, reference: Data) throws -> String {
         var query = [String: Any]()
         query[kSecClass as String] = kSecClassGenericPassword
         query[kSecAttrAccount as String] = username
@@ -131,7 +133,7 @@ internal class Keychain {
     
     // https://forums.developer.apple.com/thread/13748
     
-    internal func add(publicKeyWithIdentifier identifier: String, data: Data) throws -> SecKey {
+    public func add(publicKeyWithIdentifier identifier: String, data: Data) throws -> SecKey {
         var query = [String: Any]()
         query[kSecClass as String] = kSecClassKey
         query[kSecAttrApplicationTag as String] = identifier
@@ -149,7 +151,7 @@ internal class Keychain {
         return try publicKey(withIdentifier: identifier)
     }
     
-    internal func publicKey(withIdentifier identifier: String) throws -> SecKey {
+    public func publicKey(withIdentifier identifier: String) throws -> SecKey {
         var query = [String: Any]()
         query[kSecClass as String] = kSecClassKey
         query[kSecAttrApplicationTag as String] = identifier
@@ -172,7 +174,7 @@ internal class Keychain {
         return result as! SecKey
     }
     
-    @discardableResult internal func remove(publicKeyWithIdentifier identifier: String) -> Bool {
+    @discardableResult public func remove(publicKeyWithIdentifier identifier: String) -> Bool {
         var query = [String: Any]()
         query[kSecClass as String] = kSecClassKey
         query[kSecAttrApplicationTag as String] = identifier

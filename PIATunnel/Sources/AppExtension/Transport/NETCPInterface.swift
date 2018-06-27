@@ -52,12 +52,12 @@ class NETCPInterface: NSObject, GenericSocket, LinkInterface {
         
         self.queue = queue
         queue.schedule(after: .milliseconds(activeTimeout)) { [weak self] in
-            guard let isActive = self?.isActive else {
+            guard let _self = self else {
                 return
             }
-            guard isActive else {
-                log.debug("Socket timed out waiting for activity, cancelling...")
-                self?.impl.cancel()
+            guard _self.isActive else {
+                _self.delegate?.socketShouldChangeProtocol(_self)
+                _self.delegate?.socketDidTimeout(_self)
                 return
             }
         }

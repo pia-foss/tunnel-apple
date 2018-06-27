@@ -30,7 +30,6 @@ class AppExtensionTests: XCTestCase {
         let appGroup = "group.com.privateinternetaccess"
         let endpoint = PIATunnelProvider.AuthenticatedEndpoint(
             hostname: "example.com",
-            port: "8080",
             username: "foo",
             password: "bar"
         )
@@ -47,7 +46,7 @@ class AppExtensionTests: XCTestCase {
         XCTAssertNotNil(proto)
         
         XCTAssertEqual(proto?.providerBundleIdentifier, identifier)
-        XCTAssertEqual(proto?.serverAddress, "\(endpoint.hostname):\(endpoint.port)")
+        XCTAssertEqual(proto?.serverAddress, endpoint.hostname)
         XCTAssertEqual(proto?.username, endpoint.username)
         XCTAssertEqual(proto?.passwordReference, try? Keychain(group: appGroup).passwordReference(for: endpoint.username))
 

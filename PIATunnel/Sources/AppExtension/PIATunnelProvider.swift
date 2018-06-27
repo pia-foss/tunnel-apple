@@ -113,7 +113,7 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
             return
         }
 
-        strategy = ConnectionStrategy(hostname: endpoint.hostname, configuration: cfg, port: endpoint.port)
+        strategy = ConnectionStrategy(hostname: endpoint.hostname, configuration: cfg)
 
         if var existingLog = cfg.existingLog {
             existingLog.append("")
@@ -295,6 +295,19 @@ extension PIATunnelProvider: GenericSocketDelegate {
     
     // MARK: GenericSocketDelegate (tunnel queue)
     
+    func socketDidTimeout(_ socket: GenericSocket) {
+        log.debug("Socket timed out waiting for activity, cancelling...")
+        reasserting = true
+        socket.shutdown()
+    }
+    
+    func socketShouldChangeProtocol(_ socket: GenericSocket) {
+        guard strategy.tryNextProtocol() else {
+            disposeTunnel(error: ProviderError.exhaustedProtocols)
+            return
+        }
+    }
+    
     func socketDidBecomeActive(_ socket: GenericSocket) {
         proxy?.setLink(link: socket.link())
     }
@@ -313,6 +326,11 @@ extension PIATunnelProvider: GenericSocketDelegate {
             log.debug("Link failures so far: \(linkFailures) (max = \(maxLinkFailures))")
         }
         
+        // treat negotiation timeout as socket timeout, UDP is connection-less
+        if proxy.stopError as? SessionError == SessionError.negotiationTimeout {
+            socketShouldChangeProtocol(socket)
+        }
+
         finishTunnelDisconnection(error: shutdownError)
         if reasserting {
             guard (linkFailures < maxLinkFailures) else {

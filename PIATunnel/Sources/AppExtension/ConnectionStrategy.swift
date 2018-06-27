@@ -23,13 +23,13 @@ class ConnectionStrategy {
     
     private var currentProtocolIndex = 0
 
-    init(hostname: String, configuration: PIATunnelProvider.Configuration, port: String) {
+    init(hostname: String, configuration: PIATunnelProvider.Configuration) {
         precondition(!configuration.prefersResolvedAddresses || !(configuration.resolvedAddresses?.isEmpty ?? true))
         
         self.hostname = hostname
-        self.prefersResolvedAddresses = configuration.prefersResolvedAddresses
-        self.resolvedAddresses = configuration.resolvedAddresses
-        self.endpointProtocols = [PIATunnelProvider.EndpointProtocol(configuration.socketType, port)]
+        prefersResolvedAddresses = configuration.prefersResolvedAddresses
+        resolvedAddresses = configuration.resolvedAddresses
+        endpointProtocols = configuration.endpointProtocols
     }
 
     func createSocket(from provider: NEProvider, timeout: Int, preferredAddress: String? = nil, completionHandler: @escaping (GenericSocket?, Error?) -> Void) {
@@ -74,6 +74,17 @@ class ConnectionStrategy {
         }
     }
 
+    func tryNextProtocol() -> Bool {
+        let next = currentProtocolIndex + 1
+        guard next < endpointProtocols.count else {
+            log.debug("No more protocols available")
+            return false
+        }
+        currentProtocolIndex = next
+        log.debug("Fall back to next protocol: \(currentProtocol())")
+        return true
+    }
+    
     private func currentProtocol() -> PIATunnelProvider.EndpointProtocol {
         return endpointProtocols[currentProtocolIndex]
     }

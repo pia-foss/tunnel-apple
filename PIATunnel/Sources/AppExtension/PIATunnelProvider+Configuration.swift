@@ -61,6 +61,11 @@ extension PIATunnelProvider {
         /// Certificate with ECC based on secp521r1 curve.
         case ecc521r1 = "ECC-521r1"
         
+        /// Custom certificate.
+        ///
+        /// - Seealso:
+        case custom = "Custom"
+        
         private static let allDigests: [Handshake: String] = [
             .rsa2048: "e2fccccaba712ccc68449b1c56427ac1",
             .rsa3072: "2fcdb65712df9db7dae34a1f4a84e32d",
@@ -74,7 +79,15 @@ extension PIATunnelProvider {
             return Handshake.allDigests[self]!
         }
         
-        func write(to url: URL) throws {
+        func write(to url: URL, custom: String? = nil) throws {
+            precondition((self != .custom) || (custom != nil))
+            
+            // custom certificate?
+            if self == .custom, let content = custom {
+                try content.write(to: url, atomically: true, encoding: .ascii)
+                return
+            }
+
             let bundle = Bundle(for: PIATunnelProvider.self)
             let certName = "PIA-\(rawValue)"
             guard let certUrl = bundle.url(forResource: certName, withExtension: "pem") else {
@@ -203,6 +216,9 @@ extension PIATunnelProvider {
         /// The handshake certificate.
         public var handshake: Handshake
         
+        /// The custom CA certificate in PEM format in case `handshake == .custom`. Ignored otherwise.
+        public var ca: String?
+        
         /// The MTU of the tunnel.
         public var mtu: NSNumber
         
@@ -235,6 +251,7 @@ extension PIATunnelProvider {
             cipher = .aes128cbc
             digest = .sha1
             handshake = .rsa2048
+            ca = nil
             mtu = 1500
             renegotiatesAfterSeconds = nil
             shouldDebug = false
@@ -260,6 +277,12 @@ extension PIATunnelProvider {
             var handshake: Handshake = fallbackHandshake
             if let handshakeCertificate = providerConfiguration[S.handshakeCertificate] as? String {
                 handshake = Handshake(rawValue: handshakeCertificate) ?? fallbackHandshake
+            }
+            if handshake == .custom {
+                guard let ca = providerConfiguration[S.ca] as? String else {
+                    throw ProviderError.configuration(field: "protocolConfiguration.providerConfiguration[\(S.ca)]")
+                }
+                self.ca = ca
             }
 
             self.appGroup = appGroup
@@ -322,6 +345,7 @@ extension PIATunnelProvider {
                 cipher: cipher,
                 digest: digest,
                 handshake: handshake,
+                ca: ca,
                 mtu: mtu,
                 renegotiatesAfterSeconds: renegotiatesAfterSeconds,
                 shouldDebug: shouldDebug,
@@ -347,6 +371,8 @@ extension PIATunnelProvider {
             static let digestAlgorithm = "DigestAlgorithm"
             
             static let handshakeCertificate = "HandshakeCertificate"
+            
+            static let ca = "CA"
             
             static let mtu = "MTU"
             
@@ -379,6 +405,9 @@ extension PIATunnelProvider {
         
         /// - Seealso: `PIATunnelProvider.ConfigurationBuilder.handshake`
         public let handshake: Handshake
+        
+        /// - Seealso: `PIATunnelProvider.ConfigurationBuilder.ca`
+        public let ca: String?
         
         /// - Seealso: `PIATunnelProvider.ConfigurationBuilder.mtu`
         public let mtu: NSNumber
@@ -442,6 +471,9 @@ extension PIATunnelProvider {
                 S.mtu: mtu,
                 S.debug: shouldDebug
             ]
+            if let ca = ca {
+                dict[S.ca] = ca
+            }
             if let resolvedAddresses = resolvedAddresses {
                 dict[S.resolvedAddresses] = resolvedAddresses
             }

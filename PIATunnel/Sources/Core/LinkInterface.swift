@@ -32,5 +32,11 @@ public protocol LinkInterface: IOInterface {
     /// Timeout in seconds for HARD_RESET response.
     var hardResetTimeout: TimeInterval { get }
 
+    /**
+     Returns an optional payload to attach to the HARD_RESET packet.
+     
+     - Parameter encryption: The `SessionProxy.EncryptionParameters` to establish for this session.
+     - Returns: The optional HARD_RESET payload.
+     */
     func hardReset(with encryption: SessionProxy.EncryptionParameters) -> Data?
 }

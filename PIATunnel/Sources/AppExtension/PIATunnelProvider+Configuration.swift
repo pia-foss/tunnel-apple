@@ -108,18 +108,22 @@ extension PIATunnelProvider {
         
         /// The remote port.
         public let port: String
+        
+        /// The communication type.
+        public let communicationType: CommunicationType
 
         /// :nodoc:
-        public init(_ socketType: SocketType, _ port: String) {
+        public init(_ socketType: SocketType, _ port: String, _ communicationType: CommunicationType) {
             self.socketType = socketType
             self.port = port
+            self.communicationType = communicationType
         }
         
         // MARK: Equatable
         
         /// :nodoc:
         public static func ==(lhs: EndpointProtocol, rhs: EndpointProtocol) -> Bool {
-            return (lhs.socketType == rhs.socketType) && (lhs.port == rhs.port)
+            return (lhs.socketType == rhs.socketType) && (lhs.port == rhs.port) && (lhs.communicationType == rhs.communicationType)
         }
         
         // MARK: CustomStringConvertible
@@ -227,7 +231,7 @@ extension PIATunnelProvider {
             self.appGroup = appGroup
             prefersResolvedAddresses = false
             resolvedAddresses = nil
-            endpointProtocols = [EndpointProtocol(.udp, "1194")]
+            endpointProtocols = [EndpointProtocol(.udp, "1194", .pia)]
             cipher = .aes128cbc
             digest = .sha1
             handshake = .rsa2048
@@ -267,15 +271,19 @@ extension PIATunnelProvider {
             }
             endpointProtocols = try endpointProtocolsStrings.map {
                 let components = $0.components(separatedBy: ":")
-                guard components.count == 2 else {
-                    throw ProviderError.configuration(field: "protocolConfiguration.providerConfiguration[\(S.endpointProtocols)] entries must be in the form 'socketType:port'")
+                guard components.count == 3 else {
+                    throw ProviderError.configuration(field: "protocolConfiguration.providerConfiguration[\(S.endpointProtocols)] entries must be in the form 'socketType:port:communicationType'")
                 }
                 let socketTypeString = components[0]
                 let port = components[1]
+                let communicationTypeString = components[2]
                 guard let socketType = SocketType(rawValue: socketTypeString) else {
                     throw ProviderError.configuration(field: "protocolConfiguration.providerConfiguration[\(S.endpointProtocols)] unrecognized socketType '\(socketTypeString)'")
                 }
-                return EndpointProtocol(socketType, port)
+                guard let communicationType = CommunicationType(rawValue: communicationTypeString) else {
+                    throw ProviderError.configuration(field: "protocolConfiguration.providerConfiguration[\(S.endpointProtocols)] unrecognized communicationType '\(communicationTypeString)'")
+                }
+                return EndpointProtocol(socketType, port, communicationType)
             }
             
             self.cipher = cipher
@@ -425,7 +433,9 @@ extension PIATunnelProvider {
             var dict: [String: Any] = [
                 S.appGroup: appGroup,
                 S.prefersResolvedAddresses: prefersResolvedAddresses,
-                S.endpointProtocols: endpointProtocols.map { "\($0.socketType.rawValue):\($0.port)" },
+                S.endpointProtocols: endpointProtocols.map {
+                    "\($0.socketType.rawValue):\($0.port):\($0.communicationType.rawValue)"
+                },
                 S.cipherAlgorithm: cipher.rawValue,
                 S.digestAlgorithm: digest.rawValue,
                 S.handshakeCertificate: handshake.rawValue,

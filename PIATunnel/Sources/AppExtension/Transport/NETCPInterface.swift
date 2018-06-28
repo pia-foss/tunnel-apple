@@ -19,8 +19,9 @@ class NETCPInterface: NSObject, GenericSocket, LinkInterface {
     
     private let maxPacketSize: Int
 
-    init(impl: NWTCPConnection, maxPacketSize: Int = 32768) {
+    init(impl: NWTCPConnection, communicationType: CommunicationType, maxPacketSize: Int = 32768) {
         self.impl = impl
+        self.communicationType = communicationType
         self.maxPacketSize = maxPacketSize
         guard let hostEndpoint = impl.endpoint as? NWHostEndpoint else {
             fatalError("Expected a NWHostEndpoint")
@@ -79,7 +80,7 @@ class NETCPInterface: NSObject, GenericSocket, LinkInterface {
         guard impl.hasBetterPath else {
             return nil
         }
-        return NETCPInterface(impl: NWTCPConnection(upgradeFor: impl))
+        return NETCPInterface(impl: NWTCPConnection(upgradeFor: impl), communicationType: communicationType)
     }
     
     func link() -> LinkInterface {
@@ -156,6 +157,8 @@ class NETCPInterface: NSObject, GenericSocket, LinkInterface {
     var packetBufferSize: Int {
         return maxPacketSize
     }
+    
+    let communicationType: CommunicationType
     
     let negotiationTimeout: TimeInterval = 10.0
     

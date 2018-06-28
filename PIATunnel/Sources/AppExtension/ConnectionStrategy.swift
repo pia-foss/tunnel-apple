@@ -116,11 +116,11 @@ private extension NEProvider {
         switch endpointProtocol.socketType {
         case .udp:
             let impl = createUDPSession(to: endpoint, from: nil)
-            return NEUDPInterface(impl: impl)
+            return NEUDPInterface(impl: impl, communicationType: endpointProtocol.communicationType)
             
         case .tcp:
             let impl = createTCPConnection(to: endpoint, enableTLS: false, tlsParameters: nil, delegate: nil)
-            return NETCPInterface(impl: impl)
+            return NETCPInterface(impl: impl, communicationType: endpointProtocol.communicationType)
         }
     }
 }

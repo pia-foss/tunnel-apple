@@ -23,9 +23,20 @@ public protocol LinkInterface: IOInterface {
     /// The number of packets that this interface is able to bufferize.
     var packetBufferSize: Int { get }
 
+    /// The language spoken over this link.
+    var communicationType: CommunicationType { get }
+    
     /// Timeout in seconds for negotiation start.
     var negotiationTimeout: TimeInterval { get }
 
     /// Timeout in seconds for HARD_RESET response.
     var hardResetTimeout: TimeInterval { get }
+
+    /**
+     Returns an optional payload to attach to the HARD_RESET packet.
+     
+     - Parameter encryption: The `SessionProxy.EncryptionParameters` to establish for this session.
+     - Returns: The optional HARD_RESET payload.
+     */
+    func hardReset(with encryption: SessionProxy.EncryptionParameters) -> Data?
 }

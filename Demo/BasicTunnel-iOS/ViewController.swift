@@ -134,7 +134,7 @@ class ViewController: UIViewController, URLSessionDataDelegate {
 
             var builder = PIATunnelProvider.ConfigurationBuilder(appGroup: ViewController.APP_GROUP)
             let socketType: PIATunnelProvider.SocketType = (self.switchTCP.isOn ? .tcp : .udp)
-            builder.endpointProtocols = [PIATunnelProvider.EndpointProtocol(socketType, port)]
+            builder.endpointProtocols = [PIATunnelProvider.EndpointProtocol(socketType, port, .pia)]
             builder.cipher = ViewController.CIPHER
             builder.digest = ViewController.DIGEST
             builder.handshake = ViewController.HANDSHAKE

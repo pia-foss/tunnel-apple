@@ -135,7 +135,7 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
         }
         
         do {
-            try cfg.handshake.write(to: tmpCaURL)
+            try cfg.handshake.write(to: tmpCaURL, custom: cfg.ca)
         } catch {
             completionHandler(ProviderError.certificateSerialization)
             return

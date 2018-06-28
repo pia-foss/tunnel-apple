@@ -12,8 +12,11 @@ extension LinkInterface {
     func hardReset(with encryption: SessionProxy.EncryptionParameters) -> Data? {
         switch communicationType {
         case .pia:
+            guard let caDigest = encryption.caDigest else {
+                fatalError("PIA communication requires CA MD5 digest")
+            }
             let settings = TunnelSettings(
-                caMd5Digest: encryption.caDigest,
+                caMd5Digest: caDigest,
                 cipherName: encryption.cipherName,
                 digestName: encryption.digestName
             )

@@ -1020,7 +1020,13 @@ public class SessionProxy {
             log.debug("Setup keys")
         }
 
-        let proxy = EncryptionProxy(encryption.cipherName, encryption.digestName, auth, sessionId, remoteSessionId)
+        let proxy: EncryptionProxy
+        do {
+            proxy = try EncryptionProxy(encryption.cipherName, encryption.digestName, auth, sessionId, remoteSessionId)
+        } catch let e {
+            deferStop(.shutdown, e)
+            return
+        }
         let encrypter = proxy.encrypter()
         let decrypter = proxy.decrypter()
         if Configuration.usesDataOptimization {

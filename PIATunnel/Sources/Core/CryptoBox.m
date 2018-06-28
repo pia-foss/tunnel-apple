@@ -14,9 +14,10 @@
 #import "Allocation.h"
 #import "Errors.h"
 
-#define CRYPTO_TRACK_STATUS(ret) if (ret) ret =
+#define CRYPTO_SUCCESS(ret) (ret > 0)
+#define CRYPTO_TRACK_STATUS(ret) if (ret > 0) ret =
 #define CRYPTO_RETURN_STATUS(ret)\
-if (!ret) {\
+if (ret <= 0) {\
     if (error) {\
         *error = PIATunnelErrorWithCode(PIATunnelErrorCodeCryptoBoxEncryption);\
     }\
@@ -278,7 +279,7 @@ void CryptoBoxEraseBytesSecurely(uint8_t *bytes, int length)
     CRYPTO_TRACK_STATUS(code) HMAC_Update(self.hmacCtxDec, bytes + self.digestLength, length - self.digestLength);
     CRYPTO_TRACK_STATUS(code) HMAC_Final(self.hmacCtxDec, self.bufferDecHMAC, &l1);
 
-    if (code && CRYPTO_memcmp(self.bufferDecHMAC, bytes, self.digestLength) != 0) {
+    if (CRYPTO_SUCCESS(code) && CRYPTO_memcmp(self.bufferDecHMAC, bytes, self.digestLength) != 0) {
         if (error) {
             *error = PIATunnelErrorWithCode(PIATunnelErrorCodeCryptoBoxHMAC);
         }

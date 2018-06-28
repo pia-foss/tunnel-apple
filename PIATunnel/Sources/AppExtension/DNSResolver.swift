@@ -61,11 +61,11 @@ class DNSResolver {
         completionHandler(ipAddresses, nil)
     }
 
-    static func string(fromIPv4 ipv4: UInt32) -> String {
-        let a = UInt8(ipv4) & 0xff
-        let b = UInt8(ipv4 >> 8) & 0xff
-        let c = UInt8(ipv4 >> 16) & 0xff
-        let d = UInt8(ipv4 >> 24) & 0xff
+    public static func string(fromIPv4 ipv4: UInt32) -> String {
+        let a = UInt8(ipv4 & UInt32(0xff))
+        let b = UInt8((ipv4 >> 8) & UInt32(0xff))
+        let c = UInt8((ipv4 >> 16) & UInt32(0xff))
+        let d = UInt8((ipv4 >> 24) & UInt32(0xff))
 
         return "\(a).\(b).\(c).\(d)"
     }

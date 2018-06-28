@@ -69,4 +69,7 @@ class DNSResolver {
 
         return "\(a).\(b).\(c).\(d)"
     }
+    
+    private init() {
+    }
 }

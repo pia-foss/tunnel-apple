@@ -11,12 +11,13 @@
 extern NSString *const PIATunnelErrorDomain;
 
 typedef NS_ENUM(int, PIATunnelErrorCode) {
-    PIATunnelErrorCodeCryptoBoxRandomGenerator = 1,
+    PIATunnelErrorCodeCryptoBoxRandomGenerator = 101,
     PIATunnelErrorCodeCryptoBoxHMAC,
-    PIATunnelErrorCodeTLSBoxCA,
+    PIATunnelErrorCodeCryptoBoxEncryption,
+    PIATunnelErrorCodeTLSBoxCA = 201,
     PIATunnelErrorCodeTLSBoxHandshake,
     PIATunnelErrorCodeTLSBoxGeneric,
-    PIATunnelErrorCodeDataPathOverflow
+    PIATunnelErrorCodeDataPathOverflow = 301
 };
 
 static inline NSError *PIATunnelErrorWithCode(PIATunnelErrorCode code) {

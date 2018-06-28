@@ -25,6 +25,8 @@
 		0EA8E20D2024D5D500A92DB6 /* PIA-RSA-2048.pem in Resources */ = {isa = PBXBuildFile; fileRef = 0EFEB4822006D3D000F81029 /* PIA-RSA-2048.pem */; };
 		0EA8E20E2024D5D500A92DB6 /* PIA-RSA-3072.pem in Resources */ = {isa = PBXBuildFile; fileRef = 0EFEB4802006D3D000F81029 /* PIA-RSA-3072.pem */; };
 		0EA8E20F2024D5D500A92DB6 /* PIA-RSA-4096.pem in Resources */ = {isa = PBXBuildFile; fileRef = 0EFEB4812006D3D000F81029 /* PIA-RSA-4096.pem */; };
+		0EAAD70920E4F2BC0088754A /* CommunicationType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EAAD70820E4F2BC0088754A /* CommunicationType.swift */; };
+		0EAAD70A20E4F2BC0088754A /* CommunicationType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EAAD70820E4F2BC0088754A /* CommunicationType.swift */; };
 		0EBBF2E52084FE6F00E36B40 /* GenericSocket.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EBBF2E42084FE6F00E36B40 /* GenericSocket.swift */; };
 		0EBBF2E62084FE6F00E36B40 /* GenericSocket.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EBBF2E42084FE6F00E36B40 /* GenericSocket.swift */; };
 		0EBBF2F3208505D300E36B40 /* NEUDPInterface.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EBBF2EC2085055100E36B40 /* NEUDPInterface.swift */; };
@@ -174,6 +176,7 @@
 		0EA8E2042024D4B100A92DB6 /* PIA-ECC-256k1.pem */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "PIA-ECC-256k1.pem"; sourceTree = "<group>"; };
 		0EA8E2052024D4B100A92DB6 /* PIA-ECC-256r1.pem */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "PIA-ECC-256r1.pem"; sourceTree = "<group>"; };
 		0EA8E2062024D4B200A92DB6 /* PIA-ECC-521r1.pem */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "PIA-ECC-521r1.pem"; sourceTree = "<group>"; };
+		0EAAD70820E4F2BC0088754A /* CommunicationType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommunicationType.swift; sourceTree = "<group>"; };
 		0EBBF2E42084FE6F00E36B40 /* GenericSocket.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GenericSocket.swift; sourceTree = "<group>"; };
 		0EBBF2EA2085055100E36B40 /* NWUDPSessionState+Description.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "NWUDPSessionState+Description.swift"; sourceTree = "<group>"; };
 		0EBBF2EB2085055100E36B40 /* NETunnelInterface.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NETunnelInterface.swift; sourceTree = "<group>"; };
@@ -359,6 +362,7 @@
 				0EFEB42E2006D3C800F81029 /* Allocation.h */,
 				0EFEB4462006D3C800F81029 /* Allocation.m */,
 				0EFEB43A2006D3C800F81029 /* Authenticator.swift */,
+				0EAAD70820E4F2BC0088754A /* CommunicationType.swift */,
 				0EFEB44A2006D3C800F81029 /* Configuration.swift */,
 				0EFEB4402006D3C800F81029 /* CryptoBox.h */,
 				0EFEB4322006D3C800F81029 /* CryptoBox.m */,
@@ -779,6 +783,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				0EBBF2F5208505D700E36B40 /* NETunnelInterface.swift in Sources */,
+				0EAAD70920E4F2BC0088754A /* CommunicationType.swift in Sources */,
 				0EFEB45E2006D3C800F81029 /* PointerBasedDataPath.m in Sources */,
 				0EFEB4732006D3C800F81029 /* LinkInterface.swift in Sources */,
 				0EBBF2F8208505DD00E36B40 /* NWUDPSessionState+Description.swift in Sources */,
@@ -825,6 +830,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				0EBBF2F6208505D700E36B40 /* NETunnelInterface.swift in Sources */,
+				0EAAD70A20E4F2BC0088754A /* CommunicationType.swift in Sources */,
 				0EFEB4A12006D7F300F81029 /* LinkInterface.swift in Sources */,
 				0EFEB4872006D7C400F81029 /* PIATunnelProvider+Configuration.swift in Sources */,
 				0EBBF2F7208505DD00E36B40 /* NWUDPSessionState+Description.swift in Sources */,

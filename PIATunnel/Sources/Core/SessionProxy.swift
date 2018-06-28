@@ -87,10 +87,10 @@ public class SessionProxy {
         public let caPath: String
 
         /// The MD5 digest of the CA (computed from DER format).
-        public let caDigest: String
+        public let caDigest: String?
 
         /// :nodoc:
-        public init(_ cipherName: String, _ digestName: String, _ caPath: String, _ caDigest: String) {
+        public init(_ cipherName: String, _ digestName: String, _ caPath: String, _ caDigest: String?) {
             self.cipherName = cipherName
             self.digestName = digestName
             self.caPath = caPath

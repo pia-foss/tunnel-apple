@@ -75,8 +75,8 @@ extension PIATunnelProvider {
             .ecc521r1: "82446e0c80706e33e6e793cebf1b0c59"
         ]
         
-        var digest: String {
-            return Handshake.allDigests[self]!
+        var digest: String? {
+            return Handshake.allDigests[self]
         }
         
         func write(to url: URL, custom: String? = nil) throws {

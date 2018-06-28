@@ -8,10 +8,11 @@
 
 import Foundation
 
-class DNSResolver {
+/// :nodoc:
+public class DNSResolver {
     private static let queue = DispatchQueue(label: "DNSResolver")
 
-    static func resolve(_ hostname: String, timeout: Int, completionHandler: @escaping ([String]?, Error?) -> Void) {
+    public static func resolve(_ hostname: String, timeout: Int, queue: DispatchQueue, completionHandler: @escaping ([String]?, Error?) -> Void) {
         var pendingHandler: (([String]?, Error?) -> Void)? = completionHandler
         let host = CFHostCreateWithName(nil, hostname as CFString).takeRetainedValue()
         DNSResolver.queue.async {
@@ -19,10 +20,14 @@ class DNSResolver {
             guard let handler = pendingHandler else {
                 return
             }
-            DNSResolver.didResolve(host: host, completionHandler: handler)
-            pendingHandler = nil
+            DNSResolver.didResolve(host: host) { (addrs, error) in
+                queue.async {
+                    handler(addrs, error)
+                    pendingHandler = nil
+                }
+            }
         }
-        DNSResolver.queue.asyncAfter(deadline: .now() + .milliseconds(timeout)) {
+        queue.asyncAfter(deadline: .now() + .milliseconds(timeout)) {
             guard let handler = pendingHandler else {
                 return
             }

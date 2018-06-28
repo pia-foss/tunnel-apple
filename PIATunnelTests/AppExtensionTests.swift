@@ -67,7 +67,7 @@ class AppExtensionTests: XCTestCase {
     
     func testDNSResolver() {
         let exp = expectation(description: "DNS")
-        DNSResolver.resolve("djsbjhcbjzhbxjnvsd.com", timeout: 1000) { (addrs, error) in
+        DNSResolver.resolve("djsbjhcbjzhbxjnvsd.com", timeout: 1000, queue: DispatchQueue.main) { (addrs, error) in
             defer {
                 exp.fulfill()
             }

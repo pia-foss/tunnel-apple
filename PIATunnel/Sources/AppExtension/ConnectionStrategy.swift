@@ -32,7 +32,12 @@ class ConnectionStrategy {
         endpointProtocols = configuration.endpointProtocols
     }
 
-    func createSocket(from provider: NEProvider, timeout: Int, preferredAddress: String? = nil, completionHandler: @escaping (GenericSocket?, Error?) -> Void) {
+    func createSocket(
+        from provider: NEProvider,
+        timeout: Int,
+        preferredAddress: String? = nil,
+        queue: DispatchQueue,
+        completionHandler: @escaping (GenericSocket?, Error?) -> Void) {
         
         // reuse preferred address
         if let preferredAddress = preferredAddress {
@@ -52,8 +57,8 @@ class ConnectionStrategy {
         
         // fall back to DNS
         log.debug("DNS resolve hostname: \(hostname)")
-        DNSResolver.resolve(hostname, timeout: timeout) { (addresses, error) in
-
+        DNSResolver.resolve(hostname, timeout: timeout, queue: queue) { (addresses, error) in
+            
             // refresh resolved addresses
             if let resolved = addresses, !resolved.isEmpty {
                 self.resolvedAddresses = resolved

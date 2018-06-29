@@ -401,7 +401,7 @@ public class SessionProxy {
             if let packets = newPackets, !packets.isEmpty {
                 self?.maybeRenegotiate()
 
-//                log.verbose("Received \(packets.count) packets from \(self.linkName)")
+//                log.verbose("Received \(packets.count) packets from LINK")
                 self?.receiveLink(packets: packets)
             }
         }
@@ -433,7 +433,7 @@ public class SessionProxy {
         var dataPacketsByKey = [UInt8: [Data]]()
         
         for packet in packets {
-//            log.verbose("Received data from \(linkName) (\(packet.count) bytes): \(packet.toHex())")
+//            log.verbose("Received data from LINK (\(packet.count) bytes): \(packet.toHex())")
 
             guard let firstByte = packet.first else {
                 return
@@ -1083,7 +1083,7 @@ public class SessionProxy {
                         return
                     }
                 }
-//                log.verbose("Data: \(encryptedPackets.count) packets successfully written to \(self.linkName)")
+//                log.verbose("Data: \(encryptedPackets.count) packets successfully written to LINK")
             }
         } catch let e {
             deferStop(.reconnect, e)

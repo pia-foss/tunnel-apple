@@ -19,6 +19,9 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
     
     // MARK: Tweaks
     
+    /// An optional string describing host app version on tunnel start.
+    public var appVersion: String?
+
     /// The log separator between sessions.
     public var logSeparator = "--- EOF ---"
     
@@ -141,7 +144,7 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
             return
         }
 
-        cfg.print()
+        cfg.print(appVersion: appVersion)
         
         let caPath = tmpCaURL.path
 //        log.info("Temporary CA is stored to: \(caPath)")

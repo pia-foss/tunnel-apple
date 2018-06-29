@@ -516,7 +516,11 @@ extension PIATunnelProvider {
             return protocolConfiguration
         }
         
-        func print() {
+        func print(appVersion: String?) {
+            if let appVersion = appVersion {
+                log.info("App version: \(appVersion)")
+            }
+            
 //            log.info("Address: \(endpoint.hostname):\(endpoint.port)")
             log.info("Protocols: \(endpointProtocols)")
             log.info("Cipher: \(cipher.rawValue)")

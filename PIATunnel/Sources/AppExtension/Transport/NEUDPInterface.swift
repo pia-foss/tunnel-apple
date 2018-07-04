@@ -15,14 +15,23 @@ private let log = SwiftyBeaver.self
 class NEUDPInterface: NSObject, GenericSocket, LinkInterface {
     private static var linkContext = 0
     
+    private static let defaultMaxDatagrams: Int = {
+        if #available(iOS 12, *) {
+            return 1
+        } else {
+            return 200
+        }
+    }()
+    
     private let impl: NWUDPSession
     
     private let maxDatagrams: Int
 
-    init(impl: NWUDPSession, communicationType: CommunicationType, maxDatagrams: Int = 200) {
+    init(impl: NWUDPSession, communicationType: CommunicationType, maxDatagrams: Int? = nil) {
         self.impl = impl
         self.communicationType = communicationType
-        self.maxDatagrams = maxDatagrams
+        self.maxDatagrams = maxDatagrams ?? NEUDPInterface.defaultMaxDatagrams
+
         guard let hostEndpoint = impl.endpoint as? NWHostEndpoint else {
             fatalError("Expected a NWHostEndpoint")
         }

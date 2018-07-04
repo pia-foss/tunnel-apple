@@ -14,6 +14,17 @@
 #import "Allocation.h"
 #import "Errors.h"
 
+#define CRYPTO_SUCCESS(ret) (ret > 0)
+#define CRYPTO_TRACK_STATUS(ret) if (ret > 0) ret =
+#define CRYPTO_RETURN_STATUS(ret)\
+if (ret <= 0) {\
+    if (error) {\
+        *error = PIATunnelErrorWithCode(PIATunnelErrorCodeCryptoBoxEncryption);\
+    }\
+    return NO;\
+}\
+return YES;
+
 const NSInteger CryptoBoxMaxHMACLength = 100;
 
 @interface CryptoBoxEncrypter : NSObject <Encrypter>
@@ -44,9 +55,9 @@ const NSInteger CryptoBoxMaxHMACLength = 100;
     return [self.box encryptData:data offset:offset error:error];
 }
 
-- (int)encryptBytes:(const uint8_t *)bytes length:(int)length dest:(uint8_t *)dest error:(NSError *__autoreleasing *)error
+- (BOOL)encryptBytes:(const uint8_t *)bytes length:(int)length dest:(uint8_t *)dest destLength:(int *)destLength error:(NSError *__autoreleasing *)error
 {
-    return [self.box encryptBytes:bytes length:length dest:dest error:error];
+    return [self.box encryptBytes:bytes length:length dest:dest destLength:destLength error:error];
 }
 
 @end
@@ -81,9 +92,9 @@ const NSInteger CryptoBoxMaxHMACLength = 100;
     return [self.box decryptData:data offset:offset error:error];
 }
 
-- (int)decryptBytes:(const uint8_t *)bytes length:(int)length dest:(uint8_t *)dest error:(NSError *__autoreleasing *)error
+- (BOOL)decryptBytes:(const uint8_t *)bytes length:(int)length dest:(uint8_t *)dest destLength:(int *)destLength error:(NSError *__autoreleasing *)error
 {
-    return [self.box decryptBytes:bytes length:length dest:dest error:error];
+    return [self.box decryptBytes:bytes length:length dest:dest destLength:destLength error:error];
 }
 
 @end
@@ -204,37 +215,40 @@ void CryptoBoxEraseBytesSecurely(uint8_t *bytes, int length)
     const int maxOutputSize = (int)safe_crypto_capacity(data.length, self.overheadLength);
 
     NSMutableData *dest = [[NSMutableData alloc] initWithLength:maxOutputSize];
-    const int encryptedLength = [self encryptBytes:bytes length:length dest:dest.mutableBytes error:error];
-    if (encryptedLength < 0) {
+    int encryptedLength = INT_MAX;
+    if (![self encryptBytes:bytes length:length dest:dest.mutableBytes destLength:&encryptedLength error:error]) {
         return nil;
     }
     dest.length = encryptedLength;
     return dest;
 }
 
-- (int)encryptBytes:(const uint8_t *)bytes length:(int)length dest:(uint8_t *)dest error:(NSError *__autoreleasing *)error
+- (BOOL)encryptBytes:(const uint8_t *)bytes length:(int)length dest:(uint8_t *)dest destLength:(int *)destLength error:(NSError *__autoreleasing *)error
 {
     uint8_t *outIV = dest + self.digestLength;
     uint8_t *outEncrypted = dest + self.digestLength + self.cipherIVLength;
-    int l1, l2;
-    unsigned int l3;
+    int l1 = 0, l2 = 0;
+    unsigned int l3 = 0;
+    int code = 1;
     
     if (RAND_bytes(outIV, self.cipherIVLength) != 1) {
         if (error) {
             *error = PIATunnelErrorWithCode(PIATunnelErrorCodeCryptoBoxRandomGenerator);
         }
-        return -1;
+        return NO;
     }
 
-    EVP_CipherInit(self.cipherCtxEnc, NULL, NULL, outIV, -1);
-    EVP_CipherUpdate(self.cipherCtxEnc, outEncrypted, &l1, bytes, length);
-    EVP_CipherFinal(self.cipherCtxEnc, &outEncrypted[l1], &l2);
+    CRYPTO_TRACK_STATUS(code) EVP_CipherInit(self.cipherCtxEnc, NULL, NULL, outIV, -1);
+    CRYPTO_TRACK_STATUS(code) EVP_CipherUpdate(self.cipherCtxEnc, outEncrypted, &l1, bytes, length);
+    CRYPTO_TRACK_STATUS(code) EVP_CipherFinal(self.cipherCtxEnc, &outEncrypted[l1], &l2);
     
-    HMAC_Init_ex(self.hmacCtxEnc, NULL, 0, NULL, NULL);
-    HMAC_Update(self.hmacCtxEnc, outIV, l1 + l2 + self.cipherIVLength);
-    HMAC_Final(self.hmacCtxEnc, dest, &l3);
+    CRYPTO_TRACK_STATUS(code) HMAC_Init_ex(self.hmacCtxEnc, NULL, 0, NULL, NULL);
+    CRYPTO_TRACK_STATUS(code) HMAC_Update(self.hmacCtxEnc, outIV, l1 + l2 + self.cipherIVLength);
+    CRYPTO_TRACK_STATUS(code) HMAC_Final(self.hmacCtxEnc, dest, &l3);
     
-    return l1 + l2 + self.cipherIVLength + self.digestLength;
+    *destLength = l1 + l2 + self.cipherIVLength + self.digestLength;
+
+    CRYPTO_RETURN_STATUS(code)
 }
 
 - (NSData *)decryptData:(NSData *)data offset:(NSInteger)offset error:(NSError *__autoreleasing *)error
@@ -246,60 +260,67 @@ void CryptoBoxEraseBytesSecurely(uint8_t *bytes, int length)
     const int maxOutputSize = (int)safe_crypto_capacity(data.length, self.overheadLength);
 
     NSMutableData *dest = [[NSMutableData alloc] initWithLength:maxOutputSize];
-    const int decryptedLength = [self decryptBytes:bytes length:length dest:dest.mutableBytes error:error];
-    if (decryptedLength < 0) {
+    int decryptedLength;
+    if (![self decryptBytes:bytes length:length dest:dest.mutableBytes destLength:&decryptedLength error:error]) {
         return nil;
     }
     dest.length = decryptedLength;
     return dest;
 }
 
-- (int)decryptBytes:(const uint8_t *)bytes length:(int)length dest:(uint8_t *)dest error:(NSError *__autoreleasing *)error
+- (BOOL)decryptBytes:(const uint8_t *)bytes length:(int)length dest:(uint8_t *)dest destLength:(int *)destLength error:(NSError *__autoreleasing *)error
 {
     const uint8_t *iv = bytes + self.digestLength;
     const uint8_t *encrypted = bytes + self.digestLength + self.cipherIVLength;
-    unsigned int l1, l2;
+    unsigned int l1 = 0, l2 = 0;
+    int code = 1;
     
-    HMAC_Init_ex(self.hmacCtxDec, NULL, 0, NULL, NULL);
-    HMAC_Update(self.hmacCtxDec, bytes + self.digestLength, length - self.digestLength);
-    HMAC_Final(self.hmacCtxDec, self.bufferDecHMAC, &l1);
+    CRYPTO_TRACK_STATUS(code) HMAC_Init_ex(self.hmacCtxDec, NULL, 0, NULL, NULL);
+    CRYPTO_TRACK_STATUS(code) HMAC_Update(self.hmacCtxDec, bytes + self.digestLength, length - self.digestLength);
+    CRYPTO_TRACK_STATUS(code) HMAC_Final(self.hmacCtxDec, self.bufferDecHMAC, &l1);
 
-    if (CRYPTO_memcmp(self.bufferDecHMAC, bytes, self.digestLength) != 0) {
+    if (CRYPTO_SUCCESS(code) && CRYPTO_memcmp(self.bufferDecHMAC, bytes, self.digestLength) != 0) {
         if (error) {
             *error = PIATunnelErrorWithCode(PIATunnelErrorCodeCryptoBoxHMAC);
         }
-        return -1;
+        return NO;
     }
     
-    EVP_CipherInit(self.cipherCtxDec, NULL, NULL, iv, -1);
-    EVP_CipherUpdate(self.cipherCtxDec, dest, (int *)&l1, encrypted, (int)(length - self.digestLength - self.cipherIVLength));
-    EVP_CipherFinal(self.cipherCtxDec, dest + l1, (int *)&l2);
-    
-    return l1 + l2;
+    CRYPTO_TRACK_STATUS(code) EVP_CipherInit(self.cipherCtxDec, NULL, NULL, iv, -1);
+    CRYPTO_TRACK_STATUS(code) EVP_CipherUpdate(self.cipherCtxDec, dest, (int *)&l1, encrypted, (int)(length - self.digestLength - self.cipherIVLength));
+    CRYPTO_TRACK_STATUS(code) EVP_CipherFinal(self.cipherCtxDec, dest + l1, (int *)&l2);
+
+    *destLength = l1 + l2;
+
+    CRYPTO_RETURN_STATUS(code)
 }
 
-+ (void)hmacWithDigestName:(NSString *)digestName
++ (BOOL)hmacWithDigestName:(NSString *)digestName
                     secret:(const uint8_t *)secret
               secretLength:(NSInteger)secretLength
                       data:(const uint8_t *)data
                 dataLength:(NSInteger)dataLength
                       hmac:(uint8_t *)hmac
                 hmacLength:(NSInteger *)hmacLength
+                     error:(NSError **)error
 {
     NSParameterAssert(digestName);
     NSParameterAssert(secret);
     NSParameterAssert(data);
     
-    unsigned int l;
+    unsigned int l = 0;
+    int code = 1;
 
     HMAC_CTX *ctx = HMAC_CTX_new();
-    HMAC_CTX_reset(ctx);
-    HMAC_Init_ex(ctx, secret, (int)secretLength, EVP_get_digestbyname([digestName cStringUsingEncoding:NSASCIIStringEncoding]), NULL);
-    HMAC_Update(ctx, data, dataLength);
-    HMAC_Final(ctx, hmac, &l);
+    CRYPTO_TRACK_STATUS(code) HMAC_CTX_reset(ctx);
+    CRYPTO_TRACK_STATUS(code) HMAC_Init_ex(ctx, secret, (int)secretLength, EVP_get_digestbyname([digestName cStringUsingEncoding:NSASCIIStringEncoding]), NULL);
+    CRYPTO_TRACK_STATUS(code) HMAC_Update(ctx, data, dataLength);
+    CRYPTO_TRACK_STATUS(code) HMAC_Final(ctx, hmac, &l);
     HMAC_CTX_free(ctx);
     
     *hmacLength = l;
+
+    CRYPTO_RETURN_STATUS(code)
 }
 
 - (id<Encrypter>)encrypter

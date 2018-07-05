@@ -19,10 +19,10 @@ class NETCPInterface: NSObject, GenericSocket, LinkInterface {
     
     private let maxPacketSize: Int
 
-    init(impl: NWTCPConnection, communicationType: CommunicationType, maxPacketSize: Int = 32768) {
+    init(impl: NWTCPConnection, communicationType: CommunicationType, maxPacketSize: Int? = nil) {
         self.impl = impl
         self.communicationType = communicationType
-        self.maxPacketSize = maxPacketSize
+        self.maxPacketSize = maxPacketSize ?? (512 * 1024)
         guard let hostEndpoint = impl.endpoint as? NWHostEndpoint else {
             fatalError("Expected a NWHostEndpoint")
         }

@@ -26,13 +26,14 @@ extern const NSInteger CryptoBoxMaxHMACLength;
                        hmacDecKey:(const uint8_t *)hmacDecKey;
 
 // WARNING: hmac must be able to hold HMAC result
-+ (void)hmacWithDigestName:(NSString *)digestName
++ (BOOL)hmacWithDigestName:(NSString *)digestName
                     secret:(const uint8_t *)secret
               secretLength:(NSInteger)secretLength
                       data:(const uint8_t *)data
                 dataLength:(NSInteger)dataLength
                       hmac:(uint8_t *)hmac
-                hmacLength:(NSInteger *)hmacLength;
+                hmacLength:(NSInteger *)hmacLength
+                     error:(NSError **)error;
 
 - (nonnull id<Encrypter>)encrypter;
 - (nonnull id<Decrypter>)decrypter;

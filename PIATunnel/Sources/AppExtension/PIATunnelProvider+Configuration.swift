@@ -61,6 +61,11 @@ extension PIATunnelProvider {
         /// Certificate with ECC based on secp521r1 curve.
         case ecc521r1 = "ECC-521r1"
         
+        /// Custom certificate.
+        ///
+        /// - Seealso:
+        case custom = "Custom"
+        
         private static let allDigests: [Handshake: String] = [
             .rsa2048: "e2fccccaba712ccc68449b1c56427ac1",
             .rsa3072: "2fcdb65712df9db7dae34a1f4a84e32d",
@@ -70,11 +75,19 @@ extension PIATunnelProvider {
             .ecc521r1: "82446e0c80706e33e6e793cebf1b0c59"
         ]
         
-        var digest: String {
-            return Handshake.allDigests[self]!
+        var digest: String? {
+            return Handshake.allDigests[self]
         }
         
-        func write(to url: URL) throws {
+        func write(to url: URL, custom: String? = nil) throws {
+            precondition((self != .custom) || (custom != nil))
+            
+            // custom certificate?
+            if self == .custom, let content = custom {
+                try content.write(to: url, atomically: true, encoding: .ascii)
+                return
+            }
+
             let bundle = Bundle(for: PIATunnelProvider.self)
             let certName = "PIA-\(rawValue)"
             guard let certUrl = bundle.url(forResource: certName, withExtension: "pem") else {
@@ -108,18 +121,22 @@ extension PIATunnelProvider {
         
         /// The remote port.
         public let port: String
+        
+        /// The communication type.
+        public let communicationType: CommunicationType
 
         /// :nodoc:
-        public init(_ socketType: SocketType, _ port: String) {
+        public init(_ socketType: SocketType, _ port: String, _ communicationType: CommunicationType) {
             self.socketType = socketType
             self.port = port
+            self.communicationType = communicationType
         }
         
         // MARK: Equatable
         
         /// :nodoc:
         public static func ==(lhs: EndpointProtocol, rhs: EndpointProtocol) -> Bool {
-            return (lhs.socketType == rhs.socketType) && (lhs.port == rhs.port)
+            return (lhs.socketType == rhs.socketType) && (lhs.port == rhs.port) && (lhs.communicationType == rhs.communicationType)
         }
         
         // MARK: CustomStringConvertible
@@ -136,9 +153,6 @@ extension PIATunnelProvider {
         /// The remote hostname or IP address.
         public let hostname: String
         
-        /// The remote port.
-        public let port: String
-        
         /// The username.
         public let username: String
         
@@ -146,20 +160,15 @@ extension PIATunnelProvider {
         public let password: String
         
         /// :nodoc:
-        public init(hostname: String, port: String, username: String, password: String) {
+        public init(hostname: String, username: String, password: String) {
             self.hostname = hostname
-            self.port = port
             self.username = username
             self.password = password
         }
         
         init(protocolConfiguration: NEVPNProtocol) throws {
-            guard let address = protocolConfiguration.serverAddress else {
+            guard let hostname = protocolConfiguration.serverAddress else {
                 throw ProviderError.configuration(field: "protocolConfiguration.serverAddress")
-            }
-            let addressComponents = address.components(separatedBy: ":")
-            guard (addressComponents.count == 2) else {
-                throw ProviderError.configuration(field: "protocolConfiguration.serverAddress (hostname:port)")
             }
             guard let username = protocolConfiguration.username else {
                 throw ProviderError.credentials(field: "protocolConfiguration.username")
@@ -171,8 +180,7 @@ extension PIATunnelProvider {
                 throw ProviderError.credentials(field: "protocolConfiguration.passwordReference (keychain)")
             }
             
-            hostname = addressComponents[0]
-            port = addressComponents[1]
+            self.hostname = hostname
             self.username = username
             self.password = password
         }
@@ -196,8 +204,8 @@ extension PIATunnelProvider {
         /// Resolved addresses in case DNS fails or `prefersResolvedAddresses` is `true`.
         public var resolvedAddresses: [String]?
         
-        /// The socket type.
-        public var socketType: SocketType
+        /// The accepted communication protocols. Must be non-empty.
+        public var endpointProtocols: [EndpointProtocol]
 
         /// The encryption algorithm.
         public var cipher: Cipher
@@ -207,6 +215,9 @@ extension PIATunnelProvider {
         
         /// The handshake certificate.
         public var handshake: Handshake
+        
+        /// The custom CA certificate in PEM format in case `handshake == .custom`. Ignored otherwise.
+        public var ca: String?
         
         /// The MTU of the tunnel.
         public var mtu: NSNumber
@@ -236,10 +247,11 @@ extension PIATunnelProvider {
             self.appGroup = appGroup
             prefersResolvedAddresses = false
             resolvedAddresses = nil
-            socketType = .udp
+            endpointProtocols = [EndpointProtocol(.udp, "1194", .pia)]
             cipher = .aes128cbc
             digest = .sha1
             handshake = .rsa2048
+            ca = nil
             mtu = 1500
             renegotiatesAfterSeconds = nil
             shouldDebug = false
@@ -266,16 +278,37 @@ extension PIATunnelProvider {
             if let handshakeCertificate = providerConfiguration[S.handshakeCertificate] as? String {
                 handshake = Handshake(rawValue: handshakeCertificate) ?? fallbackHandshake
             }
+            if handshake == .custom {
+                guard let ca = providerConfiguration[S.ca] as? String else {
+                    throw ProviderError.configuration(field: "protocolConfiguration.providerConfiguration[\(S.ca)]")
+                }
+                self.ca = ca
+            }
 
             self.appGroup = appGroup
 
             prefersResolvedAddresses = providerConfiguration[S.prefersResolvedAddresses] as? Bool ?? false
             resolvedAddresses = providerConfiguration[S.resolvedAddresses] as? [String]
-            if let socketTypeString = providerConfiguration[S.socketType] as? String, let socketType = SocketType(rawValue: socketTypeString) {
-                self.socketType = socketType
-            } else {
-                socketType = .udp
+            guard let endpointProtocolsStrings = providerConfiguration[S.endpointProtocols] as? [String], !endpointProtocolsStrings.isEmpty else {
+                throw ProviderError.configuration(field: "protocolConfiguration.providerConfiguration[\(S.endpointProtocols)] is nil or empty")
             }
+            endpointProtocols = try endpointProtocolsStrings.map {
+                let components = $0.components(separatedBy: ":")
+                guard components.count == 3 else {
+                    throw ProviderError.configuration(field: "protocolConfiguration.providerConfiguration[\(S.endpointProtocols)] entries must be in the form 'socketType:port:communicationType'")
+                }
+                let socketTypeString = components[0]
+                let port = components[1]
+                let communicationTypeString = components[2]
+                guard let socketType = SocketType(rawValue: socketTypeString) else {
+                    throw ProviderError.configuration(field: "protocolConfiguration.providerConfiguration[\(S.endpointProtocols)] unrecognized socketType '\(socketTypeString)'")
+                }
+                guard let communicationType = CommunicationType(rawValue: communicationTypeString) else {
+                    throw ProviderError.configuration(field: "protocolConfiguration.providerConfiguration[\(S.endpointProtocols)] unrecognized communicationType '\(communicationTypeString)'")
+                }
+                return EndpointProtocol(socketType, port, communicationType)
+            }
+            
             self.cipher = cipher
             self.digest = digest
             self.handshake = handshake
@@ -308,10 +341,11 @@ extension PIATunnelProvider {
                 appGroup: appGroup,
                 prefersResolvedAddresses: prefersResolvedAddresses,
                 resolvedAddresses: resolvedAddresses,
-                socketType: socketType,
+                endpointProtocols: endpointProtocols,
                 cipher: cipher,
                 digest: digest,
                 handshake: handshake,
+                ca: ca,
                 mtu: mtu,
                 renegotiatesAfterSeconds: renegotiatesAfterSeconds,
                 shouldDebug: shouldDebug,
@@ -330,13 +364,15 @@ extension PIATunnelProvider {
 
             static let resolvedAddresses = "ResolvedAddresses"
 
-            static let socketType = "SocketType"
+            static let endpointProtocols = "EndpointProtocols"
             
             static let cipherAlgorithm = "CipherAlgorithm"
             
             static let digestAlgorithm = "DigestAlgorithm"
             
             static let handshakeCertificate = "HandshakeCertificate"
+            
+            static let ca = "CA"
             
             static let mtu = "MTU"
             
@@ -358,8 +394,8 @@ extension PIATunnelProvider {
         /// - Seealso: `PIATunnelProvider.ConfigurationBuilder.resolvedAddresses`
         public let resolvedAddresses: [String]?
 
-        /// - Seealso: `PIATunnelProvider.ConfigurationBuilder.socketType`
-        public let socketType: SocketType
+        /// - Seealso: `PIATunnelProvider.ConfigurationBuilder.endpointProtocols`
+        public let endpointProtocols: [EndpointProtocol]
         
         /// - Seealso: `PIATunnelProvider.ConfigurationBuilder.cipher`
         public let cipher: Cipher
@@ -369,6 +405,9 @@ extension PIATunnelProvider {
         
         /// - Seealso: `PIATunnelProvider.ConfigurationBuilder.handshake`
         public let handshake: Handshake
+        
+        /// - Seealso: `PIATunnelProvider.ConfigurationBuilder.ca`
+        public let ca: String?
         
         /// - Seealso: `PIATunnelProvider.ConfigurationBuilder.mtu`
         public let mtu: NSNumber
@@ -423,13 +462,18 @@ extension PIATunnelProvider {
             var dict: [String: Any] = [
                 S.appGroup: appGroup,
                 S.prefersResolvedAddresses: prefersResolvedAddresses,
-                S.socketType: socketType.rawValue,
+                S.endpointProtocols: endpointProtocols.map {
+                    "\($0.socketType.rawValue):\($0.port):\($0.communicationType.rawValue)"
+                },
                 S.cipherAlgorithm: cipher.rawValue,
                 S.digestAlgorithm: digest.rawValue,
                 S.handshakeCertificate: handshake.rawValue,
                 S.mtu: mtu,
                 S.debug: shouldDebug
             ]
+            if let ca = ca {
+                dict[S.ca] = ca
+            }
             if let resolvedAddresses = resolvedAddresses {
                 dict[S.resolvedAddresses] = resolvedAddresses
             }
@@ -464,7 +508,7 @@ extension PIATunnelProvider {
             }
             
             protocolConfiguration.providerBundleIdentifier = bundleIdentifier
-            protocolConfiguration.serverAddress = "\(endpoint.hostname):\(endpoint.port)"
+            protocolConfiguration.serverAddress = endpoint.hostname
             protocolConfiguration.username = endpoint.username
             protocolConfiguration.passwordReference = try? keychain.passwordReference(for: endpoint.username)
             protocolConfiguration.providerConfiguration = generatedProviderConfiguration()
@@ -472,9 +516,13 @@ extension PIATunnelProvider {
             return protocolConfiguration
         }
         
-        func print() {
+        func print(appVersion: String?) {
+            if let appVersion = appVersion {
+                log.info("App version: \(appVersion)")
+            }
+            
 //            log.info("Address: \(endpoint.hostname):\(endpoint.port)")
-            log.info("Socket: \(socketType.rawValue)")
+            log.info("Protocols: \(endpointProtocols)")
             log.info("Cipher: \(cipher.rawValue)")
             log.info("Digest: \(digest.rawValue)")
             log.info("Handshake: \(handshake.rawValue)")
@@ -500,7 +548,7 @@ extension PIATunnelProvider.Configuration: Equatable {
      */
     public func builder() -> PIATunnelProvider.ConfigurationBuilder {
         var builder = PIATunnelProvider.ConfigurationBuilder(appGroup: appGroup)
-        builder.socketType = socketType
+        builder.endpointProtocols = endpointProtocols
         builder.cipher = cipher
         builder.digest = digest
         builder.handshake = handshake
@@ -514,7 +562,7 @@ extension PIATunnelProvider.Configuration: Equatable {
     /// :nodoc:
     public static func ==(lhs: PIATunnelProvider.Configuration, rhs: PIATunnelProvider.Configuration) -> Bool {
         return (
-            (lhs.socketType == rhs.socketType) &&
+            (lhs.endpointProtocols == rhs.endpointProtocols) &&
             (lhs.cipher == rhs.cipher) &&
             (lhs.digest == rhs.digest) &&
             (lhs.handshake == rhs.handshake) &&

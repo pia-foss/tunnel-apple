@@ -19,9 +19,15 @@ class NEUDPInterface: NSObject, GenericSocket, LinkInterface {
     
     private let maxDatagrams: Int
 
-    init(impl: NWUDPSession, maxDatagrams: Int = 200) {
+    init(impl: NWUDPSession, communicationType: CommunicationType, maxDatagrams: Int? = nil) {
         self.impl = impl
-        self.maxDatagrams = maxDatagrams
+        self.communicationType = communicationType
+        if #available(iOS 12, *) {
+            self.maxDatagrams = 1
+        } else {
+            self.maxDatagrams = maxDatagrams ?? 200
+        }
+
         guard let hostEndpoint = impl.endpoint as? NWHostEndpoint else {
             fatalError("Expected a NWHostEndpoint")
         }
@@ -52,13 +58,11 @@ class NEUDPInterface: NSObject, GenericSocket, LinkInterface {
         
         self.queue = queue
         queue.schedule(after: .milliseconds(activeTimeout)) { [weak self] in
-            guard let isActive = self?.isActive else {
+            guard let _self = self else {
                 return
             }
-            guard isActive else {
-                log.debug("Socket timed out waiting for activity, cancelling...")
-                self?.impl.cancel()
-//                self?.impl.tryNextResolvedEndpoint()
+            guard _self.isActive else {
+                _self.delegate?.socketDidTimeout(_self)
                 return
             }
         }
@@ -79,7 +83,7 @@ class NEUDPInterface: NSObject, GenericSocket, LinkInterface {
         guard impl.hasBetterPath else {
             return nil
         }
-        return NEUDPInterface(impl: NWUDPSession(upgradeFor: impl))
+        return NEUDPInterface(impl: NWUDPSession(upgradeFor: impl), communicationType: communicationType)
     }
     
     func link() -> LinkInterface {
@@ -129,6 +133,9 @@ class NEUDPInterface: NSObject, GenericSocket, LinkInterface {
                 delegate?.socket(self, didShutdownWithFailure: false)
                 
             case .failed:
+//                if timedOut {
+//                    delegate?.socketShouldChangeProtocol(self)
+//                }
                 delegate?.socket(self, didShutdownWithFailure: true)
                 
             default:
@@ -157,6 +164,8 @@ class NEUDPInterface: NSObject, GenericSocket, LinkInterface {
         return maxDatagrams
     }
 
+    let communicationType: CommunicationType
+    
     let negotiationTimeout: TimeInterval = 10.0
     
     let hardResetTimeout: TimeInterval = 5.0

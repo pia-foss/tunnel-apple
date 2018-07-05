@@ -159,14 +159,16 @@ static const uint8_t DataPathPingData[]         = { 0x2a, 0x18, 0x7b, 0xf3, 0x64
         const int encryptedPacketCapacity = 1 + (int)safe_crypto_capacity(decryptedPacketLength, self.encrypter.overheadLength);
         NSMutableData *encryptedPacket = [[NSMutableData alloc] initWithLength:encryptedPacketCapacity];
         uint8_t *encryptedPacketPtr = encryptedPacket.mutableBytes;
-        const int encryptedPayloadLength = [self.encrypter encryptBytes:decryptedPacketStart
-                                                                 length:decryptedPacketLength
-                                                                   dest:(encryptedPacketPtr + 1) // skip header byte
-                                                                  error:error];
+        int encryptedPayloadLength = INT_MAX;
+        const BOOL success = [self.encrypter encryptBytes:decryptedPacketStart
+                                                   length:decryptedPacketLength
+                                                     dest:(encryptedPacketPtr + 1) // skip header byte
+                                               destLength:&encryptedPayloadLength
+                                                    error:error];
 
         NSAssert(encryptedPayloadLength <= encryptedPacketCapacity, @"Did not allocate enough bytes for payload");
 
-        if (encryptedPayloadLength == -1) {
+        if (!success) {
             return nil;
         }
         
@@ -194,11 +196,13 @@ static const uint8_t DataPathPingData[]         = { 0x2a, 0x18, 0x7b, 0xf3, 0x64
         uint8_t *decryptedPacketPtr = decryptedPacketStart;
 
         // skip header byte = (code, key)
-        const int decryptedPacketLength = [self.decrypter decryptBytes:(encryptedPacket.bytes + 1)
-                                                                length:(int)(encryptedPacket.length - 1)
-                                                                  dest:decryptedPacketStart
-                                                                 error:error];
-        if (decryptedPacketLength == -1) {
+        int decryptedPacketLength = INT_MAX;
+        const BOOL success = [self.decrypter decryptBytes:(encryptedPacket.bytes + 1)
+                                                   length:(int)(encryptedPacket.length - 1)
+                                                     dest:decryptedPacketStart
+                                               destLength:&decryptedPacketLength
+                                                    error:error];
+        if (!success) {
             return nil;
         }
         
@@ -222,7 +226,9 @@ static const uint8_t DataPathPingData[]         = { 0x2a, 0x18, 0x7b, 0xf3, 0x64
         uint8_t *payloadPtr = decryptedPacketPtr;
         const int payloadLength = decryptedPacketLength - (int)(decryptedPacketPtr - decryptedPacketStart);
         if ((payloadLength == sizeof(DataPathPingData)) && !memcmp(payloadPtr, DataPathPingData, payloadLength)) {
-            *keepAlive = true;
+            if (keepAlive) {
+                *keepAlive = true;
+            }
             continue;
         }
         MSSFix(payloadPtr, payloadLength);

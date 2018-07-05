@@ -55,6 +55,9 @@ extension PIATunnelProvider {
         /// Socket endpoint could not be resolved.
         case dnsFailure
         
+        /// No more protocols available to try.
+        case exhaustedProtocols
+        
         /// Socket failed to reach active state.
         case socketActivity
         

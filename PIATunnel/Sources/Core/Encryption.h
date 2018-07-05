@@ -14,7 +14,7 @@
 - (NSData *)encryptData:(nonnull NSData *)data offset:(NSInteger)offset error:(NSError **)error;
 
 // WARNING: dest must be able to hold ciphertext
-- (int)encryptBytes:(nonnull const uint8_t *)bytes length:(int)length dest:(nonnull uint8_t *)dest error:(NSError **)error;
+- (BOOL)encryptBytes:(nonnull const uint8_t *)bytes length:(int)length dest:(nonnull uint8_t *)dest destLength:(int *)destLength error:(NSError **)error;
 
 @end
 
@@ -24,6 +24,6 @@
 - (NSData *)decryptData:(nonnull NSData *)data offset:(NSInteger)offset error:(NSError **)error;
 
 // WARNING: dest must be able to hold plaintext
-- (int)decryptBytes:(nonnull const uint8_t *)bytes length:(int)length dest:(nonnull uint8_t *)dest error:(NSError **)error;
+- (BOOL)decryptBytes:(nonnull const uint8_t *)bytes length:(int)length dest:(nonnull uint8_t *)dest destLength:(int *)destLength error:(NSError **)error;
 
 @end

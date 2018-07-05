@@ -23,16 +23,21 @@ class ConnectionStrategy {
     
     private var currentProtocolIndex = 0
 
-    init(hostname: String, configuration: PIATunnelProvider.Configuration, port: String) {
+    init(hostname: String, configuration: PIATunnelProvider.Configuration) {
         precondition(!configuration.prefersResolvedAddresses || !(configuration.resolvedAddresses?.isEmpty ?? true))
         
         self.hostname = hostname
-        self.prefersResolvedAddresses = configuration.prefersResolvedAddresses
-        self.resolvedAddresses = configuration.resolvedAddresses
-        self.endpointProtocols = [PIATunnelProvider.EndpointProtocol(configuration.socketType, port)]
+        prefersResolvedAddresses = configuration.prefersResolvedAddresses
+        resolvedAddresses = configuration.resolvedAddresses
+        endpointProtocols = configuration.endpointProtocols
     }
 
-    func createSocket(from provider: NEProvider, timeout: Int, preferredAddress: String? = nil, completionHandler: @escaping (GenericSocket?, Error?) -> Void) {
+    func createSocket(
+        from provider: NEProvider,
+        timeout: Int,
+        preferredAddress: String? = nil,
+        queue: DispatchQueue,
+        completionHandler: @escaping (GenericSocket?, Error?) -> Void) {
         
         // reuse preferred address
         if let preferredAddress = preferredAddress {
@@ -52,8 +57,8 @@ class ConnectionStrategy {
         
         // fall back to DNS
         log.debug("DNS resolve hostname: \(hostname)")
-        DNSResolver.resolve(hostname, timeout: timeout) { (addresses, error) in
-
+        DNSResolver.resolve(hostname, timeout: timeout, queue: queue) { (addresses, error) in
+            
             // refresh resolved addresses
             if let resolved = addresses, !resolved.isEmpty {
                 self.resolvedAddresses = resolved
@@ -74,6 +79,17 @@ class ConnectionStrategy {
         }
     }
 
+    func tryNextProtocol() -> Bool {
+        let next = currentProtocolIndex + 1
+        guard next < endpointProtocols.count else {
+            log.debug("No more protocols available")
+            return false
+        }
+        currentProtocolIndex = next
+        log.debug("Fall back to next protocol: \(currentProtocol())")
+        return true
+    }
+    
     private func currentProtocol() -> PIATunnelProvider.EndpointProtocol {
         return endpointProtocols[currentProtocolIndex]
     }
@@ -100,11 +116,11 @@ private extension NEProvider {
         switch endpointProtocol.socketType {
         case .udp:
             let impl = createUDPSession(to: endpoint, from: nil)
-            return NEUDPInterface(impl: impl)
+            return NEUDPInterface(impl: impl, communicationType: endpointProtocol.communicationType)
             
         case .tcp:
             let impl = createTCPConnection(to: endpoint, enableTLS: false, tlsParameters: nil, delegate: nil)
-            return NETCPInterface(impl: impl)
+            return NETCPInterface(impl: impl, communicationType: endpointProtocol.communicationType)
         }
     }
 }

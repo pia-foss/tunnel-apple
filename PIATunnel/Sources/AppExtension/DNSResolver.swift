@@ -8,10 +8,11 @@
 
 import Foundation
 
-class DNSResolver {
+/// :nodoc:
+public class DNSResolver {
     private static let queue = DispatchQueue(label: "DNSResolver")
 
-    static func resolve(_ hostname: String, timeout: Int, completionHandler: @escaping ([String]?, Error?) -> Void) {
+    public static func resolve(_ hostname: String, timeout: Int, queue: DispatchQueue, completionHandler: @escaping ([String]?, Error?) -> Void) {
         var pendingHandler: (([String]?, Error?) -> Void)? = completionHandler
         let host = CFHostCreateWithName(nil, hostname as CFString).takeRetainedValue()
         DNSResolver.queue.async {
@@ -19,10 +20,14 @@ class DNSResolver {
             guard let handler = pendingHandler else {
                 return
             }
-            DNSResolver.didResolve(host: host, completionHandler: handler)
-            pendingHandler = nil
+            DNSResolver.didResolve(host: host) { (addrs, error) in
+                queue.async {
+                    handler(addrs, error)
+                    pendingHandler = nil
+                }
+            }
         }
-        DNSResolver.queue.asyncAfter(deadline: .now() + .milliseconds(timeout)) {
+        queue.asyncAfter(deadline: .now() + .milliseconds(timeout)) {
             guard let handler = pendingHandler else {
                 return
             }
@@ -61,12 +66,15 @@ class DNSResolver {
         completionHandler(ipAddresses, nil)
     }
 
-    static func string(fromIPv4 ipv4: UInt32) -> String {
-        let a = UInt8(ipv4) & 0xff
-        let b = UInt8(ipv4 >> 8) & 0xff
-        let c = UInt8(ipv4 >> 16) & 0xff
-        let d = UInt8(ipv4 >> 24) & 0xff
+    public static func string(fromIPv4 ipv4: UInt32) -> String {
+        let a = UInt8(ipv4 & UInt32(0xff))
+        let b = UInt8((ipv4 >> 8) & UInt32(0xff))
+        let c = UInt8((ipv4 >> 16) & UInt32(0xff))
+        let d = UInt8((ipv4 >> 24) & UInt32(0xff))
 
         return "\(a).\(b).\(c).\(d)"
+    }
+    
+    private init() {
     }
 }

@@ -87,10 +87,10 @@ public class SessionProxy {
         public let caPath: String
 
         /// The MD5 digest of the CA (computed from DER format).
-        public let caDigest: String
+        public let caDigest: String?
 
         /// :nodoc:
-        public init(_ cipherName: String, _ digestName: String, _ caPath: String, _ caDigest: String) {
+        public init(_ cipherName: String, _ digestName: String, _ caPath: String, _ caDigest: String?) {
             self.cipherName = cipherName
             self.digestName = digestName
             self.caPath = caPath
@@ -125,8 +125,6 @@ public class SessionProxy {
     private let encryption: EncryptionParameters
     
     private let credentials: Credentials
-    
-    private let encodedSettings: Data
     
     /// The number of seconds after which a renegotiation should be initiated. If `nil`, the client will never initiate a renegotiation.
     public var renegotiatesAfter: TimeInterval?
@@ -219,9 +217,6 @@ public class SessionProxy {
         self.encryption = encryption
         self.credentials = credentials
 
-        encodedSettings = try TunnelSettings(caMd5Digest: encryption.caDigest,
-                                             cipherName: encryption.cipherName,
-                                             digestName: encryption.digestName).encodedData()
         renegotiatesAfter = nil
         
         keys = [:]
@@ -611,8 +606,9 @@ public class SessionProxy {
         keys[negotiationKeyIdx] = SessionKey(id: UInt8(negotiationKeyIdx))
         log.debug("Negotiation key index is \(negotiationKeyIdx)")
 
+        let payload = link?.hardReset(with: encryption) ?? Data()
         negotiationKey.state = .hardReset
-        enqueueControlPackets(code: .hardResetClientV2, key: UInt8(negotiationKeyIdx), payload: encodedSettings)
+        enqueueControlPackets(code: .hardResetClientV2, key: UInt8(negotiationKeyIdx), payload: payload)
     }
     
     // Ruby: soft_reset
@@ -1024,7 +1020,13 @@ public class SessionProxy {
             log.debug("Setup keys")
         }
 
-        let proxy = EncryptionProxy(encryption.cipherName, encryption.digestName, auth, sessionId, remoteSessionId)
+        let proxy: EncryptionProxy
+        do {
+            proxy = try EncryptionProxy(encryption.cipherName, encryption.digestName, auth, sessionId, remoteSessionId)
+        } catch let e {
+            deferStop(.shutdown, e)
+            return
+        }
         let encrypter = proxy.encrypter()
         let decrypter = proxy.decrypter()
         if Configuration.usesDataOptimization {

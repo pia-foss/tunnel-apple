@@ -19,9 +19,10 @@ class NETCPInterface: NSObject, GenericSocket, LinkInterface {
     
     private let maxPacketSize: Int
 
-    init(impl: NWTCPConnection, maxPacketSize: Int = 32768) {
+    init(impl: NWTCPConnection, communicationType: CommunicationType, maxPacketSize: Int? = nil) {
         self.impl = impl
-        self.maxPacketSize = maxPacketSize
+        self.communicationType = communicationType
+        self.maxPacketSize = maxPacketSize ?? (512 * 1024)
         guard let hostEndpoint = impl.endpoint as? NWHostEndpoint else {
             fatalError("Expected a NWHostEndpoint")
         }
@@ -52,12 +53,12 @@ class NETCPInterface: NSObject, GenericSocket, LinkInterface {
         
         self.queue = queue
         queue.schedule(after: .milliseconds(activeTimeout)) { [weak self] in
-            guard let isActive = self?.isActive else {
+            guard let _self = self else {
                 return
             }
-            guard isActive else {
-                log.debug("Socket timed out waiting for activity, cancelling...")
-                self?.impl.cancel()
+            guard _self.isActive else {
+                _self.delegate?.socketShouldChangeProtocol(_self)
+                _self.delegate?.socketDidTimeout(_self)
                 return
             }
         }
@@ -79,7 +80,7 @@ class NETCPInterface: NSObject, GenericSocket, LinkInterface {
         guard impl.hasBetterPath else {
             return nil
         }
-        return NETCPInterface(impl: NWTCPConnection(upgradeFor: impl))
+        return NETCPInterface(impl: NWTCPConnection(upgradeFor: impl), communicationType: communicationType)
     }
     
     func link() -> LinkInterface {
@@ -156,6 +157,8 @@ class NETCPInterface: NSObject, GenericSocket, LinkInterface {
     var packetBufferSize: Int {
         return maxPacketSize
     }
+    
+    let communicationType: CommunicationType
     
     let negotiationTimeout: TimeInterval = 10.0
     

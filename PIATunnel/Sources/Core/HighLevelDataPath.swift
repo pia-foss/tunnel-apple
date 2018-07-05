@@ -84,7 +84,7 @@ class HighLevelDataPath: DataPath {
     }
     
 //    func decryptPackets(_ packets: [Data]) throws -> [Data] {
-    func decryptPackets(_ packets: [Data], keepAlive: UnsafeMutablePointer<Bool>) throws -> [Data] {
+    func decryptPackets(_ packets: [Data], keepAlive: UnsafeMutablePointer<Bool>?) throws -> [Data] {
         var inPackets = [Data]()
         
         for encryptedPacket in packets {
@@ -117,7 +117,7 @@ class HighLevelDataPath: DataPath {
             
             var payload = decryptedPacket.subdata(in: offset..<decryptedPacket.count)
             guard (payload != ProtocolMacros.pingString) else {
-                keepAlive.pointee = true
+                keepAlive?.pointee = true
                 continue
             }
             

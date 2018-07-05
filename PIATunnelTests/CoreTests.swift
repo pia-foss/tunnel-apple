@@ -275,7 +275,7 @@ class CoreTests: XCTestCase {
         
         measure {
             encryptedPackets = try! self.swiftDP.encryptPackets(packets, key: 0)
-            decryptedPackets = try! self.swiftDP.decryptPackets(encryptedPackets)
+            decryptedPackets = try! self.swiftDP.decryptPackets(encryptedPackets, keepAlive: nil)
         }
         
         //        print(">>> \(packets?.count) packets")
@@ -290,7 +290,7 @@ class CoreTests: XCTestCase {
         
         measure {
             encryptedPackets = try! self.pointerDP.encryptPackets(packets, key: 0)
-            decryptedPackets = try! self.pointerDP.decryptPackets(encryptedPackets)
+            decryptedPackets = try! self.pointerDP.decryptPackets(encryptedPackets, keepAlive: nil)
         }
         
         //        print(">>> \(packets?.count) packets")

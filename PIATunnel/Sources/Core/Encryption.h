@@ -8,9 +8,11 @@
 
 #import <Foundation/Foundation.h>
 
+#import "ZeroingData.h"
+
 @protocol Encrypter
 
-- (void)configureEncryptionWithCipherKey:(nonnull const uint8_t *)cipherKey hmacKey:(nonnull const uint8_t *)hmacKey;
+- (void)configureEncryptionWithCipherKey:(nonnull ZeroingData *)cipherKey hmacKey:(nonnull ZeroingData *)hmacKey;
 - (int)overheadLength;
 
 - (NSData *)encryptData:(nonnull NSData *)data offset:(NSInteger)offset error:(NSError **)error;
@@ -22,7 +24,7 @@
 
 @protocol Decrypter
 
-- (void)configureDecryptionWithCipherKey:(nonnull const uint8_t *)cipherKey hmacKey:(nonnull const uint8_t *)hmacKey;
+- (void)configureDecryptionWithCipherKey:(nonnull ZeroingData *)cipherKey hmacKey:(nonnull ZeroingData *)hmacKey;
 - (int)overheadLength;
 
 - (NSData *)decryptData:(nonnull NSData *)data offset:(NSInteger)offset error:(NSError **)error;

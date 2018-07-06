@@ -8,6 +8,8 @@
 
 #import <Foundation/Foundation.h>
 
+#import "ZeroingData.h"
+
 @protocol Encrypter;
 @protocol Decrypter;
 
@@ -18,10 +20,10 @@
 - (nonnull instancetype)initWithCipherAlgorithm:(nonnull NSString *)cipherAlgorithm
                                 digestAlgorithm:(nullable NSString *)digestAlgorithm;
 
-- (BOOL)configureWithCipherEncKey:(nonnull const uint8_t *)cipherEncKey
-                     cipherDecKey:(nonnull const uint8_t *)cipherDecKey
-                       hmacEncKey:(nonnull const uint8_t *)hmacEncKey
-                       hmacDecKey:(nonnull const uint8_t *)hmacDecKey
+- (BOOL)configureWithCipherEncKey:(nonnull ZeroingData *)cipherEncKey
+                     cipherDecKey:(nonnull ZeroingData *)cipherDecKey
+                       hmacEncKey:(nonnull ZeroingData *)hmacEncKey
+                       hmacDecKey:(nonnull ZeroingData *)hmacDecKey
                             error:(NSError **)error;
 
 // WARNING: hmac must be able to hold HMAC result

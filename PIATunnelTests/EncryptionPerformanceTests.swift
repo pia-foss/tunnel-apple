@@ -20,7 +20,7 @@ class EncryptionPerformanceTests: XCTestCase {
         let hmacKey = try! SecureRandom.safeData(length: 32)
         
         let cbc = CryptoBox(cipherAlgorithm: "aes-128-cbc", digestAlgorithm: "sha1")
-        try! cbc.configure(withCipherEncKey: cipherKey.bytes, cipherDecKey: cipherKey.bytes, hmacEncKey: hmacKey.bytes, hmacDecKey: hmacKey.bytes)
+        try! cbc.configure(withCipherEncKey: cipherKey, cipherDecKey: cipherKey, hmacEncKey: hmacKey, hmacDecKey: hmacKey)
         cbcEncrypter = cbc.encrypter()
         cbcDecrypter = cbc.decrypter()
     }

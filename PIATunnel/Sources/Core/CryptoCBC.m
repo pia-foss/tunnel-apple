@@ -74,13 +74,15 @@ const NSInteger CryptoCBCMaxHMACLength = 100;
 
 #pragma mark Encrypter
 
-- (void)configureEncryptionWithCipherKey:(const uint8_t *)cipherKey hmacKey:(const uint8_t *)hmacKey
+- (void)configureEncryptionWithCipherKey:(ZeroingData *)cipherKey hmacKey:(ZeroingData *)hmacKey
 {
+    NSParameterAssert(cipherKey.count >= self.cipherKeyLength);
+
     EVP_CIPHER_CTX_reset(self.cipherCtxEnc);
-    EVP_CipherInit(self.cipherCtxEnc, self.cipher, cipherKey, NULL, 1);
+    EVP_CipherInit(self.cipherCtxEnc, self.cipher, cipherKey.bytes, NULL, 1);
 
     HMAC_CTX_reset(self.hmacCtxEnc);
-    HMAC_Init_ex(self.hmacCtxEnc, hmacKey, self.digestLength, self.digest, NULL);
+    HMAC_Init_ex(self.hmacCtxEnc, hmacKey.bytes, self.digestLength, self.digest, NULL);
 }
 
 - (NSData *)encryptData:(NSData *)data offset:(NSInteger)offset error:(NSError *__autoreleasing *)error
@@ -130,13 +132,15 @@ const NSInteger CryptoCBCMaxHMACLength = 100;
 
 #pragma mark Decrypter
 
-- (void)configureDecryptionWithCipherKey:(const uint8_t *)cipherKey hmacKey:(const uint8_t *)hmacKey
+- (void)configureDecryptionWithCipherKey:(ZeroingData *)cipherKey hmacKey:(ZeroingData *)hmacKey
 {
+    NSParameterAssert(cipherKey.count >= self.cipherKeyLength);
+
     EVP_CIPHER_CTX_reset(self.cipherCtxDec);
-    EVP_CipherInit(self.cipherCtxDec, self.cipher, cipherKey, NULL, 0);
+    EVP_CipherInit(self.cipherCtxDec, self.cipher, cipherKey.bytes, NULL, 0);
     
     HMAC_CTX_reset(self.hmacCtxDec);
-    HMAC_Init_ex(self.hmacCtxDec, hmacKey, self.digestLength, self.digest, NULL);
+    HMAC_Init_ex(self.hmacCtxDec, hmacKey.bytes, self.digestLength, self.digest, NULL);
 }
 
 - (NSData *)decryptData:(NSData *)data offset:(NSInteger)offset error:(NSError *__autoreleasing *)error

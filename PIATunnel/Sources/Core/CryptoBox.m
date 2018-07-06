@@ -63,10 +63,10 @@
 }
 
 // these keys are coming from the OpenVPN negotiation despite the cipher
-- (BOOL)configureWithCipherEncKey:(const uint8_t *)cipherEncKey
-                     cipherDecKey:(const uint8_t *)cipherDecKey
-                       hmacEncKey:(const uint8_t *)hmacEncKey
-                       hmacDecKey:(const uint8_t *)hmacDecKey
+- (BOOL)configureWithCipherEncKey:(ZeroingData *)cipherEncKey
+                     cipherDecKey:(ZeroingData *)cipherDecKey
+                       hmacEncKey:(ZeroingData *)hmacEncKey
+                       hmacDecKey:(ZeroingData *)hmacDecKey
                             error:(NSError *__autoreleasing *)error
 {
     NSParameterAssert(cipherEncKey);

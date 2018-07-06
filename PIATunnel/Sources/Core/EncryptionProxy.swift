@@ -132,7 +132,12 @@ public class EncryptionProxy {
     
     init(_ cipher: String, _ digest: String, _ cipherEncKey: ZeroingData, _ cipherDecKey: ZeroingData, _ hmacEncKey: ZeroingData, _ hmacDecKey: ZeroingData) throws {
         box = CryptoBox(cipherAlgorithm: cipher, digestAlgorithm: digest)
-        try box.configure(withCipherEncKey: cipherEncKey.bytes, cipherDecKey: cipherDecKey.bytes, hmacEncKey: hmacEncKey.bytes, hmacDecKey: hmacDecKey.bytes)
+        try box.configure(
+            withCipherEncKey: cipherEncKey,
+            cipherDecKey: cipherDecKey,
+            hmacEncKey: hmacEncKey,
+            hmacDecKey: hmacDecKey
+        )
     }
     
     func encrypter() -> Encrypter {

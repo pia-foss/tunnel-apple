@@ -11,6 +11,8 @@ import __PIATunnelNative
 
 /// Bridges native encryption for high-level operations.
 public class EncryptionProxy {
+    private static let maxHmacLength = 100
+    
     private let box: CryptoBox
     
     /**
@@ -68,7 +70,7 @@ public class EncryptionProxy {
     // Ruby: keys_hash
     private static func keysHash(_ digestName: String, _ secret: ZeroingData, _ seed: ZeroingData, _ size: Int) throws -> ZeroingData {
         let out = Z()
-        let buffer = Z(count: CryptoBoxMaxHMACLength)
+        let buffer = Z(count: EncryptionProxy.maxHmacLength)
         var chain = try EncryptionProxy.hmac(buffer, digestName, secret, seed)
         while (out.count < size) {
             out.append(try EncryptionProxy.hmac(buffer, digestName, secret, chain.appending(seed)))
@@ -125,12 +127,12 @@ public class EncryptionProxy {
         let cipherDecKey = keysArray[2]
         let hmacDecKey = keysArray[3]
         
-        self.init(cipher, digest, cipherEncKey, cipherDecKey, hmacEncKey, hmacDecKey)
+        try self.init(cipher, digest, cipherEncKey, cipherDecKey, hmacEncKey, hmacDecKey)
     }
     
-    init(_ cipher: String, _ digest: String, _ cipherEncKey: ZeroingData, _ cipherDecKey: ZeroingData, _ hmacEncKey: ZeroingData, _ hmacDecKey: ZeroingData) {
+    init(_ cipher: String, _ digest: String, _ cipherEncKey: ZeroingData, _ cipherDecKey: ZeroingData, _ hmacEncKey: ZeroingData, _ hmacDecKey: ZeroingData) throws {
         box = CryptoBox(cipherAlgorithm: cipher, digestAlgorithm: digest)
-        box.configure(withCipherEncKey: cipherEncKey.bytes, cipherDecKey: cipherDecKey.bytes, hmacEncKey: hmacEncKey.bytes, hmacDecKey: hmacDecKey.bytes)
+        try box.configure(withCipherEncKey: cipherEncKey.bytes, cipherDecKey: cipherDecKey.bytes, hmacEncKey: hmacEncKey.bytes, hmacDecKey: hmacDecKey.bytes)
     }
     
     func encrypter() -> Encrypter {

@@ -8,33 +8,33 @@
 
 #import <Foundation/Foundation.h>
 
-#import "Encryption.h"
+@protocol Encrypter;
+@protocol Decrypter;
 
-extern const NSInteger CryptoBoxMaxHMACLength;
+@interface CryptoBox : NSObject
 
-// encrypt/decrypt are mutually thread-safe
++ (BOOL)preparePRNGWithSeed:(nonnull const uint8_t *)seed length:(NSInteger)length;
 
-@interface CryptoBox : NSObject <Encrypter, Decrypter>
+- (nonnull instancetype)initWithCipherAlgorithm:(nonnull NSString *)cipherAlgorithm
+                                digestAlgorithm:(nullable NSString *)digestAlgorithm;
 
-+ (BOOL)preparePRNGWithSeed:(const uint8_t *)seed length:(NSInteger)length;
-
-- (instancetype)initWithCipherAlgorithm:(NSString *)cipherAlgorithm digestAlgorithm:(NSString *)digestAlgorithm;
-
-- (void)configureWithCipherEncKey:(const uint8_t *)cipherEncKey
-                     cipherDecKey:(const uint8_t *)cipherDecKey
-                       hmacEncKey:(const uint8_t *)hmacEncKey
-                       hmacDecKey:(const uint8_t *)hmacDecKey;
+- (BOOL)configureWithCipherEncKey:(nonnull const uint8_t *)cipherEncKey
+                     cipherDecKey:(nonnull const uint8_t *)cipherDecKey
+                       hmacEncKey:(nonnull const uint8_t *)hmacEncKey
+                       hmacDecKey:(nonnull const uint8_t *)hmacDecKey
+                            error:(NSError **)error;
 
 // WARNING: hmac must be able to hold HMAC result
-+ (BOOL)hmacWithDigestName:(NSString *)digestName
-                    secret:(const uint8_t *)secret
++ (BOOL)hmacWithDigestName:(nonnull NSString *)digestName
+                    secret:(nonnull const uint8_t *)secret
               secretLength:(NSInteger)secretLength
-                      data:(const uint8_t *)data
+                      data:(nonnull const uint8_t *)data
                 dataLength:(NSInteger)dataLength
-                      hmac:(uint8_t *)hmac
-                hmacLength:(NSInteger *)hmacLength
+                      hmac:(nonnull uint8_t *)hmac
+                hmacLength:(nonnull NSInteger *)hmacLength
                      error:(NSError **)error;
 
+// encrypt/decrypt are mutually thread-safe
 - (nonnull id<Encrypter>)encrypter;
 - (nonnull id<Decrypter>)decrypter;
 

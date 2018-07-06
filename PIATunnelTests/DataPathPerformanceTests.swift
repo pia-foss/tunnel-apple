@@ -23,7 +23,7 @@ class DataPathPerformanceTests: XCTestCase {
         let ck = try! SecureRandom.safeData(length: 32)
         let hk = try! SecureRandom.safeData(length: 32)
         
-        let crypto = EncryptionProxy("aes-128-cbc", "sha1", ck, ck, hk, hk)
+        let crypto = try! EncryptionProxy("aes-128-cbc", "sha1", ck, ck, hk, hk)
         encrypter = crypto.encrypter()
         decrypter = crypto.decrypter()
         

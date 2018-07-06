@@ -16,6 +16,7 @@
 #import "Errors.h"
 
 #import "CryptoCBC.h"
+#import "CryptoAEAD.h"
 
 @interface CryptoBox ()
 
@@ -86,7 +87,9 @@
         self.decrypter = cbc;
     }
     else if ([[self.cipherAlgorithm uppercaseString] hasSuffix:@"GCM"]) {
-        // TODO: implement GCM
+        CryptoAEAD *gcm = [[CryptoAEAD alloc] initWithCipherName:self.cipherAlgorithm];
+        self.encrypter = gcm;
+        self.decrypter = gcm;
     }
     // not supported
     else {

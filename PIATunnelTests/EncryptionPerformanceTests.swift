@@ -34,7 +34,7 @@ class EncryptionPerformanceTests: XCTestCase {
         let suite = TestUtils.generateDataSuite(1000, 100000)
         measure {
             for data in suite {
-                let _ = try! self.cbcEncrypter.encryptData(data, offset: 0)
+                let _ = try! self.cbcEncrypter.encryptData(data, offset: 0, packetId: 0)
             }
         }
     }

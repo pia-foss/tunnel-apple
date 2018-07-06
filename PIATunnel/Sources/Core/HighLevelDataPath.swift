@@ -65,7 +65,7 @@ class HighLevelDataPath: DataPath {
 //            log.verbose("Data: Built packetId \(packetId) with payload (\(payload.count) bytes)")
             
             let encryptedPayload: Data
-            try encryptedPayload = encrypter.encryptData(decryptedPacket, offset: 0)
+            try encryptedPayload = encrypter.encryptData(decryptedPacket, offset: 0, packetId: outPacketId)
             
 //            log.verbose("Data: Encrypted payload (\(encryptedPayload.count) bytes)")
             
@@ -91,7 +91,7 @@ class HighLevelDataPath: DataPath {
 //            log.verbose("Data: Handle packet from UDP (\(encryptedPacket.count) bytes)")
             
             let decryptedPacket: Data
-            try decryptedPacket = decrypter.decryptData(encryptedPacket, offset: 1) // skip (code, key)
+            try decryptedPacket = decrypter.decryptData(encryptedPacket, offset: 1, packetId: 0xffffffff) // skip (code, key)
             
 //            log.verbose("Data: Decrypted packet (\(decryptedPacket.count) bytes)")
             

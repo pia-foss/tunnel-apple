@@ -31,8 +31,8 @@ class EncryptionTests: XCTestCase {
         let dec = cbc.decrypter()
         
         let plain = Data(hex: "00112233445566778899")
-        let encrypted = try! enc.encryptData(plain, offset: 0)
-        let decrypted = try! dec.decryptData(encrypted, offset: 0)
+        let encrypted = try! enc.encryptData(plain, offset: 0, packetId: 0)
+        let decrypted = try! dec.decryptData(encrypted, offset: 0, packetId: 0)
         XCTAssertEqual(plain, decrypted)
     }
 

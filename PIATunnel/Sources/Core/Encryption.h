@@ -15,10 +15,10 @@
 - (void)configureEncryptionWithCipherKey:(nonnull ZeroingData *)cipherKey hmacKey:(nonnull ZeroingData *)hmacKey;
 - (int)overheadLength;
 
-- (NSData *)encryptData:(nonnull NSData *)data offset:(NSInteger)offset error:(NSError **)error;
+- (NSData *)encryptData:(nonnull NSData *)data offset:(NSInteger)offset packetId:(uint32_t)packetId error:(NSError **)error;
 
 // WARNING: dest must be able to hold ciphertext
-- (BOOL)encryptBytes:(nonnull const uint8_t *)bytes length:(int)length dest:(nonnull uint8_t *)dest destLength:(int *)destLength error:(NSError **)error;
+- (BOOL)encryptBytes:(nonnull const uint8_t *)bytes length:(int)length dest:(nonnull uint8_t *)dest destLength:(int *)destLength packetId:(uint32_t)packetId error:(NSError **)error;
 
 @end
 
@@ -27,9 +27,9 @@
 - (void)configureDecryptionWithCipherKey:(nonnull ZeroingData *)cipherKey hmacKey:(nonnull ZeroingData *)hmacKey;
 - (int)overheadLength;
 
-- (NSData *)decryptData:(nonnull NSData *)data offset:(NSInteger)offset error:(NSError **)error;
+- (NSData *)decryptData:(nonnull NSData *)data offset:(NSInteger)offset packetId:(uint32_t)packetId error:(NSError **)error;
 
 // WARNING: dest must be able to hold plaintext
-- (BOOL)decryptBytes:(nonnull const uint8_t *)bytes length:(int)length dest:(nonnull uint8_t *)dest destLength:(int *)destLength error:(NSError **)error;
+- (BOOL)decryptBytes:(nonnull const uint8_t *)bytes length:(int)length dest:(nonnull uint8_t *)dest destLength:(int *)destLength packetId:(uint32_t)packetId error:(NSError **)error;
 
 @end

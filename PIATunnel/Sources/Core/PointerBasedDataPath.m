@@ -164,6 +164,7 @@ static const uint8_t DataPathPingData[]         = { 0x2a, 0x18, 0x7b, 0xf3, 0x64
                                                    length:decryptedPacketLength
                                                      dest:(encryptedPacketPtr + 1) // skip header byte
                                                destLength:&encryptedPayloadLength
+                                                 packetId:self.outPacketId
                                                     error:error];
 
         NSAssert(encryptedPayloadLength <= encryptedPacketCapacity, @"Did not allocate enough bytes for payload");
@@ -201,6 +202,7 @@ static const uint8_t DataPathPingData[]         = { 0x2a, 0x18, 0x7b, 0xf3, 0x64
                                                    length:(int)(encryptedPacket.length - 1)
                                                      dest:decryptedPacketStart
                                                destLength:&decryptedPacketLength
+                                                 packetId:0xffffffff
                                                     error:error];
         if (!success) {
             return nil;

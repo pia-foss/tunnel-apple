@@ -201,17 +201,17 @@ class CoreTests: XCTestCase {
         var dec: Data
         
         enc = Data()
-        enc.append(try! encrypter.encryptData(data, offset: 0))
+        enc.append(try! encrypter.encryptData(data, offset: 0, packetId: 0))
         print("Encrypted: \(enc.toHex())")
-        dec = try! decrypter.decryptData(enc, offset: 0)
+        dec = try! decrypter.decryptData(enc, offset: 0, packetId: 0)
         print("Decrypted: \(dec.toHex())")
         XCTAssert(dec == data)
         
         let prefix = "abcdef"
         enc = Data(hex: prefix)
-        enc.append(try! encrypter.encryptData(data, offset: 0))
+        enc.append(try! encrypter.encryptData(data, offset: 0, packetId: 0))
         print("Encrypted: \(enc.toHex())")
-        dec = try! decrypter.decryptData(enc, offset: (prefix.count / 2))
+        dec = try! decrypter.decryptData(enc, offset: (prefix.count / 2), packetId: 0)
         print("Decrypted: \(dec.toHex())")
         XCTAssert(dec == data)
     }
@@ -226,7 +226,7 @@ class CoreTests: XCTestCase {
         let suite = generateDataSuite(1000, 100000)
         measure {
             for data in suite {
-                let _ = try! self.encrypter.encryptData(data, offset: 0)
+                let _ = try! self.encrypter.encryptData(data, offset: 0, packetId: 0)
             }
         }
     }

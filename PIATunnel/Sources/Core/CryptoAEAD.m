@@ -41,6 +41,7 @@ const NSInteger CryptoAEADTagLength     = 16;
     self = [super init];
     if (self) {
         self.cipher = EVP_get_cipherbyname([cipherName cStringUsingEncoding:NSASCIIStringEncoding]);
+        NSAssert(self.cipher, @"Unknown cipher '%@'", cipherName);
         
         self.cipherKeyLength = EVP_CIPHER_key_length(self.cipher);
         self.cipherIVLength = EVP_CIPHER_iv_length(self.cipher);

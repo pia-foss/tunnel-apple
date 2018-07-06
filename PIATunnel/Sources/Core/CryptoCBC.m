@@ -43,8 +43,10 @@ const NSInteger CryptoCBCMaxHMACLength = 100;
     self = [super init];
     if (self) {
         self.cipher = EVP_get_cipherbyname([cipherName cStringUsingEncoding:NSASCIIStringEncoding]);
+        NSAssert(self.cipher, @"Unknown cipher '%@'", cipherName);
         self.digest = EVP_get_digestbyname([digestName cStringUsingEncoding:NSASCIIStringEncoding]);
-        
+        NSAssert(self.digest, @"Unknown digest '%@'", digestName);
+
         self.cipherKeyLength = EVP_CIPHER_key_length(self.cipher);
         self.cipherIVLength = EVP_CIPHER_iv_length(self.cipher);
         self.digestLength = EVP_MD_size(self.digest);

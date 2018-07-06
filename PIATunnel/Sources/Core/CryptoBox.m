@@ -51,8 +51,8 @@
 //    NSParameterAssert(digestAlgorithm);
     
     if ((self = [super init])) {
-        self.cipherAlgorithm = cipherAlgorithm;
-        self.digestAlgorithm = digestAlgorithm;
+        self.cipherAlgorithm = [cipherAlgorithm lowercaseString];
+        self.digestAlgorithm = [digestAlgorithm lowercaseString];
     }
     return self;
 }
@@ -75,18 +75,19 @@
     NSParameterAssert(hmacEncKey);
     NSParameterAssert(hmacDecKey);
 
-    if ([[self.cipherAlgorithm uppercaseString] hasSuffix:@"CBC"]) {
+    if ([self.cipherAlgorithm hasSuffix:@"-cbc"]) {
         if (!self.digestAlgorithm) {
             if (error) {
                 *error = PIATunnelErrorWithCode(PIATunnelErrorCodeCryptoBoxAlgorithm);
             }
             return NO;
         }
-        CryptoCBC *cbc = [[CryptoCBC alloc] initWithCipherName:self.cipherAlgorithm digestName:self.digestAlgorithm];
+        CryptoCBC *cbc = [[CryptoCBC alloc] initWithCipherName:self.cipherAlgorithm
+                                                    digestName:self.digestAlgorithm];
         self.encrypter = cbc;
         self.decrypter = cbc;
     }
-    else if ([[self.cipherAlgorithm uppercaseString] hasSuffix:@"GCM"]) {
+    else if ([self.cipherAlgorithm hasSuffix:@"-gcm"]) {
         CryptoAEAD *gcm = [[CryptoAEAD alloc] initWithCipherName:self.cipherAlgorithm];
         self.encrypter = gcm;
         self.decrypter = gcm;

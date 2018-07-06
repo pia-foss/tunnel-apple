@@ -36,6 +36,19 @@ class EncryptionTests: XCTestCase {
         XCTAssertEqual(plain, decrypted)
     }
 
+    func testGCM() {
+        let gcm = CryptoBox(cipherAlgorithm: "aes-256-gcm", digestAlgorithm: nil)
+        try! gcm.configure(withCipherEncKey: cipherKey, cipherDecKey: cipherKey, hmacEncKey: hmacKey, hmacDecKey: hmacKey)
+        let enc = gcm.encrypter()
+        let dec = gcm.decrypter()
+        
+        let packetId: UInt32 = 0x56341200
+        let plain = Data(hex: "00112233445566778899")
+        let encrypted = try! enc.encryptData(plain, offset: 0, packetId: packetId)
+        let decrypted = try! dec.decryptData(encrypted, offset: 0, packetId: packetId)
+        XCTAssertEqual(plain, decrypted)
+    }
+
 //    func testCryptoOperation() {
 //        let data = Data(hex: "aabbccddeeff")
 //

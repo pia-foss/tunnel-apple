@@ -388,4 +388,20 @@ class CoreTests: XCTestCase {
         bytes.removeSubrange(0..<until)
         XCTAssertEqual(bytes.count, 0)
     }
+
+    func testGCM() {
+        let ck = try! SecureRandom.safeData(length: 32)
+        let hk = try! SecureRandom.safeData(length: 32)
+
+        let gcm = CryptoBox(cipherAlgorithm: "aes-256-gcm", digestAlgorithm: nil)
+        try! gcm.configure(withCipherEncKey: ck, cipherDecKey: ck, hmacEncKey: hk, hmacDecKey: hk)
+        let enc = gcm.encrypter()
+        let dec = gcm.decrypter()
+
+        let packetId: UInt32 = 0x56341200
+        let plain = Data(hex: "00112233445566778899")
+        let encrypted = try! enc.encryptData(plain, offset: 0, packetId: packetId)
+        let decrypted = try! dec.decryptData(encrypted, offset: 0, packetId: packetId)
+        XCTAssertEqual(plain, decrypted)
+    }
 }

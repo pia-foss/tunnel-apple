@@ -401,7 +401,7 @@ public class SessionProxy {
             if let packets = newPackets, !packets.isEmpty {
                 self?.maybeRenegotiate()
 
-//                log.verbose("Received \(packets.count) packets from \(self.linkName)")
+//                log.verbose("Received \(packets.count) packets from LINK")
                 self?.receiveLink(packets: packets)
             }
         }
@@ -433,7 +433,7 @@ public class SessionProxy {
         var dataPacketsByKey = [UInt8: [Data]]()
         
         for packet in packets {
-//            log.verbose("Received data from \(linkName) (\(packet.count) bytes): \(packet.toHex())")
+//            log.verbose("Received data from LINK (\(packet.count) bytes): \(packet.toHex())")
 
             guard let firstByte = packet.first else {
                 return
@@ -979,8 +979,8 @@ public class SessionProxy {
 
             // WARNING: runs in Network.framework queue
             link?.writePacket(raw) { [weak self] (error) in
-                self?.queue.sync {
-                    if let error = error {
+                if let error = error {
+                    self?.queue.sync {
                         log.error("Failed LINK write during control flush: \(error)")
                         self?.deferStop(.reconnect, SessionError.failedLinkWrite)
                         return
@@ -1076,14 +1076,14 @@ public class SessionProxy {
             
             // WARNING: runs in Network.framework queue
             link?.writePackets(encryptedPackets) { [weak self] (error) in
-                self?.queue.sync {
-                    if let error = error {
+                if let error = error {
+                    self?.queue.sync {
                         log.error("Data: Failed LINK write during send data: \(error)")
                         self?.deferStop(.reconnect, SessionError.failedLinkWrite)
                         return
                     }
-//                    log.verbose("Data: \(encryptedPackets.count) packets successfully written to \(self.linkName)")
                 }
+//                log.verbose("Data: \(encryptedPackets.count) packets successfully written to LINK")
             }
         } catch let e {
             deferStop(.reconnect, e)
@@ -1131,14 +1131,14 @@ public class SessionProxy {
         
         // WARNING: runs in Network.framework queue
         link?.writePacket(raw) { [weak self] (error) in
-            self?.queue.sync {
-                if let error = error {
+            if let error = error {
+                self?.queue.sync {
                     log.error("Failed LINK write during send ack for packetId \(packetId): \(error)")
                     self?.deferStop(.reconnect, SessionError.failedLinkWrite)
                     return
                 }
-                log.debug("Ack successfully written to LINK for packetId \(packetId)")
             }
+            log.debug("Ack successfully written to LINK for packetId \(packetId)")
         }
     }
     

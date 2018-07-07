@@ -185,9 +185,9 @@ class NETCPInterface: NSObject, GenericSocket, LinkInterface {
                 newBuffer.append(contentsOf: data)
                 let (until, packets) = ControlPacket.parsed(newBuffer)
                 newBuffer.removeSubrange(0..<until)
+                self?.loopReadPackets(queue, newBuffer, handler)
 
                 handler(packets, nil)
-                self?.loopReadPackets(queue, newBuffer, handler)
             }
         }
     }

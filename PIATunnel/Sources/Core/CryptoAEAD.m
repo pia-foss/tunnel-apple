@@ -112,7 +112,47 @@ const NSInteger CryptoAEADTagLength     = 16;
 
     *destLength = CryptoAEADTagLength + l1 + l2;
 
+//    NSLog(@">>> ENC iv: %@", [NSData dataWithBytes:self.cipherIVEnc length:self.cipherIVLength]);
+//    NSLog(@">>> ENC ad: %@", [NSData dataWithBytes:ad length:4]);
+//    NSLog(@">>> ENC tag: %@", [NSData dataWithBytes:dest length:CryptoAEADTagLength]);
+//    NSLog(@">>> ENC dest: %@", [NSData dataWithBytes:dest + CryptoAEADTagLength length:*destLength - CryptoAEADTagLength]);
+
     PIA_CRYPTO_RETURN_STATUS(code)
+}
+
+- (void)assembleDataPacketWithPacketId:(uint32_t)packetId compression:(uint8_t)compression payload:(NSData *)payload into:(uint8_t *)dest length:(int *)length
+{
+    uint8_t *ptr = dest;
+    *ptr = compression;
+    ptr += sizeof(uint8_t);
+    memcpy(ptr, payload.bytes, payload.length);
+    *length = (int)(ptr - dest + payload.length);
+}
+
+- (NSData *)encryptedDataPacketWithHeader:(uint8_t)header packetId:(uint32_t)packetId payload:(const uint8_t *)payload payloadLength:(int)payloadLength error:(NSError *__autoreleasing *)error
+{
+    const int capacity = 5 + (int)safe_crypto_capacity(payloadLength, self.overheadLength);
+    NSMutableData *encryptedPacket = [[NSMutableData alloc] initWithLength:capacity];
+    uint8_t *ptr = encryptedPacket.mutableBytes;
+    int encryptedPayloadLength = INT_MAX;
+    const BOOL success = [self encryptBytes:payload
+                                     length:payloadLength
+                                       dest:(ptr + 5) // skip header and packet id
+                                 destLength:&encryptedPayloadLength
+                                   packetId:htonl(packetId)
+                                      error:error];
+    
+    NSAssert(encryptedPayloadLength <= capacity, @"Did not allocate enough bytes for payload");
+    
+    if (!success) {
+        return nil;
+    }
+    
+    // set header byte
+    *ptr = header;
+    *(uint32_t *)(ptr + 1) = htonl(packetId);
+    encryptedPacket.length = 5 + encryptedPayloadLength;
+    return encryptedPacket;
 }
 
 #pragma mark Decrypter
@@ -160,8 +200,41 @@ const NSInteger CryptoAEADTagLength     = 16;
     PIA_CRYPTO_TRACK_STATUS(code) EVP_CipherFinal(self.cipherCtxDec, dest + l1, &l2);
 
     *destLength = l1 + l2;
+    
+//    NSLog(@">>> DEC iv: %@", [NSData dataWithBytes:self.cipherIVDec length:self.cipherIVLength]);
+//    NSLog(@">>> DEC ad: %@", [NSData dataWithBytes:ad length:4]);
+//    NSLog(@">>> DEC tag: %@", [NSData dataWithBytes:bytes length:CryptoAEADTagLength]);
+//    NSLog(@">>> DEC dest: %@", [NSData dataWithBytes:dest length:*destLength]);
 
     PIA_CRYPTO_RETURN_STATUS(code)
+}
+
+- (BOOL)decryptDataPacket:(NSData *)packet into:(uint8_t *)dest length:(int *)length packetId:(uint32_t *)packetId error:(NSError *__autoreleasing *)error
+{
+    // associated data from packet id after header
+    const uint32_t ad = *(const uint32_t *)(packet.bytes + 1);
+
+    // skip header byte + packet id
+    const BOOL success = [self decryptBytes:(packet.bytes + 5)
+                                     length:(int)(packet.length - 5)
+                                       dest:dest
+                                 destLength:length
+                                   packetId:ad
+                                      error:error];
+    if (!success) {
+        return NO;
+    }
+    *packetId = ntohl(ad);
+    return YES;
+}
+
+- (uint8_t *)parsePayloadWithDataPacket:(uint8_t *)packet packetLength:(int)packetLength length:(int *)length compression:(uint8_t *)compression
+{
+    uint8_t *ptr = packet;
+    *compression = *ptr;
+    ptr += sizeof(uint8_t); // compression byte
+    *length = packetLength - (int)(ptr - packet);
+    return ptr;
 }
 
 #pragma mark Helpers

@@ -130,6 +130,42 @@ const NSInteger CryptoCBCMaxHMACLength = 100;
     PIA_CRYPTO_RETURN_STATUS(code)
 }
 
+- (void)assembleDataPacketWithPacketId:(uint32_t)packetId compression:(uint8_t)compression payload:(NSData *)payload into:(uint8_t *)dest length:(int *)length
+{
+    uint8_t *ptr = dest;
+    *(uint32_t *)ptr = htonl(packetId);
+    ptr += sizeof(uint32_t);
+    *ptr = compression;
+    ptr += sizeof(uint8_t);
+    memcpy(ptr, payload.bytes, payload.length);
+    *length = (int)(ptr - dest + payload.length);
+}
+
+- (NSData *)encryptedDataPacketWithHeader:(uint8_t)header packetId:(uint32_t)packetId payload:(const uint8_t *)payload payloadLength:(int)payloadLength error:(NSError *__autoreleasing *)error
+{
+    const int capacity = 1 + (int)safe_crypto_capacity(payloadLength, self.overheadLength);
+    NSMutableData *encryptedPacket = [[NSMutableData alloc] initWithLength:capacity];
+    uint8_t *ptr = encryptedPacket.mutableBytes;
+    int encryptedPayloadLength = INT_MAX;
+    const BOOL success = [self encryptBytes:payload
+                                     length:payloadLength
+                                       dest:(ptr + 1) // skip header byte
+                                 destLength:&encryptedPayloadLength
+                                   packetId:packetId
+                                      error:error];
+    
+    NSAssert(encryptedPayloadLength <= capacity, @"Did not allocate enough bytes for payload");
+    
+    if (!success) {
+        return nil;
+    }
+    
+    // set header byte
+    *ptr = header;
+    encryptedPacket.length = 1 + encryptedPayloadLength;
+    return encryptedPacket;
+}
+
 #pragma mark Decrypter
 
 - (void)configureDecryptionWithCipherKey:(ZeroingData *)cipherKey hmacKey:(ZeroingData *)hmacKey
@@ -185,6 +221,32 @@ const NSInteger CryptoCBCMaxHMACLength = 100;
     *destLength = l1 + l2;
     
     PIA_CRYPTO_RETURN_STATUS(code)
+}
+
+- (BOOL)decryptDataPacket:(NSData *)packet into:(uint8_t *)dest length:(int *)length packetId:(nonnull uint32_t *)packetId error:(NSError *__autoreleasing *)error
+{
+    // skip header byte = (code, key)
+    const BOOL success = [self decryptBytes:(packet.bytes + 1)
+                                     length:(int)(packet.length - 1)
+                                       dest:dest
+                                 destLength:length
+                                   packetId:0   // ignored
+                                      error:error];
+    if (!success) {
+        return NO;
+    }
+    *packetId = ntohl(*(uint32_t *)dest);
+    return YES;
+}
+
+- (uint8_t *)parsePayloadWithDataPacket:(uint8_t *)packet packetLength:(int)packetLength length:(int *)length compression:(uint8_t *)compression
+{
+    uint8_t *ptr = packet;
+    ptr += sizeof(uint32_t); // packet id
+    *compression = *ptr;
+    ptr += sizeof(uint8_t); // compression byte
+    *length = packetLength - (int)(ptr - packet);
+    return ptr;
 }
 
 @end

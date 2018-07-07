@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0E11089D1F77B9E800A92462 /* CoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E11089C1F77B9E800A92462 /* CoreTests.swift */; };
 		0E11089F1F77B9E800A92462 /* PIATunnel.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0E17D7F91F730D9F009EE129 /* PIATunnel.framework */; };
 		0E1108AC1F77B9F900A92462 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E1108AB1F77B9F900A92462 /* AppDelegate.swift */; };
 		0E1108AE1F77B9F900A92462 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E1108AD1F77B9F900A92462 /* ViewController.swift */; };
@@ -29,6 +28,14 @@
 		0EAAD70A20E4F2BC0088754A /* CommunicationType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EAAD70820E4F2BC0088754A /* CommunicationType.swift */; };
 		0EAAD70C20E4F85A0088754A /* LinkInterface+Strategy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EAAD70B20E4F85A0088754A /* LinkInterface+Strategy.swift */; };
 		0EAAD70D20E4F85A0088754A /* LinkInterface+Strategy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EAAD70B20E4F85A0088754A /* LinkInterface+Strategy.swift */; };
+		0EB2B45320F0BB44004233D7 /* EncryptionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EB2B45220F0BB44004233D7 /* EncryptionTests.swift */; };
+		0EB2B45520F0BB53004233D7 /* DataManipulationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EB2B45420F0BB53004233D7 /* DataManipulationTests.swift */; };
+		0EB2B45720F0BD16004233D7 /* RandomTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EB2B45620F0BD16004233D7 /* RandomTests.swift */; };
+		0EB2B45920F0BD9A004233D7 /* LinkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EB2B45820F0BD9A004233D7 /* LinkTests.swift */; };
+		0EB2B45B20F0BE4C004233D7 /* TestUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EB2B45A20F0BE4C004233D7 /* TestUtils.swift */; };
+		0EB2B45D20F0BF41004233D7 /* RawPerformanceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EB2B45C20F0BF41004233D7 /* RawPerformanceTests.swift */; };
+		0EB2B45F20F0C098004233D7 /* EncryptionPerformanceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EB2B45E20F0C098004233D7 /* EncryptionPerformanceTests.swift */; };
+		0EB2B46120F0C0A4004233D7 /* DataPathPerformanceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EB2B46020F0C0A4004233D7 /* DataPathPerformanceTests.swift */; };
 		0EBBF2E52084FE6F00E36B40 /* GenericSocket.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EBBF2E42084FE6F00E36B40 /* GenericSocket.swift */; };
 		0EBBF2E62084FE6F00E36B40 /* GenericSocket.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EBBF2E42084FE6F00E36B40 /* GenericSocket.swift */; };
 		0EBBF2F3208505D300E36B40 /* NEUDPInterface.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EBBF2EC2085055100E36B40 /* NEUDPInterface.swift */; };
@@ -161,7 +168,6 @@
 
 /* Begin PBXFileReference section */
 		0E11089A1F77B9E800A92462 /* PIATunnelTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PIATunnelTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		0E11089C1F77B9E800A92462 /* CoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreTests.swift; sourceTree = "<group>"; };
 		0E11089E1F77B9E800A92462 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		0E1108A91F77B9F900A92462 /* PIATunnelHost.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PIATunnelHost.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0E1108AB1F77B9F900A92462 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -180,6 +186,14 @@
 		0EA8E2062024D4B200A92DB6 /* PIA-ECC-521r1.pem */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "PIA-ECC-521r1.pem"; sourceTree = "<group>"; };
 		0EAAD70820E4F2BC0088754A /* CommunicationType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommunicationType.swift; sourceTree = "<group>"; };
 		0EAAD70B20E4F85A0088754A /* LinkInterface+Strategy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LinkInterface+Strategy.swift"; sourceTree = "<group>"; };
+		0EB2B45220F0BB44004233D7 /* EncryptionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncryptionTests.swift; sourceTree = "<group>"; };
+		0EB2B45420F0BB53004233D7 /* DataManipulationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataManipulationTests.swift; sourceTree = "<group>"; };
+		0EB2B45620F0BD16004233D7 /* RandomTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RandomTests.swift; sourceTree = "<group>"; };
+		0EB2B45820F0BD9A004233D7 /* LinkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LinkTests.swift; sourceTree = "<group>"; };
+		0EB2B45A20F0BE4C004233D7 /* TestUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestUtils.swift; sourceTree = "<group>"; };
+		0EB2B45C20F0BF41004233D7 /* RawPerformanceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RawPerformanceTests.swift; sourceTree = "<group>"; };
+		0EB2B45E20F0C098004233D7 /* EncryptionPerformanceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncryptionPerformanceTests.swift; sourceTree = "<group>"; };
+		0EB2B46020F0C0A4004233D7 /* DataPathPerformanceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataPathPerformanceTests.swift; sourceTree = "<group>"; };
 		0EBBF2E42084FE6F00E36B40 /* GenericSocket.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GenericSocket.swift; sourceTree = "<group>"; };
 		0EBBF2EA2085055100E36B40 /* NWUDPSessionState+Description.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "NWUDPSessionState+Description.swift"; sourceTree = "<group>"; };
 		0EBBF2EB2085055100E36B40 /* NETunnelInterface.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NETunnelInterface.swift; sourceTree = "<group>"; };
@@ -284,9 +298,16 @@
 		0E11089B1F77B9E800A92462 /* PIATunnelTests */ = {
 			isa = PBXGroup;
 			children = (
-				0E85A259202CC5AE0059E9F9 /* AppExtensionTests.swift */,
-				0E11089C1F77B9E800A92462 /* CoreTests.swift */,
 				0E11089E1F77B9E800A92462 /* Info.plist */,
+				0E85A259202CC5AE0059E9F9 /* AppExtensionTests.swift */,
+				0EB2B45420F0BB53004233D7 /* DataManipulationTests.swift */,
+				0EB2B46020F0C0A4004233D7 /* DataPathPerformanceTests.swift */,
+				0EB2B45E20F0C098004233D7 /* EncryptionPerformanceTests.swift */,
+				0EB2B45220F0BB44004233D7 /* EncryptionTests.swift */,
+				0EB2B45820F0BD9A004233D7 /* LinkTests.swift */,
+				0EB2B45620F0BD16004233D7 /* RandomTests.swift */,
+				0EB2B45C20F0BF41004233D7 /* RawPerformanceTests.swift */,
+				0EB2B45A20F0BE4C004233D7 /* TestUtils.swift */,
 			);
 			path = PIATunnelTests;
 			sourceTree = "<group>";
@@ -768,7 +789,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0E11089D1F77B9E800A92462 /* CoreTests.swift in Sources */,
+				0EB2B45720F0BD16004233D7 /* RandomTests.swift in Sources */,
+				0EB2B45920F0BD9A004233D7 /* LinkTests.swift in Sources */,
+				0EB2B45520F0BB53004233D7 /* DataManipulationTests.swift in Sources */,
+				0EB2B45320F0BB44004233D7 /* EncryptionTests.swift in Sources */,
+				0EB2B45B20F0BE4C004233D7 /* TestUtils.swift in Sources */,
+				0EB2B46120F0C0A4004233D7 /* DataPathPerformanceTests.swift in Sources */,
+				0EB2B45F20F0C098004233D7 /* EncryptionPerformanceTests.swift in Sources */,
+				0EB2B45D20F0BF41004233D7 /* RawPerformanceTests.swift in Sources */,
 				0E85A25A202CC5AF0059E9F9 /* AppExtensionTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

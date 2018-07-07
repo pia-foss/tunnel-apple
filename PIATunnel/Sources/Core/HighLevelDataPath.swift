@@ -12,6 +12,7 @@ import __PIATunnelNative
 
 private let log = SwiftyBeaver.self
 
+// FIXME: use generic Encrypter/Decrypter
 class HighLevelDataPath: DataPath {
     private let encrypter: Encrypter
     

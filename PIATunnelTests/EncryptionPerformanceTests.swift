@@ -29,6 +29,7 @@ class EncryptionPerformanceTests: XCTestCase {
         // Put teardown code here. This method is called after the invocation of each test method in the class.
     }
 
+    // 1.215s
     func testCBCEncryption() {
         let suite = TestUtils.generateDataSuite(1000, 100000)
         measure {

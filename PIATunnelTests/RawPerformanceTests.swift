@@ -21,6 +21,7 @@ class RawPerformanceTests: XCTestCase {
         // Put teardown code here. This method is called after the invocation of each test method in the class.
     }
     
+    // 0.434s
     func testUInt16FromBuffer() {
         let data = Data([0x22, 0xff, 0xaa, 0xbb, 0x55, 0x66])
         
@@ -31,6 +32,7 @@ class RawPerformanceTests: XCTestCase {
         }
     }
     
+    // 0.463s
     func testUInt16FromPointers() {
         let data = Data([0x22, 0xff, 0xaa, 0xbb, 0x55, 0x66])
         
@@ -41,6 +43,7 @@ class RawPerformanceTests: XCTestCase {
         }
     }
     
+    // 0.863s
     func testUInt32FromBuffer() {
         let data = Data([0x22, 0xff, 0xaa, 0xbb, 0x55, 0x66])
         
@@ -51,6 +54,7 @@ class RawPerformanceTests: XCTestCase {
         }
     }
     
+    // 0.469s
     func testUInt32FromPointers() {
         let data = Data([0x22, 0xff, 0xaa, 0xbb, 0x55, 0x66])
         
@@ -61,6 +65,7 @@ class RawPerformanceTests: XCTestCase {
         }
     }
     
+    // 0.071s
     func testRandomUInt32FromBuffer() {
         measure {
             for _ in 0..<10000 {
@@ -69,6 +74,7 @@ class RawPerformanceTests: XCTestCase {
         }
     }
     
+    // 0.063s
     func testRandomUInt32FromPointers() {
         measure {
             for _ in 0..<10000 {
@@ -77,6 +83,7 @@ class RawPerformanceTests: XCTestCase {
         }
     }
 
+    // 0.215s
     func testMyPacketHeader() {
         let suite = TestUtils.generateDataSuite(1000, 200000)
         measure {
@@ -86,6 +93,7 @@ class RawPerformanceTests: XCTestCase {
         }
     }
 
+    // 0.146s
     func testStevePacketHeader() {
         let suite = TestUtils.generateDataSuite(1000, 200000)
         measure {
@@ -95,6 +103,7 @@ class RawPerformanceTests: XCTestCase {
         }
     }
 
+    // 0.060s
     func testDataSubdata() {
         let suite = TestUtils.generateDataSuite(1000, 100000)
         measure {
@@ -104,6 +113,7 @@ class RawPerformanceTests: XCTestCase {
         }
     }
 
+    // 0.118s
     func testDataRemoveSubrange() {
         let suite = TestUtils.generateDataSuite(1000, 100000)
         measure {

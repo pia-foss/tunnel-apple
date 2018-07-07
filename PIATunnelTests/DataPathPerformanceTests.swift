@@ -23,7 +23,7 @@ class DataPathPerformanceTests: XCTestCase {
         let ck = try! SecureRandom.safeData(length: 32)
         let hk = try! SecureRandom.safeData(length: 32)
         
-        let crypto = try! EncryptionProxy("aes-128-cbc", "sha1", ck, ck, hk, hk)
+        let crypto = EncryptionProxy("aes-128-cbc", "sha1", ck, ck, hk, hk)
         encrypter = crypto.encrypter()
         decrypter = crypto.decrypter()
         
@@ -35,9 +35,9 @@ class DataPathPerformanceTests: XCTestCase {
         // Put teardown code here. This method is called after the invocation of each test method in the class.
     }
 
-    // 236ms on simulator
+    // 28ms
     func testHighLevel() {
-        let packets = TestUtils.generateDataSuite(1200, 10000)
+        let packets = TestUtils.generateDataSuite(1200, 1000)
         var encryptedPackets: [Data]!
         var decryptedPackets: [Data]!
         
@@ -50,9 +50,9 @@ class DataPathPerformanceTests: XCTestCase {
         XCTAssertEqual(decryptedPackets, packets)
     }
     
-    // 200ms on simulator
+    // 16ms
     func testPointerBased() {
-        let packets = TestUtils.generateDataSuite(1200, 10000)
+        let packets = TestUtils.generateDataSuite(1200, 1000)
         var encryptedPackets: [Data]!
         var decryptedPackets: [Data]!
         

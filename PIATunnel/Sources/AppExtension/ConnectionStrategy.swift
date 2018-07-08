@@ -112,7 +112,7 @@ class ConnectionStrategy {
 
 private extension NEProvider {
     func createSocket(to address: String, protocol endpointProtocol: PIATunnelProvider.EndpointProtocol) -> GenericSocket {
-        let endpoint = NWHostEndpoint(hostname: address, port: endpointProtocol.port)
+        let endpoint = NWHostEndpoint(hostname: address, port: "\(endpointProtocol.port)")
         switch endpointProtocol.socketType {
         case .udp:
             let impl = createUDPSession(to: endpoint, from: nil)

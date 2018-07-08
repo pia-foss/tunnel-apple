@@ -145,6 +145,18 @@ extension Data {
 //        print("value: \(String(format: "%x", value))")
         return value
     }
+
+    func networkUInt16Value(from: Int) -> UInt16 {
+        return UInt16(bigEndian: subdata(in: from..<(from + 2)).withUnsafeBytes {
+            $0.pointee
+        })
+    }
+
+    func networkUInt32Value(from: Int) -> UInt32 {
+        return UInt32(bigEndian: subdata(in: from..<(from + 4)).withUnsafeBytes {
+            $0.pointee
+        })
+    }
 }
 
 extension Data {

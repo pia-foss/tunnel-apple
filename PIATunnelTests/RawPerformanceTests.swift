@@ -98,7 +98,8 @@ class RawPerformanceTests: XCTestCase {
         let suite = TestUtils.generateDataSuite(1000, 200000)
         measure {
             for data in suite {
-                let _ = UInt32(bigEndian: data.subdata(in: 0..<4).withUnsafeBytes { $0.pointee })
+//                let _ = UInt32(bigEndian: data.subdata(in: 0..<4).withUnsafeBytes { $0.pointee })
+                let _ = data.networkUInt32Value(from: 0)
             }
         }
     }

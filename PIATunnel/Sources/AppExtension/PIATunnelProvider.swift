@@ -204,6 +204,13 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
         case .requestLog:
             response = memoryLog.description.data(using: .utf8)
 
+        case .dataCount:
+            if let proxy = proxy {
+                response = Data()
+                response?.append(UInt64(proxy.bytesIn))
+                response?.append(UInt64(proxy.bytesOut))
+            }
+            
         default:
             break
         }

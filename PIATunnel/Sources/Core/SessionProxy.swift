@@ -203,6 +203,12 @@ public class SessionProxy {
     
     private var authenticator: Authenticator?
     
+    // MARK: Data
+    
+    private(set) var bytesIn: Int
+    
+    private(set) var bytesOut: Int
+    
     // MARK: Init
 
     /**
@@ -232,6 +238,8 @@ public class SessionProxy {
         controlPendingAcks = []
         controlPacketIdOut = 0
         controlPacketIdIn = 0
+        bytesIn = 0
+        bytesOut = 0
     }
     
     deinit {
@@ -589,6 +597,8 @@ public class SessionProxy {
         controlPacketIdOut = 0
         controlPacketIdIn = 0
         authenticator = nil
+        bytesIn = 0
+        bytesOut = 0
     }
     
     // Ruby: hard_reset
@@ -1045,6 +1055,7 @@ public class SessionProxy {
 
     // Ruby: handle_data_pkt
     private func handleDataPackets(_ packets: [Data], key: SessionKey) {
+        bytesIn += packets.flatCount
         do {
             guard let decryptedPackets = try key.decrypt(packets: packets) else {
                 log.warning("Could not decrypt packets, is data path set?")
@@ -1075,6 +1086,7 @@ public class SessionProxy {
             }
             
             // WARNING: runs in Network.framework queue
+            bytesOut += encryptedPackets.flatCount
             link?.writePackets(encryptedPackets) { [weak self] (error) in
                 if let error = error {
                     self?.queue.sync {

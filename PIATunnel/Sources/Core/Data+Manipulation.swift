@@ -116,8 +116,8 @@ extension Data {
         return value
     }
     
-    // best
-    func UInt32Value(from: Int) -> UInt32 {
+    @available(*, deprecated)
+    func UInt32ValueFromBuffer(from: Int) -> UInt32 {
         var value: UInt32 = 0
         for i in 0..<4 {
             let byte = self[from + i]
@@ -128,8 +128,8 @@ extension Data {
         return value
     }
     
-    @available(*, deprecated)
-    func UInt32ValueFromPointers(from: Int) -> UInt32 {
+    // best
+    func UInt32Value(from: Int) -> UInt32 {
         return subdata(in: from..<(from + 4)).withUnsafeBytes { $0.pointee }
     }
 

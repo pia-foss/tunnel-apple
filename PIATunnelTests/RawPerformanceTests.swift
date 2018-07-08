@@ -49,7 +49,7 @@ class RawPerformanceTests: XCTestCase {
         
         measure {
             for _ in 0..<1000000 {
-                let _ = data.UInt32Value(from: 1)
+                let _ = data.UInt32ValueFromBuffer(from: 1)
             }
         }
     }
@@ -60,7 +60,7 @@ class RawPerformanceTests: XCTestCase {
         
         measure {
             for _ in 0..<1000000 {
-                let _ = data.UInt32ValueFromPointers(from: 1)
+                let _ = data.UInt32Value(from: 1)
             }
         }
     }

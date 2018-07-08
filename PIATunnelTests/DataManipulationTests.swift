@@ -28,9 +28,9 @@ class DataManipulationTests: XCTestCase {
         XCTAssertEqual(data.UInt32Value(from: 0), 0xbbaaff22)
         
         XCTAssertEqual(data.UInt16Value(from: 3), data.UInt16ValueFromPointers(from: 3))
-        XCTAssertEqual(data.UInt32Value(from: 2), data.UInt32ValueFromPointers(from: 2))
+        XCTAssertEqual(data.UInt32Value(from: 2), data.UInt32ValueFromBuffer(from: 2))
         XCTAssertEqual(data.UInt16Value(from: 4), data.UInt16ValueFromPointers(from: 4))
-        XCTAssertEqual(data.UInt32Value(from: 0), data.UInt32ValueFromPointers(from: 0))
+        XCTAssertEqual(data.UInt32Value(from: 0), data.UInt32ValueFromBuffer(from: 0))
     }
     
     func testZeroingData() {

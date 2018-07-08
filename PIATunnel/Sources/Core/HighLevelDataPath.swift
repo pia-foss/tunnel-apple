@@ -96,7 +96,7 @@ class HighLevelDataPath: DataPath {
 //            log.verbose("Data: Decrypted packet (\(decryptedPacket.count) bytes)")
             
             var offset = 0
-            let packetId = CFSwapInt32BigToHost(decryptedPacket.UInt32Value(from: offset))
+            let packetId = decryptedPacket.networkUInt32Value(from: offset)
             offset += 4
             
 //            let compression = decryptedPacket[offset]

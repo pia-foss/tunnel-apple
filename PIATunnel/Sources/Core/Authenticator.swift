@@ -106,7 +106,7 @@ class Authenticator {
         let serverRandom2 = controlBuffer.withOffset(offset, count: Configuration.randomLength)
         offset += Configuration.randomLength
         
-        let serverOptsLength = Int(CFSwapInt16BigToHost(controlBuffer.uint16Value(fromOffset: offset)))
+        let serverOptsLength = Int(controlBuffer.networkUInt16Value(fromOffset: offset))
         offset += 2
         
         let serverOpts = controlBuffer.withOffset(offset, count: serverOptsLength)

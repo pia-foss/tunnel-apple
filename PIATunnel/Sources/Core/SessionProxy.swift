@@ -474,7 +474,7 @@ public class SessionProxy {
             if (ackSize > 0) {
                 var ackedPacketIds = [UInt32]()
                 for _ in 0..<ackSize {
-                    let ackedPacketId = CFSwapInt32BigToHost(packet.UInt32Value(from: offset))
+                    let ackedPacketId = packet.networkUInt32Value(from: offset)
                     ackedPacketIds.append(ackedPacketId)
                     offset += ProtocolMacros.packetIdLength
                 }
@@ -490,7 +490,7 @@ public class SessionProxy {
                 return
             }
 
-            let packetId = CFSwapInt32BigToHost(packet.UInt32Value(from: offset))
+            let packetId = packet.networkUInt32Value(from: offset)
             log.debug("Control packet has packetId \(packetId)")
             offset += ProtocolMacros.packetIdLength
 

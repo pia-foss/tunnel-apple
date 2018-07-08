@@ -47,8 +47,7 @@ class ControlPacket: Packet {
         var ni = 0
         var parsed: [Data] = []
         while (ni + 2 <= stream.count) {
-            let networkPacklen = stream.UInt16Value(from: ni)
-            let packlen = Int(CFSwapInt16BigToHost(networkPacklen))
+            let packlen = Int(stream.networkUInt16Value(from: ni))
             let start = ni + 2
             let end = start + packlen
             guard (end <= stream.count) else {

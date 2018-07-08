@@ -49,7 +49,7 @@ class RawPerformanceTests: XCTestCase {
         
         measure {
             for _ in 0..<1000000 {
-                let _ = data.UInt32Value(from: 1)
+                let _ = data.UInt32ValueFromBuffer(from: 1)
             }
         }
     }
@@ -60,7 +60,7 @@ class RawPerformanceTests: XCTestCase {
         
         measure {
             for _ in 0..<1000000 {
-                let _ = data.UInt32ValueFromPointers(from: 1)
+                let _ = data.UInt32Value(from: 1)
             }
         }
     }
@@ -98,7 +98,8 @@ class RawPerformanceTests: XCTestCase {
         let suite = TestUtils.generateDataSuite(1000, 200000)
         measure {
             for data in suite {
-                let _ = UInt32(bigEndian: data.subdata(in: 0..<4).withUnsafeBytes { $0.pointee })
+//                let _ = UInt32(bigEndian: data.subdata(in: 0..<4).withUnsafeBytes { $0.pointee })
+                let _ = data.networkUInt32Value(from: 0)
             }
         }
     }

@@ -67,6 +67,12 @@ extension Data {
         append(buffer)
     }
     
+    mutating func append(_ value: UInt64) {
+        var localValue = value
+        let buffer = UnsafeBufferPointer(start: &localValue, count: 1)
+        append(buffer)
+    }
+    
     mutating func append(nullTerminatedString: String) {
         append(nullTerminatedString.data(using: .ascii)!)
         append(UInt8(0))
@@ -116,8 +122,8 @@ extension Data {
         return value
     }
     
-    // best
-    func UInt32Value(from: Int) -> UInt32 {
+    @available(*, deprecated)
+    func UInt32ValueFromBuffer(from: Int) -> UInt32 {
         var value: UInt32 = 0
         for i in 0..<4 {
             let byte = self[from + i]
@@ -128,8 +134,8 @@ extension Data {
         return value
     }
     
-    @available(*, deprecated)
-    func UInt32ValueFromPointers(from: Int) -> UInt32 {
+    // best
+    func UInt32Value(from: Int) -> UInt32 {
         return subdata(in: from..<(from + 4)).withUnsafeBytes { $0.pointee }
     }
 
@@ -145,10 +151,28 @@ extension Data {
 //        print("value: \(String(format: "%x", value))")
         return value
     }
+
+    func networkUInt16Value(from: Int) -> UInt16 {
+        return UInt16(bigEndian: subdata(in: from..<(from + 2)).withUnsafeBytes {
+            $0.pointee
+        })
+    }
+
+    func networkUInt32Value(from: Int) -> UInt32 {
+        return UInt32(bigEndian: subdata(in: from..<(from + 4)).withUnsafeBytes {
+            $0.pointee
+        })
+    }
 }
 
 extension Data {
     func subdata(offset: Int, count: Int) -> Data {
         return subdata(in: offset..<(offset + count))
+    }
+}
+
+extension Array where Element == Data {
+    var flatCount: Int {
+        return map { $0.count }.reduce(0) { $0 + $1 }
     }
 }

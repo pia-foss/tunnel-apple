@@ -201,7 +201,7 @@
     return [[ZeroingData alloc] initWithBytesNoCopy:newBytes count:count];
 }
 
-- (uint16_t)uint16ValueFromOffset:(NSInteger)from
+- (uint16_t)UInt16ValueFromOffset:(NSInteger)from
 {
     NSParameterAssert(from + 2 <= _count);
 
@@ -209,6 +209,16 @@
     value |= _bytes[from];
     value |= _bytes[from + 1] << 8;
     return value;
+}
+
+- (uint16_t)networkUInt16ValueFromOffset:(NSInteger)from
+{
+    NSParameterAssert(from + 2 <= _count);
+    
+    uint16_t value = 0;
+    value |= _bytes[from];
+    value |= _bytes[from + 1] << 8;
+    return CFSwapInt16BigToHost(value);
 }
 
 - (NSString *)nullTerminatedStringFromOffset:(NSInteger)from

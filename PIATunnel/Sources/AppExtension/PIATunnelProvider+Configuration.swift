@@ -120,13 +120,13 @@ extension PIATunnelProvider {
         public let socketType: SocketType
         
         /// The remote port.
-        public let port: String
+        public let port: UInt16
         
         /// The communication type.
         public let communicationType: CommunicationType
 
         /// :nodoc:
-        public init(_ socketType: SocketType, _ port: String, _ communicationType: CommunicationType) {
+        public init(_ socketType: SocketType, _ port: UInt16, _ communicationType: CommunicationType) {
             self.socketType = socketType
             self.port = port
             self.communicationType = communicationType
@@ -247,7 +247,7 @@ extension PIATunnelProvider {
             self.appGroup = appGroup
             prefersResolvedAddresses = false
             resolvedAddresses = nil
-            endpointProtocols = [EndpointProtocol(.udp, "1194", .pia)]
+            endpointProtocols = [EndpointProtocol(.udp, 1194, .pia)]
             cipher = .aes128cbc
             digest = .sha1
             handshake = .rsa2048
@@ -298,10 +298,13 @@ extension PIATunnelProvider {
                     throw ProviderError.configuration(field: "protocolConfiguration.providerConfiguration[\(S.endpointProtocols)] entries must be in the form 'socketType:port:communicationType'")
                 }
                 let socketTypeString = components[0]
-                let port = components[1]
+                let portString = components[1]
                 let communicationTypeString = components[2]
                 guard let socketType = SocketType(rawValue: socketTypeString) else {
                     throw ProviderError.configuration(field: "protocolConfiguration.providerConfiguration[\(S.endpointProtocols)] unrecognized socketType '\(socketTypeString)'")
+                }
+                guard let port = UInt16(portString) else {
+                    throw ProviderError.configuration(field: "protocolConfiguration.providerConfiguration[\(S.endpointProtocols)] non-numeric port '\(portString)'")
                 }
                 guard let communicationType = CommunicationType(rawValue: communicationTypeString) else {
                     throw ProviderError.configuration(field: "protocolConfiguration.providerConfiguration[\(S.endpointProtocols)] unrecognized communicationType '\(communicationTypeString)'")

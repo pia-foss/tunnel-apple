@@ -30,7 +30,8 @@
 
 - (nonnull ZeroingData *)appendingData:(ZeroingData *)other;
 - (nonnull ZeroingData *)withOffset:(NSInteger)offset count:(NSInteger)count;
-- (uint16_t)uint16ValueFromOffset:(NSInteger)from;
+- (uint16_t)UInt16ValueFromOffset:(NSInteger)from;
+- (uint16_t)networkUInt16ValueFromOffset:(NSInteger)from;
 - (NSString *)nullTerminatedStringFromOffset:(NSInteger)from;
 
 - (BOOL)isEqualToData:(NSData *)data;

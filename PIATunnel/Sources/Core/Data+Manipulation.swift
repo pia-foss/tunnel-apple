@@ -164,3 +164,9 @@ extension Data {
         return subdata(in: offset..<(offset + count))
     }
 }
+
+extension Array where Element == Data {
+    var flatCount: Int {
+        return map { $0.count }.reduce(0) { $0 + $1 }
+    }
+}

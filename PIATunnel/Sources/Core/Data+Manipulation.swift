@@ -67,6 +67,12 @@ extension Data {
         append(buffer)
     }
     
+    mutating func append(_ value: UInt64) {
+        var localValue = value
+        let buffer = UnsafeBufferPointer(start: &localValue, count: 1)
+        append(buffer)
+    }
+    
     mutating func append(nullTerminatedString: String) {
         append(nullTerminatedString.data(using: .ascii)!)
         append(UInt8(0))

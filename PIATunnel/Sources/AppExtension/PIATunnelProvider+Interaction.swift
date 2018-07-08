@@ -18,6 +18,11 @@ extension PIATunnelProvider {
         /// Requests a snapshot of the latest debug log. Returns the log data decoded from UTF-8.
         public static let requestLog = Message(0xff)
         
+        /// Requests the current bytes count from data channel (if connected).
+        ///
+        /// Data is 16 bytes: low 8 = received, high 8 = sent.
+        public static let dataCount = Message(0xfe)
+        
         /// The underlying raw message `Data` to forward to the tunnel via IPC.
         public let data: Data
         

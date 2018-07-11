@@ -12,6 +12,7 @@
 
 #import "CryptoCBC.h"
 #import "CryptoMacros.h"
+#import "PacketMacros.h"
 #import "Allocation.h"
 #import "Errors.h"
 
@@ -237,7 +238,7 @@ const NSInteger CryptoCBCMaxHMACLength = 100;
     *length = (int)(ptr - dest + payload.length);
 }
 
-- (NSData *)encryptedDataPacketWithHeader:(uint8_t)header packetId:(uint32_t)packetId payload:(const uint8_t *)payload payloadLength:(int)payloadLength error:(NSError *__autoreleasing *)error
+- (NSData *)encryptedDataPacketWithKey:(uint8_t)key packetId:(uint32_t)packetId payload:(const uint8_t *)payload payloadLength:(int)payloadLength error:(NSError *__autoreleasing *)error
 {
     const int capacity = PacketHeaderLength + (int)safe_crypto_capacity(payloadLength, self.crypto.overheadLength);
     NSMutableData *encryptedPacket = [[NSMutableData alloc] initWithLength:capacity];
@@ -257,7 +258,7 @@ const NSInteger CryptoCBCMaxHMACLength = 100;
     }
     
     // set header byte
-    *ptr = header;
+    PacketHeaderSet(ptr, PacketCodeDataV1, key);
     encryptedPacket.length = PacketHeaderLength + encryptedPayloadLength;
     return encryptedPacket;
 }
@@ -266,7 +267,7 @@ const NSInteger CryptoCBCMaxHMACLength = 100;
 
 - (BOOL)decryptDataPacket:(NSData *)packet into:(uint8_t *)dest length:(int *)length packetId:(nonnull uint32_t *)packetId error:(NSError *__autoreleasing *)error
 {
-    // skip header byte = (code, key)
+    // skip header = (code, key)
     const BOOL success = [self.crypto decryptBytes:(packet.bytes + PacketHeaderLength)
                                             length:(int)(packet.length - PacketHeaderLength)
                                               dest:dest

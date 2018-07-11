@@ -229,7 +229,7 @@ const NSInteger CryptoAEADTagLength     = 16;
     *length = (int)(ptr - dest + payload.length);
 }
 
-- (NSData *)encryptedDataPacketWithHeader:(uint8_t)header packetId:(uint32_t)packetId payload:(const uint8_t *)payload payloadLength:(int)payloadLength error:(NSError *__autoreleasing *)error
+- (NSData *)encryptedDataPacketWithKey:(uint8_t)key packetId:(uint32_t)packetId payload:(const uint8_t *)payload payloadLength:(int)payloadLength error:(NSError *__autoreleasing *)error
 {
     const int capacity = PacketHeaderLength + PacketIdLength + (int)safe_crypto_capacity(payloadLength, self.crypto.overheadLength);
     NSMutableData *encryptedPacket = [[NSMutableData alloc] initWithLength:capacity];
@@ -249,7 +249,7 @@ const NSInteger CryptoAEADTagLength     = 16;
     }
     
     // set header byte
-    *ptr = header;
+    PacketHeaderSet(ptr, PacketCodeDataV1, key);
     *(uint32_t *)(ptr + PacketHeaderLength) = htonl(packetId);
     encryptedPacket.length = PacketHeaderLength + PacketIdLength + encryptedPayloadLength;
     return encryptedPacket;
@@ -262,7 +262,7 @@ const NSInteger CryptoAEADTagLength     = 16;
     // associated data from packet id after header
     const uint32_t ad = *(const uint32_t *)(packet.bytes + PacketHeaderLength);
 
-    // skip header byte + packet id
+    // skip header + packet id
     const BOOL success = [self.crypto decryptBytes:(packet.bytes + PacketHeaderLength + PacketIdLength)
                                             length:(int)(packet.length - (PacketHeaderLength + PacketIdLength))
                                               dest:dest

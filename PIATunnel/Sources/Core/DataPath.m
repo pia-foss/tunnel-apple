@@ -151,12 +151,11 @@
                                                 length:&payloadLength];
         MSSFix(payload, payloadLength);
         
-        const uint8_t header = (PacketCodeDataV1 << 3 | (key & 0b111));
-        NSData *encryptedPacket = [self.encrypter encryptedDataPacketWithHeader:header
-                                                                       packetId:self.outPacketId
-                                                                        payload:payload
-                                                                  payloadLength:payloadLength
-                                                                          error:error];
+        NSData *encryptedPacket = [self.encrypter encryptedDataPacketWithKey:key
+                                                                    packetId:self.outPacketId
+                                                                     payload:payload
+                                                               payloadLength:payloadLength
+                                                                       error:error];
         if (!encryptedPacket) {
             return nil;
         }

@@ -7,6 +7,18 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0E07595F20EF6D1400F38FD8 /* CryptoCBC.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E07595C20EF6D1400F38FD8 /* CryptoCBC.m */; };
+		0E07596020EF6D1400F38FD8 /* CryptoCBC.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E07595C20EF6D1400F38FD8 /* CryptoCBC.m */; };
+		0E07596320EF733F00F38FD8 /* CryptoMacros.h in Headers */ = {isa = PBXBuildFile; fileRef = 0E07596120EF733F00F38FD8 /* CryptoMacros.h */; };
+		0E07596420EF733F00F38FD8 /* CryptoMacros.h in Headers */ = {isa = PBXBuildFile; fileRef = 0E07596120EF733F00F38FD8 /* CryptoMacros.h */; };
+		0E07596B20EF79AB00F38FD8 /* Encryption.h in Headers */ = {isa = PBXBuildFile; fileRef = 0E07596A20EF79AB00F38FD8 /* Encryption.h */; };
+		0E07596C20EF79AB00F38FD8 /* Encryption.h in Headers */ = {isa = PBXBuildFile; fileRef = 0E07596A20EF79AB00F38FD8 /* Encryption.h */; };
+		0E07596E20EF79B400F38FD8 /* CryptoCBC.h in Headers */ = {isa = PBXBuildFile; fileRef = 0E07596D20EF79B400F38FD8 /* CryptoCBC.h */; };
+		0E07596F20EF79B400F38FD8 /* CryptoCBC.h in Headers */ = {isa = PBXBuildFile; fileRef = 0E07596D20EF79B400F38FD8 /* CryptoCBC.h */; };
+		0E07597E20F0060E00F38FD8 /* CryptoAEAD.h in Headers */ = {isa = PBXBuildFile; fileRef = 0E07597C20F0060E00F38FD8 /* CryptoAEAD.h */; };
+		0E07597F20F0060E00F38FD8 /* CryptoAEAD.h in Headers */ = {isa = PBXBuildFile; fileRef = 0E07597C20F0060E00F38FD8 /* CryptoAEAD.h */; };
+		0E07598020F0060E00F38FD8 /* CryptoAEAD.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E07597D20F0060E00F38FD8 /* CryptoAEAD.m */; };
+		0E07598120F0060E00F38FD8 /* CryptoAEAD.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E07597D20F0060E00F38FD8 /* CryptoAEAD.m */; };
 		0E11089F1F77B9E800A92462 /* PIATunnel.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0E17D7F91F730D9F009EE129 /* PIATunnel.framework */; };
 		0E1108AC1F77B9F900A92462 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E1108AB1F77B9F900A92462 /* AppDelegate.swift */; };
 		0E1108AE1F77B9F900A92462 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E1108AD1F77B9F900A92462 /* ViewController.swift */; };
@@ -57,7 +69,6 @@
 		0EEC49E120B5F7EA008FEB91 /* Allocation.h in Headers */ = {isa = PBXBuildFile; fileRef = 0EFEB42E2006D3C800F81029 /* Allocation.h */; };
 		0EEC49E220B5F7F6008FEB91 /* CryptoBox.h in Headers */ = {isa = PBXBuildFile; fileRef = 0EFEB4402006D3C800F81029 /* CryptoBox.h */; };
 		0EEC49E320B5F7F6008FEB91 /* DataPath.h in Headers */ = {isa = PBXBuildFile; fileRef = 0EFEB4352006D3C800F81029 /* DataPath.h */; };
-		0EEC49E420B5F7F6008FEB91 /* Encryption.h in Headers */ = {isa = PBXBuildFile; fileRef = 0EFEB4342006D3C800F81029 /* Encryption.h */; };
 		0EEC49E520B5F7F6008FEB91 /* Errors.h in Headers */ = {isa = PBXBuildFile; fileRef = 0EFEB4362006D3C800F81029 /* Errors.h */; };
 		0EEC49E620B5F7F6008FEB91 /* MSS.h in Headers */ = {isa = PBXBuildFile; fileRef = 0EFEB42D2006D3C800F81029 /* MSS.h */; };
 		0EEC49E720B5F7F6008FEB91 /* PointerBasedDataPath.h in Headers */ = {isa = PBXBuildFile; fileRef = 0EFEB43F2006D3C800F81029 /* PointerBasedDataPath.h */; };
@@ -74,7 +85,6 @@
 		0EFEB45C2006D3C800F81029 /* ZeroingData.m in Sources */ = {isa = PBXBuildFile; fileRef = 0EFEB4312006D3C800F81029 /* ZeroingData.m */; };
 		0EFEB45D2006D3C800F81029 /* CryptoBox.m in Sources */ = {isa = PBXBuildFile; fileRef = 0EFEB4322006D3C800F81029 /* CryptoBox.m */; };
 		0EFEB45E2006D3C800F81029 /* PointerBasedDataPath.m in Sources */ = {isa = PBXBuildFile; fileRef = 0EFEB4332006D3C800F81029 /* PointerBasedDataPath.m */; };
-		0EFEB45F2006D3C800F81029 /* Encryption.h in Headers */ = {isa = PBXBuildFile; fileRef = 0EFEB4342006D3C800F81029 /* Encryption.h */; };
 		0EFEB4602006D3C800F81029 /* DataPath.h in Headers */ = {isa = PBXBuildFile; fileRef = 0EFEB4352006D3C800F81029 /* DataPath.h */; };
 		0EFEB4612006D3C800F81029 /* Errors.h in Headers */ = {isa = PBXBuildFile; fileRef = 0EFEB4362006D3C800F81029 /* Errors.h */; };
 		0EFEB4622006D3C800F81029 /* SecureRandom.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EFEB4372006D3C800F81029 /* SecureRandom.swift */; };
@@ -167,6 +177,12 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		0E07595C20EF6D1400F38FD8 /* CryptoCBC.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CryptoCBC.m; sourceTree = "<group>"; };
+		0E07596120EF733F00F38FD8 /* CryptoMacros.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CryptoMacros.h; sourceTree = "<group>"; };
+		0E07596A20EF79AB00F38FD8 /* Encryption.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Encryption.h; sourceTree = "<group>"; };
+		0E07596D20EF79B400F38FD8 /* CryptoCBC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CryptoCBC.h; sourceTree = "<group>"; };
+		0E07597C20F0060E00F38FD8 /* CryptoAEAD.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CryptoAEAD.h; sourceTree = "<group>"; };
+		0E07597D20F0060E00F38FD8 /* CryptoAEAD.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CryptoAEAD.m; sourceTree = "<group>"; };
 		0E11089A1F77B9E800A92462 /* PIATunnelTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PIATunnelTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		0E11089E1F77B9E800A92462 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		0E1108A91F77B9F900A92462 /* PIATunnelHost.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PIATunnelHost.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -213,7 +229,6 @@
 		0EFEB4312006D3C800F81029 /* ZeroingData.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZeroingData.m; sourceTree = "<group>"; };
 		0EFEB4322006D3C800F81029 /* CryptoBox.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CryptoBox.m; sourceTree = "<group>"; };
 		0EFEB4332006D3C800F81029 /* PointerBasedDataPath.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PointerBasedDataPath.m; sourceTree = "<group>"; };
-		0EFEB4342006D3C800F81029 /* Encryption.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Encryption.h; sourceTree = "<group>"; };
 		0EFEB4352006D3C800F81029 /* DataPath.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DataPath.h; sourceTree = "<group>"; };
 		0EFEB4362006D3C800F81029 /* Errors.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Errors.h; sourceTree = "<group>"; };
 		0EFEB4372006D3C800F81029 /* SecureRandom.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SecureRandom.swift; sourceTree = "<group>"; };
@@ -389,12 +404,17 @@
 				0EFEB43A2006D3C800F81029 /* Authenticator.swift */,
 				0EAAD70820E4F2BC0088754A /* CommunicationType.swift */,
 				0EFEB44A2006D3C800F81029 /* Configuration.swift */,
+				0E07597C20F0060E00F38FD8 /* CryptoAEAD.h */,
+				0E07597D20F0060E00F38FD8 /* CryptoAEAD.m */,
 				0EFEB4402006D3C800F81029 /* CryptoBox.h */,
 				0EFEB4322006D3C800F81029 /* CryptoBox.m */,
+				0E07596D20EF79B400F38FD8 /* CryptoCBC.h */,
+				0E07595C20EF6D1400F38FD8 /* CryptoCBC.m */,
+				0E07596120EF733F00F38FD8 /* CryptoMacros.h */,
 				0EFEB4432006D3C800F81029 /* Data+Manipulation.swift */,
 				0EFEB4352006D3C800F81029 /* DataPath.h */,
 				0EFEB44C2006D3C800F81029 /* DataPath.m */,
-				0EFEB4342006D3C800F81029 /* Encryption.h */,
+				0E07596A20EF79AB00F38FD8 /* Encryption.h */,
 				0EFEB42A2006D3C800F81029 /* EncryptionProxy.swift */,
 				0EFEB4362006D3C800F81029 /* Errors.h */,
 				0EFEB44B2006D3C800F81029 /* Errors.m */,
@@ -495,13 +515,16 @@
 			files = (
 				0EFEB4642006D3C800F81029 /* ReplayProtector.h in Headers */,
 				0EFEB4612006D3C800F81029 /* Errors.h in Headers */,
+				0E07596E20EF79B400F38FD8 /* CryptoCBC.h in Headers */,
+				0E07596320EF733F00F38FD8 /* CryptoMacros.h in Headers */,
 				0EFEB46E2006D3C800F81029 /* TLSBox.h in Headers */,
 				0EFEB46A2006D3C800F81029 /* PointerBasedDataPath.h in Headers */,
+				0E07596B20EF79AB00F38FD8 /* Encryption.h in Headers */,
 				0EFEB46B2006D3C800F81029 /* CryptoBox.h in Headers */,
-				0EFEB45F2006D3C800F81029 /* Encryption.h in Headers */,
 				0EFEB4592006D3C800F81029 /* Allocation.h in Headers */,
 				0EFEB4582006D3C800F81029 /* MSS.h in Headers */,
 				0EFEB4602006D3C800F81029 /* DataPath.h in Headers */,
+				0E07597E20F0060E00F38FD8 /* CryptoAEAD.h in Headers */,
 				0EFEB46C2006D3C800F81029 /* ZeroingData.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -512,13 +535,16 @@
 			files = (
 				0EEC49E620B5F7F6008FEB91 /* MSS.h in Headers */,
 				0EEC49E520B5F7F6008FEB91 /* Errors.h in Headers */,
+				0E07596F20EF79B400F38FD8 /* CryptoCBC.h in Headers */,
+				0E07596420EF733F00F38FD8 /* CryptoMacros.h in Headers */,
 				0EEC49E720B5F7F6008FEB91 /* PointerBasedDataPath.h in Headers */,
 				0EEC49EA20B5F7F6008FEB91 /* ZeroingData.h in Headers */,
+				0E07596C20EF79AB00F38FD8 /* Encryption.h in Headers */,
 				0EEC49E120B5F7EA008FEB91 /* Allocation.h in Headers */,
-				0EEC49E420B5F7F6008FEB91 /* Encryption.h in Headers */,
 				0EEC49E320B5F7F6008FEB91 /* DataPath.h in Headers */,
 				0EEC49E820B5F7F6008FEB91 /* ReplayProtector.h in Headers */,
 				0EEC49E920B5F7F6008FEB91 /* TLSBox.h in Headers */,
+				0E07597F20F0060E00F38FD8 /* CryptoAEAD.h in Headers */,
 				0EEC49E220B5F7F6008FEB91 /* CryptoBox.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -837,8 +863,10 @@
 				0EFEB46D2006D3C800F81029 /* Data+Manipulation.swift in Sources */,
 				0EFEB47B2006D3C800F81029 /* PIATunnelProvider.swift in Sources */,
 				0EFEB4742006D3C800F81029 /* Configuration.swift in Sources */,
+				0E07595F20EF6D1400F38FD8 /* CryptoCBC.m in Sources */,
 				0EC1BBA820D7D803007C4C7B /* ConnectionStrategy.swift in Sources */,
 				0EFEB46F2006D3C800F81029 /* IOInterface.swift in Sources */,
+				0E07598020F0060E00F38FD8 /* CryptoAEAD.m in Sources */,
 				0EFEB4662006D3C800F81029 /* ZeroingData.swift in Sources */,
 				0EBBF2F3208505D300E36B40 /* NEUDPInterface.swift in Sources */,
 				0EFEB4682006D3C800F81029 /* MSS.m in Sources */,
@@ -885,8 +913,10 @@
 				0EFEB49A2006D7F300F81029 /* MSS.m in Sources */,
 				0EFEB48D2006D7F300F81029 /* EncryptionProxy.swift in Sources */,
 				0EFEB4922006D7F300F81029 /* ZeroingData.m in Sources */,
+				0E07596020EF6D1400F38FD8 /* CryptoCBC.m in Sources */,
 				0EC1BBA920D7D803007C4C7B /* ConnectionStrategy.swift in Sources */,
 				0EFEB4932006D7F300F81029 /* CryptoBox.m in Sources */,
+				0E07598120F0060E00F38FD8 /* CryptoAEAD.m in Sources */,
 				0EFEB49C2006D7F300F81029 /* Data+Manipulation.swift in Sources */,
 				0EBBF2F4208505D400E36B40 /* NEUDPInterface.swift in Sources */,
 				0EFEB4902006D7F300F81029 /* TunnelInterface.swift in Sources */,

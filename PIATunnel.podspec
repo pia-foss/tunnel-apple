@@ -12,8 +12,8 @@ Pod::Spec.new do |s|
     #s.osx.deployment_target = "10.11"
 
     s.subspec "Core" do |p|
-        p.source_files          = "PIATunnel/Sources/Core/*.{h,m,swift}"
-        p.private_header_files  = "PIATunnel/Sources/Core/*.h"
+        p.source_files          = "PIATunnel/Sources/Core/**/*.{h,m,swift}"
+        p.private_header_files  = "PIATunnel/Sources/Core/**/*.h"
         p.preserve_paths        = "PIATunnel/Sources/Core/*.modulemap"
         p.pod_target_xcconfig   = { "SWIFT_INCLUDE_PATHS" => "${PODS_TARGET_SRCROOT}/PIATunnel/Sources/Core",
                                     "APPLICATION_EXTENSION_API_ONLY" => "YES" }

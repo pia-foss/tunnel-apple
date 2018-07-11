@@ -139,43 +139,31 @@ static const uint8_t DataPathPingData[]         = { 0x2a, 0x18, 0x7b, 0xf3, 0x64
     
     [self.outPackets removeAllObjects];
     
-    for (NSData *payload in packets) {
+    for (NSData *raw in packets) {
         self.outPacketId += 1;
         
         // may resize encBuffer to hold encrypted payload
-        [self adjustEncBufferToPacketSize:(int)payload.length];
+        [self adjustEncBufferToPacketSize:(int)raw.length];
 
-        uint8_t *decryptedPacketStart = self.encBufferAligned;
-        uint8_t *decryptedPacketPtr = decryptedPacketStart;
+        uint8_t *payload = self.encBufferAligned;
+        int payloadLength;
+        [self.encrypter assembleDataPacketWithPacketId:self.outPacketId
+                                           compression:DataPathCodeNoCompress
+                                               payload:raw
+                                                  into:payload
+                                                length:&payloadLength];
+        MSSFix(payload, payloadLength);
 
-        *(uint32_t *)decryptedPacketPtr = htonl(self.outPacketId);
-        decryptedPacketPtr += sizeof(uint32_t);
-        *decryptedPacketPtr = DataPathCodeNoCompress;
-        decryptedPacketPtr += sizeof(uint8_t);
-        memcpy(decryptedPacketPtr, payload.bytes, payload.length);
-        const int decryptedPacketLength = (int)(decryptedPacketPtr - decryptedPacketStart + payload.length);
-        MSSFix(decryptedPacketPtr, decryptedPacketLength);
-        
-        const int encryptedPacketCapacity = 1 + (int)safe_crypto_capacity(decryptedPacketLength, self.encrypter.overheadLength);
-        NSMutableData *encryptedPacket = [[NSMutableData alloc] initWithLength:encryptedPacketCapacity];
-        uint8_t *encryptedPacketPtr = encryptedPacket.mutableBytes;
-        int encryptedPayloadLength = INT_MAX;
-        const BOOL success = [self.encrypter encryptBytes:decryptedPacketStart
-                                                   length:decryptedPacketLength
-                                                     dest:(encryptedPacketPtr + 1) // skip header byte
-                                               destLength:&encryptedPayloadLength
-                                                    error:error];
-
-        NSAssert(encryptedPayloadLength <= encryptedPacketCapacity, @"Did not allocate enough bytes for payload");
-
-        if (!success) {
+        const uint8_t header = (DataPathCodeDataV1 << 3 | (key & 0b111));
+        NSData *encryptedPacket = [self.encrypter encryptedDataPacketWithHeader:header
+                                                                       packetId:self.outPacketId
+                                                                        payload:payload
+                                                                  payloadLength:payloadLength
+                                                                          error:error];
+        if (!encryptedPacket) {
             return nil;
         }
-        
-        // set header byte
-        *encryptedPacketPtr = (DataPathCodeDataV1 << 3 | (key & 0b111));
-        encryptedPacket.length = 1 + encryptedPayloadLength;
-        
+
         [self.outPackets addObject:encryptedPacket];
     }
     
@@ -192,49 +180,45 @@ static const uint8_t DataPathPingData[]         = { 0x2a, 0x18, 0x7b, 0xf3, 0x64
         // may resize decBuffer to encryptedPacket.length
         [self adjustDecBufferToPacketSize:(int)encryptedPacket.length];
 
-        uint8_t *decryptedPacketStart = self.decBufferAligned;
-        uint8_t *decryptedPacketPtr = decryptedPacketStart;
-
-        // skip header byte = (code, key)
-        int decryptedPacketLength = INT_MAX;
-        const BOOL success = [self.decrypter decryptBytes:(encryptedPacket.bytes + 1)
-                                                   length:(int)(encryptedPacket.length - 1)
-                                                     dest:decryptedPacketStart
-                                               destLength:&decryptedPacketLength
-                                                    error:error];
+        uint8_t *packet = self.decBufferAligned;
+        int packetLength = INT_MAX;
+        uint32_t packetId;
+        const BOOL success = [self.decrypter decryptDataPacket:encryptedPacket
+                                                          into:packet
+                                                        length:&packetLength
+                                                      packetId:&packetId
+                                                         error:error];
         if (!success) {
             return nil;
         }
-        
-        const uint32_t packetId = ntohl(*(uint32_t *)decryptedPacketPtr);
-        decryptedPacketPtr += sizeof(uint32_t);
-        
         if (packetId > self.maxPacketId) {
             if (error) {
                 *error = PIATunnelErrorWithCode(PIATunnelErrorCodeDataPathOverflow);
             }
             return nil;
         }
-
-        // skip compression byte
-        decryptedPacketPtr += sizeof(uint8_t);
-        
         if (self.inReplay && [self.inReplay isReplayedPacketId:packetId]) {
             continue;
         }
-        
-        uint8_t *payloadPtr = decryptedPacketPtr;
-        const int payloadLength = decryptedPacketLength - (int)(decryptedPacketPtr - decryptedPacketStart);
-        if ((payloadLength == sizeof(DataPathPingData)) && !memcmp(payloadPtr, DataPathPingData, payloadLength)) {
+
+        int payloadLength;
+        uint8_t compression;
+        uint8_t *payload = [self.decrypter parsePayloadWithDataPacket:packet
+                                                         packetLength:packetLength
+                                                               length:&payloadLength
+                                                          compression:&compression];
+
+        if ((payloadLength == sizeof(DataPathPingData)) && !memcmp(payload, DataPathPingData, payloadLength)) {
             if (keepAlive) {
                 *keepAlive = true;
             }
             continue;
         }
-        MSSFix(payloadPtr, payloadLength);
+
+        MSSFix(payload, payloadLength);
         
-        NSData *payload = [[NSData alloc] initWithBytes:payloadPtr length:payloadLength];
-        [self.inPackets addObject:payload];
+        NSData *raw = [[NSData alloc] initWithBytes:payload length:payloadLength];
+        [self.inPackets addObject:raw];
     }
     
     return self.inPackets;

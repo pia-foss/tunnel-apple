@@ -41,7 +41,7 @@ class CoreTests: XCTestCase {
         let ck = try! SecureRandom.safeData(length: 32)
         let hk = try! SecureRandom.safeData(length: 32)
         
-        let crypto = EncryptionProxy("aes-128-cbc", "sha1", ck, ck, hk, hk)
+        let crypto = try! EncryptionProxy("aes-128-cbc", "sha1", ck, ck, hk, hk)
         encrypter = crypto.encrypter()
         decrypter = crypto.decrypter()
         session = SessionProxy.mockProxy()
@@ -201,17 +201,17 @@ class CoreTests: XCTestCase {
         var dec: Data
         
         enc = Data()
-        enc.append(try! encrypter.encryptData(data, offset: 0))
+        enc.append(try! encrypter.encryptData(data, offset: 0, packetId: 0))
         print("Encrypted: \(enc.toHex())")
-        dec = try! decrypter.decryptData(enc, offset: 0)
+        dec = try! decrypter.decryptData(enc, offset: 0, packetId: 0)
         print("Decrypted: \(dec.toHex())")
         XCTAssert(dec == data)
         
         let prefix = "abcdef"
         enc = Data(hex: prefix)
-        enc.append(try! encrypter.encryptData(data, offset: 0))
+        enc.append(try! encrypter.encryptData(data, offset: 0, packetId: 0))
         print("Encrypted: \(enc.toHex())")
-        dec = try! decrypter.decryptData(enc, offset: (prefix.count / 2))
+        dec = try! decrypter.decryptData(enc, offset: (prefix.count / 2), packetId: 0)
         print("Decrypted: \(dec.toHex())")
         XCTAssert(dec == data)
     }
@@ -226,7 +226,7 @@ class CoreTests: XCTestCase {
         let suite = generateDataSuite(1000, 100000)
         measure {
             for data in suite {
-                let _ = try! self.encrypter.encryptData(data, offset: 0)
+                let _ = try! self.encrypter.encryptData(data, offset: 0, packetId: 0)
             }
         }
     }
@@ -387,5 +387,21 @@ class CoreTests: XCTestCase {
         XCTAssertEqual(packets.count, 1)
         bytes.removeSubrange(0..<until)
         XCTAssertEqual(bytes.count, 0)
+    }
+
+    func testGCM() {
+        let ck = try! SecureRandom.safeData(length: 32)
+        let hk = try! SecureRandom.safeData(length: 32)
+
+        let gcm = CryptoBox(cipherAlgorithm: "aes-256-gcm", digestAlgorithm: nil)
+        try! gcm.configure(withCipherEncKey: ck, cipherDecKey: ck, hmacEncKey: hk, hmacDecKey: hk)
+        let enc = gcm.encrypter()
+        let dec = gcm.decrypter()
+
+        let packetId: UInt32 = 0x56341200
+        let plain = Data(hex: "00112233445566778899")
+        let encrypted = try! enc.encryptData(plain, offset: 0, packetId: packetId)
+        let decrypted = try! dec.decryptData(encrypted, offset: 0, packetId: packetId)
+        XCTAssertEqual(plain, decrypted)
     }
 }

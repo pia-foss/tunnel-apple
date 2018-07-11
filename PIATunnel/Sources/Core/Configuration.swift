@@ -16,7 +16,7 @@ struct Configuration {
 
     static let usesReplayProtection = true
 
-    static let usesDataOptimization = true
+//    static let usesDataOptimization = true
 
     static let tickInterval = 0.2
     

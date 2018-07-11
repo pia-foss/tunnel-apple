@@ -14,6 +14,7 @@ typedef NS_ENUM(int, PIATunnelErrorCode) {
     PIATunnelErrorCodeCryptoBoxRandomGenerator = 101,
     PIATunnelErrorCodeCryptoBoxHMAC,
     PIATunnelErrorCodeCryptoBoxEncryption,
+    PIATunnelErrorCodeCryptoBoxAlgorithm,
     PIATunnelErrorCodeTLSBoxCA = 201,
     PIATunnelErrorCodeTLSBoxHandshake,
     PIATunnelErrorCodeTLSBoxGeneric,

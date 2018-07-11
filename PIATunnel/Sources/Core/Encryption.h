@@ -18,9 +18,10 @@
 
 - (void)configureEncryptionWithCipherKey:(nonnull ZeroingData *)cipherKey hmacKey:(nonnull ZeroingData *)hmacKey;
 - (int)overheadLength;
+- (int)extraLength;
 
-- (NSData *)encryptData:(nonnull NSData *)data offset:(NSInteger)offset packetId:(uint32_t)packetId error:(NSError **)error;
-- (BOOL)encryptBytes:(nonnull const uint8_t *)bytes length:(NSInteger)length dest:(nonnull uint8_t *)dest destLength:(nonnull NSInteger *)destLength packetId:(uint32_t)packetId error:(NSError **)error;
+- (NSData *)encryptData:(nonnull NSData *)data offset:(NSInteger)offset extra:(const uint8_t *)extra error:(NSError **)error;
+- (BOOL)encryptBytes:(nonnull const uint8_t *)bytes length:(NSInteger)length dest:(nonnull uint8_t *)dest destLength:(nonnull NSInteger *)destLength extra:(const uint8_t *)extra error:(NSError **)error;
 
 - (nonnull id<DataPathEncrypter>)dataPathEncrypter;
 
@@ -31,9 +32,10 @@
 
 - (void)configureDecryptionWithCipherKey:(nonnull ZeroingData *)cipherKey hmacKey:(nonnull ZeroingData *)hmacKey;
 - (int)overheadLength;
+- (int)extraLength;
 
-- (NSData *)decryptData:(nonnull NSData *)data offset:(NSInteger)offset packetId:(uint32_t)packetId error:(NSError **)error;
-- (BOOL)decryptBytes:(nonnull const uint8_t *)bytes length:(NSInteger)length dest:(nonnull uint8_t *)dest destLength:(nonnull NSInteger *)destLength packetId:(uint32_t)packetId error:(NSError **)error;
+- (NSData *)decryptData:(nonnull NSData *)data offset:(NSInteger)offset extra:(const uint8_t *)extra error:(NSError **)error;
+- (BOOL)decryptBytes:(nonnull const uint8_t *)bytes length:(NSInteger)length dest:(nonnull uint8_t *)dest destLength:(nonnull NSInteger *)destLength extra:(const uint8_t *)extra error:(NSError **)error;
 
 - (nonnull id<DataPathDecrypter>)dataPathDecrypter;
 

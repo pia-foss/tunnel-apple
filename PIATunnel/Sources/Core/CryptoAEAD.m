@@ -15,7 +15,6 @@
 #import "Allocation.h"
 #import "Errors.h"
 
-const NSInteger CryptoAEADADLength      = 4; // packetId
 const NSInteger CryptoAEADTagLength     = 16;
 
 @interface CryptoAEAD ()
@@ -24,6 +23,7 @@ const NSInteger CryptoAEADTagLength     = 16;
 @property (nonatomic, assign) int cipherKeyLength;
 @property (nonatomic, assign) int cipherIVLength; // 12 (AD packetId + HMAC key)
 @property (nonatomic, assign) int overheadLength;
+@property (nonatomic, assign) int extraPacketIdOffset;
 
 @property (nonatomic, unsafe_unretained) EVP_CIPHER_CTX *cipherCtxEnc;
 @property (nonatomic, unsafe_unretained) EVP_CIPHER_CTX *cipherCtxDec;
@@ -46,6 +46,8 @@ const NSInteger CryptoAEADTagLength     = 16;
         self.cipherKeyLength = EVP_CIPHER_key_length(self.cipher);
         self.cipherIVLength = EVP_CIPHER_iv_length(self.cipher);
         self.overheadLength = CryptoAEADTagLength;
+        self.extraLength = PacketIdLength;
+        self.extraPacketIdOffset = 0;
         
         self.cipherCtxEnc = EVP_CIPHER_CTX_new();
         self.cipherCtxDec = EVP_CIPHER_CTX_new();
@@ -79,9 +81,10 @@ const NSInteger CryptoAEADTagLength     = 16;
     [self prepareIV:self.cipherIVEnc withHMACKey:hmacKey];
 }
 
-- (NSData *)encryptData:(NSData *)data offset:(NSInteger)offset packetId:(uint32_t)packetId error:(NSError *__autoreleasing *)error
+- (NSData *)encryptData:(NSData *)data offset:(NSInteger)offset extra:(nonnull const uint8_t *)extra error:(NSError *__autoreleasing *)error
 {
     NSParameterAssert(data);
+    NSParameterAssert(extra);
 
     const uint8_t *bytes = data.bytes + offset;
     const int length = (int)(data.length - offset);
@@ -89,24 +92,26 @@ const NSInteger CryptoAEADTagLength     = 16;
 
     NSMutableData *dest = [[NSMutableData alloc] initWithLength:maxOutputSize];
     NSInteger encryptedLength = INT_MAX;
-    if (![self encryptBytes:bytes length:length dest:dest.mutableBytes destLength:&encryptedLength packetId:packetId error:error]) {
+    if (![self encryptBytes:bytes length:length dest:dest.mutableBytes destLength:&encryptedLength extra:extra error:error]) {
         return nil;
     }
     dest.length = encryptedLength;
     return dest;
 }
 
-- (BOOL)encryptBytes:(const uint8_t *)bytes length:(NSInteger)length dest:(uint8_t *)dest destLength:(NSInteger *)destLength packetId:(uint32_t)packetId error:(NSError *__autoreleasing *)error
+- (BOOL)encryptBytes:(const uint8_t *)bytes length:(NSInteger)length dest:(uint8_t *)dest destLength:(NSInteger *)destLength extra:(nonnull const uint8_t *)extra error:(NSError *__autoreleasing *)error
 {
+    NSParameterAssert(extra);
+
     int l1 = 0, l2 = 0;
     int x = 0;
     int code = 1;
 
-    const uint8_t *ad = (const uint8_t *)&packetId;
-    memcpy(self.cipherIVEnc, ad, CryptoAEADADLength);
+    assert(self.extraLength >= PacketIdLength);
+    memcpy(self.cipherIVEnc, extra + self.extraPacketIdOffset, PacketIdLength);
     
     PIA_CRYPTO_TRACK_STATUS(code) EVP_CipherInit(self.cipherCtxEnc, NULL, NULL, self.cipherIVEnc, -1);
-    PIA_CRYPTO_TRACK_STATUS(code) EVP_CipherUpdate(self.cipherCtxEnc, NULL, &x, ad, CryptoAEADADLength);
+    PIA_CRYPTO_TRACK_STATUS(code) EVP_CipherUpdate(self.cipherCtxEnc, NULL, &x, extra, self.extraLength);
     PIA_CRYPTO_TRACK_STATUS(code) EVP_CipherUpdate(self.cipherCtxEnc, dest + CryptoAEADTagLength, &l1, bytes, (int)length);
     PIA_CRYPTO_TRACK_STATUS(code) EVP_CipherFinal(self.cipherCtxEnc, dest + CryptoAEADTagLength + l1, &l2);
     PIA_CRYPTO_TRACK_STATUS(code) EVP_CIPHER_CTX_ctrl(self.cipherCtxEnc, EVP_CTRL_GCM_GET_TAG, CryptoAEADTagLength, dest);
@@ -114,7 +119,8 @@ const NSInteger CryptoAEADTagLength     = 16;
     *destLength = CryptoAEADTagLength + l1 + l2;
 
 //    NSLog(@">>> ENC iv: %@", [NSData dataWithBytes:self.cipherIVEnc length:self.cipherIVLength]);
-//    NSLog(@">>> ENC ad: %@", [NSData dataWithBytes:ad length:4]);
+//    NSLog(@">>> ENC ad: %@", [NSData dataWithBytes:extra length:self.extraLength]);
+//    NSLog(@">>> ENC x: %d", x);
 //    NSLog(@">>> ENC tag: %@", [NSData dataWithBytes:dest length:CryptoAEADTagLength]);
 //    NSLog(@">>> ENC dest: %@", [NSData dataWithBytes:dest + CryptoAEADTagLength length:*destLength - CryptoAEADTagLength]);
 
@@ -138,42 +144,46 @@ const NSInteger CryptoAEADTagLength     = 16;
     [self prepareIV:self.cipherIVDec withHMACKey:hmacKey];
 }
 
-- (NSData *)decryptData:(NSData *)data offset:(NSInteger)offset packetId:(uint32_t)packetId error:(NSError *__autoreleasing *)error
+- (NSData *)decryptData:(NSData *)data offset:(NSInteger)offset extra:(nonnull const uint8_t *)extra error:(NSError *__autoreleasing *)error
 {
     NSParameterAssert(data);
-    
+    NSParameterAssert(extra);
+
     const uint8_t *bytes = data.bytes + offset;
     const int length = (int)(data.length - offset);
     const int maxOutputSize = (int)safe_crypto_capacity(data.length, self.overheadLength);
 
     NSMutableData *dest = [[NSMutableData alloc] initWithLength:maxOutputSize];
     NSInteger decryptedLength;
-    if (![self decryptBytes:bytes length:length dest:dest.mutableBytes destLength:&decryptedLength packetId:packetId error:error]) {
+    if (![self decryptBytes:bytes length:length dest:dest.mutableBytes destLength:&decryptedLength extra:extra error:error]) {
         return nil;
     }
     dest.length = decryptedLength;
     return dest;
 }
 
-- (BOOL)decryptBytes:(const uint8_t *)bytes length:(NSInteger)length dest:(uint8_t *)dest destLength:(NSInteger *)destLength packetId:(uint32_t)packetId error:(NSError *__autoreleasing *)error
+- (BOOL)decryptBytes:(const uint8_t *)bytes length:(NSInteger)length dest:(uint8_t *)dest destLength:(NSInteger *)destLength extra:(nonnull const uint8_t *)extra error:(NSError *__autoreleasing *)error
 {
+    NSParameterAssert(extra);
+
     int l1 = 0, l2 = 0;
     int x = 0;
     int code = 1;
     
-    const uint8_t *ad = (const uint8_t *)&packetId;
-    memcpy(self.cipherIVDec, ad, CryptoAEADADLength);
+    assert(self.extraLength >= PacketIdLength);
+    memcpy(self.cipherIVDec, extra + self.extraPacketIdOffset, PacketIdLength);
 
     PIA_CRYPTO_TRACK_STATUS(code) EVP_CipherInit(self.cipherCtxDec, NULL, NULL, self.cipherIVDec, -1);
     PIA_CRYPTO_TRACK_STATUS(code) EVP_CIPHER_CTX_ctrl(self.cipherCtxDec, EVP_CTRL_GCM_SET_TAG, CryptoAEADTagLength, (uint8_t *)bytes);
-    PIA_CRYPTO_TRACK_STATUS(code) EVP_CipherUpdate(self.cipherCtxDec, NULL, &x, ad, CryptoAEADADLength);
+    PIA_CRYPTO_TRACK_STATUS(code) EVP_CipherUpdate(self.cipherCtxDec, NULL, &x, extra, self.extraLength);
     PIA_CRYPTO_TRACK_STATUS(code) EVP_CipherUpdate(self.cipherCtxDec, dest, &l1, bytes + CryptoAEADTagLength, (int)length - CryptoAEADTagLength);
     PIA_CRYPTO_TRACK_STATUS(code) EVP_CipherFinal(self.cipherCtxDec, dest + l1, &l2);
 
     *destLength = l1 + l2;
     
 //    NSLog(@">>> DEC iv: %@", [NSData dataWithBytes:self.cipherIVDec length:self.cipherIVLength]);
-//    NSLog(@">>> DEC ad: %@", [NSData dataWithBytes:ad length:4]);
+//    NSLog(@">>> DEC ad: %@", [NSData dataWithBytes:extra length:self.extraLength]);
+//    NSLog(@">>> DEC x: %d", x);
 //    NSLog(@">>> DEC tag: %@", [NSData dataWithBytes:bytes length:CryptoAEADTagLength]);
 //    NSLog(@">>> DEC dest: %@", [NSData dataWithBytes:dest length:*destLength]);
 
@@ -189,8 +199,8 @@ const NSInteger CryptoAEADTagLength     = 16;
 
 - (void)prepareIV:(uint8_t *)iv withHMACKey:(ZeroingData *)hmacKey
 {
-    bzero(iv, CryptoAEADADLength);
-    memcpy(iv + CryptoAEADADLength, hmacKey.bytes, self.cipherIVLength - CryptoAEADADLength);
+    bzero(iv, PacketIdLength);
+    memcpy(iv + PacketIdLength, hmacKey.bytes, self.cipherIVLength - PacketIdLength);
 }
 
 @end
@@ -228,12 +238,16 @@ const NSInteger CryptoAEADTagLength     = 16;
     
     if (_peerId == PacketPeerIdDisabled) {
         self.headerLength = 1;
+        self.crypto.extraLength = PacketIdLength;
+        self.crypto.extraPacketIdOffset = 0;
         self.setDataHeader = ^(uint8_t *to, uint8_t key) {
             PacketHeaderSet(to, PacketCodeDataV1, key);
         };
     }
     else {
         self.headerLength = 4;
+        self.crypto.extraLength = self.headerLength + PacketIdLength;
+        self.crypto.extraPacketIdOffset = self.headerLength;
         self.setDataHeader = ^(uint8_t *to, uint8_t key) {
             PacketHeaderSetDataV2(to, key, peerId);
         };
@@ -260,11 +274,20 @@ const NSInteger CryptoAEADTagLength     = 16;
     NSMutableData *encryptedPacket = [[NSMutableData alloc] initWithLength:capacity];
     uint8_t *ptr = encryptedPacket.mutableBytes;
     NSInteger encryptedPayloadLength = INT_MAX;
+
+    self.setDataHeader(ptr, key);
+    *(uint32_t *)(ptr + self.headerLength) = htonl(packetId);
+
+    const uint8_t *extra = ptr; // AD = header + peer id + packet id
+    if (self.peerId == PacketPeerIdDisabled) {
+        extra += self.headerLength; // AD = packet id only
+    }
+
     const BOOL success = [self.crypto encryptBytes:payload
                                             length:payloadLength
                                               dest:(ptr + self.headerLength + PacketIdLength) // skip header and packet id
                                         destLength:&encryptedPayloadLength
-                                          packetId:htonl(packetId)
+                                             extra:extra
                                              error:error];
     
     NSAssert(encryptedPayloadLength <= capacity, @"Did not allocate enough bytes for payload");
@@ -273,8 +296,6 @@ const NSInteger CryptoAEADTagLength     = 16;
         return nil;
     }
     
-    self.setDataHeader(ptr, key);
-    *(uint32_t *)(ptr + self.headerLength) = htonl(packetId);
     encryptedPacket.length = self.headerLength + PacketIdLength + encryptedPayloadLength;
     return encryptedPacket;
 }
@@ -283,15 +304,17 @@ const NSInteger CryptoAEADTagLength     = 16;
 
 - (BOOL)decryptDataPacket:(NSData *)packet into:(uint8_t *)dest length:(NSInteger *)length packetId:(uint32_t *)packetId error:(NSError *__autoreleasing *)error
 {
-    // associated data from packet id after header
-    const uint32_t ad = *(const uint32_t *)(packet.bytes + self.headerLength);
+    const uint8_t *extra = packet.bytes; // AD = header + peer id + packet id
+    if (self.peerId == PacketPeerIdDisabled) {
+        extra += self.headerLength; // AD = packet id only
+    }
 
     // skip header + packet id
     const BOOL success = [self.crypto decryptBytes:(packet.bytes + self.headerLength + PacketIdLength)
                                             length:(int)(packet.length - (self.headerLength + PacketIdLength))
                                               dest:dest
                                         destLength:length
-                                          packetId:ad
+                                             extra:extra
                                              error:error];
     if (!success) {
         return NO;
@@ -302,7 +325,7 @@ const NSInteger CryptoAEADTagLength     = 16;
         }
         return NO;
     }
-    *packetId = ntohl(ad);
+    *packetId = ntohl(*(const uint32_t *)(packet.bytes + self.headerLength));
     return YES;
 }
 

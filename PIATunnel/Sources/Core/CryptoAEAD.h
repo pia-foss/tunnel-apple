@@ -15,6 +15,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface CryptoAEAD : NSObject <Encrypter, Decrypter>
 
+@property (nonatomic, assign) int extraLength;
+
 - (instancetype)initWithCipherName:(nonnull NSString *)cipherName;
 
 @end

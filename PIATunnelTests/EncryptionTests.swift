@@ -31,8 +31,8 @@ class EncryptionTests: XCTestCase {
         let dec = cbc.decrypter()
         
         let plain = Data(hex: "00112233445566778899")
-        let encrypted = try! enc.encryptData(plain, offset: 0, packetId: 0)
-        let decrypted = try! dec.decryptData(encrypted, offset: 0, packetId: 0)
+        let encrypted = try! enc.encryptData(plain, offset: 0, extra: nil)
+        let decrypted = try! dec.decryptData(encrypted, offset: 0, extra: nil)
         XCTAssertEqual(plain, decrypted)
     }
 
@@ -42,10 +42,11 @@ class EncryptionTests: XCTestCase {
         let enc = gcm.encrypter()
         let dec = gcm.decrypter()
         
-        let packetId: UInt32 = 0x56341200
+//        let packetId: UInt32 = 0x56341200
+        let extra: [UInt8] = [0x00, 0x12, 0x34, 0x56]
         let plain = Data(hex: "00112233445566778899")
-        let encrypted = try! enc.encryptData(plain, offset: 0, packetId: packetId)
-        let decrypted = try! dec.decryptData(encrypted, offset: 0, packetId: packetId)
+        let encrypted = try! enc.encryptData(plain, offset: 0, extra: extra)
+        let decrypted = try! dec.decryptData(encrypted, offset: 0, extra: extra)
         XCTAssertEqual(plain, decrypted)
     }
 

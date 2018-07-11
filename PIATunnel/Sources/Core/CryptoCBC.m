@@ -75,6 +75,11 @@ const NSInteger CryptoCBCMaxHMACLength = 100;
     self.digest = NULL;
 }
 
+- (int)extraLength
+{
+    return 0;
+}
+
 #pragma mark Encrypter
 
 - (void)configureEncryptionWithCipherKey:(ZeroingData *)cipherKey hmacKey:(ZeroingData *)hmacKey
@@ -88,24 +93,24 @@ const NSInteger CryptoCBCMaxHMACLength = 100;
     HMAC_Init_ex(self.hmacCtxEnc, hmacKey.bytes, self.digestLength, self.digest, NULL);
 }
 
-- (NSData *)encryptData:(NSData *)data offset:(NSInteger)offset packetId:(uint32_t)packetId error:(NSError *__autoreleasing *)error
+- (NSData *)encryptData:(NSData *)data offset:(NSInteger)offset extra:(nonnull const uint8_t *)extra error:(NSError *__autoreleasing *)error
 {
     NSParameterAssert(data);
-    
+
     const uint8_t *bytes = data.bytes + offset;
     const int length = (int)(data.length - offset);
     const int maxOutputSize = (int)safe_crypto_capacity(data.length, self.overheadLength);
     
     NSMutableData *dest = [[NSMutableData alloc] initWithLength:maxOutputSize];
     NSInteger encryptedLength = INT_MAX;
-    if (![self encryptBytes:bytes length:length dest:dest.mutableBytes destLength:&encryptedLength packetId:packetId error:error]) {
+    if (![self encryptBytes:bytes length:length dest:dest.mutableBytes destLength:&encryptedLength extra:extra error:error]) {
         return nil;
     }
     dest.length = encryptedLength;
     return dest;
 }
 
-- (BOOL)encryptBytes:(const uint8_t *)bytes length:(NSInteger)length dest:(uint8_t *)dest destLength:(NSInteger *)destLength packetId:(uint32_t)packetId error:(NSError *__autoreleasing *)error
+- (BOOL)encryptBytes:(const uint8_t *)bytes length:(NSInteger)length dest:(uint8_t *)dest destLength:(NSInteger *)destLength extra:(nonnull const uint8_t *)extra error:(NSError *__autoreleasing *)error
 {
     uint8_t *outIV = dest + self.digestLength;
     uint8_t *outEncrypted = dest + self.digestLength + self.cipherIVLength;
@@ -151,24 +156,24 @@ const NSInteger CryptoCBCMaxHMACLength = 100;
     HMAC_Init_ex(self.hmacCtxDec, hmacKey.bytes, self.digestLength, self.digest, NULL);
 }
 
-- (NSData *)decryptData:(NSData *)data offset:(NSInteger)offset packetId:(uint32_t)packetId error:(NSError *__autoreleasing *)error
+- (NSData *)decryptData:(NSData *)data offset:(NSInteger)offset extra:(const uint8_t *)extra error:(NSError *__autoreleasing *)error
 {
     NSParameterAssert(data);
-    
+
     const uint8_t *bytes = data.bytes + offset;
     const int length = (int)(data.length - offset);
     const int maxOutputSize = (int)safe_crypto_capacity(data.length, self.overheadLength);
     
     NSMutableData *dest = [[NSMutableData alloc] initWithLength:maxOutputSize];
     NSInteger decryptedLength;
-    if (![self decryptBytes:bytes length:length dest:dest.mutableBytes destLength:&decryptedLength packetId:packetId error:error]) {
+    if (![self decryptBytes:bytes length:length dest:dest.mutableBytes destLength:&decryptedLength extra:extra error:error]) {
         return nil;
     }
     dest.length = decryptedLength;
     return dest;
 }
 
-- (BOOL)decryptBytes:(const uint8_t *)bytes length:(NSInteger)length dest:(uint8_t *)dest destLength:(NSInteger *)destLength packetId:(uint32_t)packetId error:(NSError *__autoreleasing *)error
+- (BOOL)decryptBytes:(const uint8_t *)bytes length:(NSInteger)length dest:(uint8_t *)dest destLength:(NSInteger *)destLength extra:(const uint8_t *)extra error:(NSError *__autoreleasing *)error
 {
     const uint8_t *iv = bytes + self.digestLength;
     const uint8_t *encrypted = bytes + self.digestLength + self.cipherIVLength;
@@ -273,7 +278,7 @@ const NSInteger CryptoCBCMaxHMACLength = 100;
                                             length:payloadLength
                                               dest:(ptr + self.headerLength) // skip header byte
                                         destLength:&encryptedPayloadLength
-                                          packetId:packetId
+                                             extra:NULL
                                              error:error];
     
     NSAssert(encryptedPayloadLength <= capacity, @"Did not allocate enough bytes for payload");
@@ -296,7 +301,7 @@ const NSInteger CryptoCBCMaxHMACLength = 100;
                                             length:(int)(packet.length - self.headerLength)
                                               dest:dest
                                         destLength:length
-                                          packetId:0   // ignored
+                                             extra:NULL
                                              error:error];
     if (!success) {
         return NO;

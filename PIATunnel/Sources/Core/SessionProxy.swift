@@ -174,6 +174,8 @@ public class SessionProxy {
 
     private var authToken: String?
     
+    private var peerId: UInt32?
+    
     private var nextPushRequestDate: Date?
     
     private var connectedDate: Date?
@@ -343,6 +345,7 @@ public class SessionProxy {
         nextPushRequestDate = nil
         connectedDate = nil
         authenticator = nil
+        peerId = nil
         link = nil
         if !(tunnel?.isPersistent ?? false) {
             tunnel = nil
@@ -619,6 +622,7 @@ public class SessionProxy {
         controlPacketIdOut = 0
         controlPacketIdIn = 0
         authenticator = nil
+        peerId = nil
         bytesIn = 0
         bytesOut = 0
     }
@@ -870,11 +874,12 @@ public class SessionProxy {
         }
         
         if ((negotiationKey.controlState == .preIfConfig) && message.hasPrefix("PUSH_REPLY")) {
-            log.debug("Received PUSH_REPLY")
+            log.debug("Received PUSH_REPLY: \"\(message)\"")
 
             let ifconfigRegexp = try! NSRegularExpression(pattern: "ifconfig [\\d\\.]+ [\\d\\.]+", options: [])
             let dnsRegexp = try! NSRegularExpression(pattern: "dhcp-option DNS [\\d\\.]+", options: [])
             let authTokenRegexp = try! NSRegularExpression(pattern: "auth-token [a-zA-Z0-9/=+]+", options: [])
+            let peerIdRegexp = try! NSRegularExpression(pattern: "peer-id [0-9]+", options: [])
 
             var ifconfigComponents: [String]?
             ifconfigRegexp.enumerateMatches(in: message, options: [], range: NSMakeRange(0, message.count), using: { (result, flags, _) in
@@ -910,6 +915,17 @@ public class SessionProxy {
                 
                 if (tokenComponents.count > 1) {
                     self.authToken = tokenComponents[1]
+                }
+            })
+            
+            peerIdRegexp.enumerateMatches(in: message, options: [], range: NSMakeRange(0, message.count), using: { (result, flags, _) in
+                guard let range = result?.range else { return }
+                
+                let match = (message as NSString).substring(with: range)
+                let tokenComponents = match.components(separatedBy: " ")
+                
+                if (tokenComponents.count > 1) {
+                    self.peerId = UInt32(tokenComponents[1])
                 }
             })
             

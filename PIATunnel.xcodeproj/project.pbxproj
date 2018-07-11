@@ -68,6 +68,7 @@
 		0EE7A79620F61EDC00B42E6A /* PacketMacros.h in Sources */ = {isa = PBXBuildFile; fileRef = 0EE7A79420F61EDC00B42E6A /* PacketMacros.h */; };
 		0EE7A79820F6296F00B42E6A /* PacketMacros.m in Sources */ = {isa = PBXBuildFile; fileRef = 0EE7A79720F6296F00B42E6A /* PacketMacros.m */; };
 		0EE7A79920F6296F00B42E6A /* PacketMacros.m in Sources */ = {isa = PBXBuildFile; fileRef = 0EE7A79720F6296F00B42E6A /* PacketMacros.m */; };
+		0EE7A7A120F664AC00B42E6A /* DataPathEncryptionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EE7A7A020F664AB00B42E6A /* DataPathEncryptionTests.swift */; };
 		0EEC49DC20B5E732008FEB91 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EEC49DB20B5E732008FEB91 /* Utils.swift */; };
 		0EEC49DD20B5E732008FEB91 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EEC49DB20B5E732008FEB91 /* Utils.swift */; };
 		0EEC49E120B5F7EA008FEB91 /* Allocation.h in Headers */ = {isa = PBXBuildFile; fileRef = 0EFEB42E2006D3C800F81029 /* Allocation.h */; };
@@ -219,6 +220,7 @@
 		0EE7A79420F61EDC00B42E6A /* PacketMacros.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PacketMacros.h; sourceTree = "<group>"; };
 		0EE7A79720F6296F00B42E6A /* PacketMacros.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PacketMacros.m; sourceTree = "<group>"; };
 		0EE7A79D20F6488400B42E6A /* DataPathEncryption.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DataPathEncryption.h; sourceTree = "<group>"; };
+		0EE7A7A020F664AB00B42E6A /* DataPathEncryptionTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataPathEncryptionTests.swift; sourceTree = "<group>"; };
 		0EEC49DB20B5E732008FEB91 /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 		0EFEB42A2006D3C800F81029 /* EncryptionProxy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EncryptionProxy.swift; sourceTree = "<group>"; };
 		0EFEB42B2006D3C800F81029 /* SessionKey.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SessionKey.swift; sourceTree = "<group>"; };
@@ -314,6 +316,7 @@
 				0E11089E1F77B9E800A92462 /* Info.plist */,
 				0E85A259202CC5AE0059E9F9 /* AppExtensionTests.swift */,
 				0EB2B45420F0BB53004233D7 /* DataManipulationTests.swift */,
+				0EE7A7A020F664AB00B42E6A /* DataPathEncryptionTests.swift */,
 				0EB2B46020F0C0A4004233D7 /* DataPathPerformanceTests.swift */,
 				0EB2B45E20F0C098004233D7 /* EncryptionPerformanceTests.swift */,
 				0EB2B45220F0BB44004233D7 /* EncryptionTests.swift */,
@@ -818,6 +821,7 @@
 				0EB2B45B20F0BE4C004233D7 /* TestUtils.swift in Sources */,
 				0EB2B46120F0C0A4004233D7 /* DataPathPerformanceTests.swift in Sources */,
 				0EB2B45F20F0C098004233D7 /* EncryptionPerformanceTests.swift in Sources */,
+				0EE7A7A120F664AC00B42E6A /* DataPathEncryptionTests.swift in Sources */,
 				0EB2B45D20F0BF41004233D7 /* RawPerformanceTests.swift in Sources */,
 				0E85A25A202CC5AF0059E9F9 /* AppExtensionTests.swift in Sources */,
 			);

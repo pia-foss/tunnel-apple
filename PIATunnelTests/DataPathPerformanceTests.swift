@@ -11,13 +11,11 @@ import XCTest
 @testable import __PIATunnelNative
 
 class DataPathPerformanceTests: XCTestCase {
-//    private var swiftDP: HighLevelDataPath!
+    private var dataPath: DataPath!
 
-    private var pointerDP: PointerBasedDataPath!
+    private var encrypter: DataPathEncrypter!
 
-    private var encrypter: Encrypter!
-
-    private var decrypter: Decrypter!
+    private var decrypter: DataPathDecrypter!
     
     override func setUp() {
         let ck = try! SecureRandom.safeData(length: 32)
@@ -27,8 +25,7 @@ class DataPathPerformanceTests: XCTestCase {
         encrypter = crypto.encrypter()
         decrypter = crypto.decrypter()
         
-//        swiftDP = HighLevelDataPath(encrypter: encrypter, decrypter: decrypter, usesReplayProtection: false)
-        pointerDP = PointerBasedDataPath(encrypter: encrypter, decrypter: decrypter, maxPackets: 200, usesReplayProtection: false)!
+        dataPath = DataPath(encrypter: encrypter, decrypter: decrypter, maxPackets: 200, usesReplayProtection: false)!
     }
 
     override func tearDown() {
@@ -57,8 +54,8 @@ class DataPathPerformanceTests: XCTestCase {
         var decryptedPackets: [Data]!
         
         measure {
-            encryptedPackets = try! self.pointerDP.encryptPackets(packets, key: 0)
-            decryptedPackets = try! self.pointerDP.decryptPackets(encryptedPackets, keepAlive: nil)
+            encryptedPackets = try! self.dataPath.encryptPackets(packets, key: 0)
+            decryptedPackets = try! self.dataPath.decryptPackets(encryptedPackets, keepAlive: nil)
         }
         
 //        print(">>> \(packets?.count) packets")

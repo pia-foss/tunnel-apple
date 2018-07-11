@@ -75,7 +75,6 @@
 		0EEC49E320B5F7F6008FEB91 /* DataPath.h in Headers */ = {isa = PBXBuildFile; fileRef = 0EFEB4352006D3C800F81029 /* DataPath.h */; };
 		0EEC49E520B5F7F6008FEB91 /* Errors.h in Headers */ = {isa = PBXBuildFile; fileRef = 0EFEB4362006D3C800F81029 /* Errors.h */; };
 		0EEC49E620B5F7F6008FEB91 /* MSS.h in Headers */ = {isa = PBXBuildFile; fileRef = 0EFEB42D2006D3C800F81029 /* MSS.h */; };
-		0EEC49E720B5F7F6008FEB91 /* PointerBasedDataPath.h in Headers */ = {isa = PBXBuildFile; fileRef = 0EFEB43F2006D3C800F81029 /* PointerBasedDataPath.h */; };
 		0EEC49E820B5F7F6008FEB91 /* ReplayProtector.h in Headers */ = {isa = PBXBuildFile; fileRef = 0EFEB4392006D3C800F81029 /* ReplayProtector.h */; };
 		0EEC49E920B5F7F6008FEB91 /* TLSBox.h in Headers */ = {isa = PBXBuildFile; fileRef = 0EFEB4442006D3C800F81029 /* TLSBox.h */; };
 		0EEC49EA20B5F7F6008FEB91 /* ZeroingData.h in Headers */ = {isa = PBXBuildFile; fileRef = 0EFEB4412006D3C800F81029 /* ZeroingData.h */; };
@@ -87,7 +86,6 @@
 		0EFEB45B2006D3C800F81029 /* TLSBox.m in Sources */ = {isa = PBXBuildFile; fileRef = 0EFEB4302006D3C800F81029 /* TLSBox.m */; };
 		0EFEB45C2006D3C800F81029 /* ZeroingData.m in Sources */ = {isa = PBXBuildFile; fileRef = 0EFEB4312006D3C800F81029 /* ZeroingData.m */; };
 		0EFEB45D2006D3C800F81029 /* CryptoBox.m in Sources */ = {isa = PBXBuildFile; fileRef = 0EFEB4322006D3C800F81029 /* CryptoBox.m */; };
-		0EFEB45E2006D3C800F81029 /* PointerBasedDataPath.m in Sources */ = {isa = PBXBuildFile; fileRef = 0EFEB4332006D3C800F81029 /* PointerBasedDataPath.m */; };
 		0EFEB4602006D3C800F81029 /* DataPath.h in Headers */ = {isa = PBXBuildFile; fileRef = 0EFEB4352006D3C800F81029 /* DataPath.h */; };
 		0EFEB4612006D3C800F81029 /* Errors.h in Headers */ = {isa = PBXBuildFile; fileRef = 0EFEB4362006D3C800F81029 /* Errors.h */; };
 		0EFEB4622006D3C800F81029 /* SecureRandom.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EFEB4372006D3C800F81029 /* SecureRandom.swift */; };
@@ -98,7 +96,6 @@
 		0EFEB4672006D3C800F81029 /* SessionProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EFEB43C2006D3C800F81029 /* SessionProxy.swift */; };
 		0EFEB4682006D3C800F81029 /* MSS.m in Sources */ = {isa = PBXBuildFile; fileRef = 0EFEB43D2006D3C800F81029 /* MSS.m */; };
 		0EFEB4692006D3C800F81029 /* Packet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EFEB43E2006D3C800F81029 /* Packet.swift */; };
-		0EFEB46A2006D3C800F81029 /* PointerBasedDataPath.h in Headers */ = {isa = PBXBuildFile; fileRef = 0EFEB43F2006D3C800F81029 /* PointerBasedDataPath.h */; };
 		0EFEB46B2006D3C800F81029 /* CryptoBox.h in Headers */ = {isa = PBXBuildFile; fileRef = 0EFEB4402006D3C800F81029 /* CryptoBox.h */; };
 		0EFEB46C2006D3C800F81029 /* ZeroingData.h in Headers */ = {isa = PBXBuildFile; fileRef = 0EFEB4412006D3C800F81029 /* ZeroingData.h */; };
 		0EFEB46D2006D3C800F81029 /* Data+Manipulation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EFEB4432006D3C800F81029 /* Data+Manipulation.swift */; };
@@ -126,7 +123,6 @@
 		0EFEB4912006D7F300F81029 /* TLSBox.m in Sources */ = {isa = PBXBuildFile; fileRef = 0EFEB4302006D3C800F81029 /* TLSBox.m */; };
 		0EFEB4922006D7F300F81029 /* ZeroingData.m in Sources */ = {isa = PBXBuildFile; fileRef = 0EFEB4312006D3C800F81029 /* ZeroingData.m */; };
 		0EFEB4932006D7F300F81029 /* CryptoBox.m in Sources */ = {isa = PBXBuildFile; fileRef = 0EFEB4322006D3C800F81029 /* CryptoBox.m */; };
-		0EFEB4942006D7F300F81029 /* PointerBasedDataPath.m in Sources */ = {isa = PBXBuildFile; fileRef = 0EFEB4332006D3C800F81029 /* PointerBasedDataPath.m */; };
 		0EFEB4952006D7F300F81029 /* SecureRandom.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EFEB4372006D3C800F81029 /* SecureRandom.swift */; };
 		0EFEB4962006D7F300F81029 /* ProtocolMacros.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EFEB4382006D3C800F81029 /* ProtocolMacros.swift */; };
 		0EFEB4972006D7F300F81029 /* Authenticator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EFEB43A2006D3C800F81029 /* Authenticator.swift */; };
@@ -222,6 +218,7 @@
 		0EC1BBA720D7D803007C4C7B /* ConnectionStrategy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionStrategy.swift; sourceTree = "<group>"; };
 		0EE7A79420F61EDC00B42E6A /* PacketMacros.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PacketMacros.h; sourceTree = "<group>"; };
 		0EE7A79720F6296F00B42E6A /* PacketMacros.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PacketMacros.m; sourceTree = "<group>"; };
+		0EE7A79D20F6488400B42E6A /* DataPathEncryption.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DataPathEncryption.h; sourceTree = "<group>"; };
 		0EEC49DB20B5E732008FEB91 /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 		0EFEB42A2006D3C800F81029 /* EncryptionProxy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EncryptionProxy.swift; sourceTree = "<group>"; };
 		0EFEB42B2006D3C800F81029 /* SessionKey.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SessionKey.swift; sourceTree = "<group>"; };
@@ -231,7 +228,6 @@
 		0EFEB4302006D3C800F81029 /* TLSBox.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TLSBox.m; sourceTree = "<group>"; };
 		0EFEB4312006D3C800F81029 /* ZeroingData.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZeroingData.m; sourceTree = "<group>"; };
 		0EFEB4322006D3C800F81029 /* CryptoBox.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CryptoBox.m; sourceTree = "<group>"; };
-		0EFEB4332006D3C800F81029 /* PointerBasedDataPath.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PointerBasedDataPath.m; sourceTree = "<group>"; };
 		0EFEB4352006D3C800F81029 /* DataPath.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DataPath.h; sourceTree = "<group>"; };
 		0EFEB4362006D3C800F81029 /* Errors.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Errors.h; sourceTree = "<group>"; };
 		0EFEB4372006D3C800F81029 /* SecureRandom.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SecureRandom.swift; sourceTree = "<group>"; };
@@ -242,7 +238,6 @@
 		0EFEB43C2006D3C800F81029 /* SessionProxy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SessionProxy.swift; sourceTree = "<group>"; };
 		0EFEB43D2006D3C800F81029 /* MSS.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MSS.m; sourceTree = "<group>"; };
 		0EFEB43E2006D3C800F81029 /* Packet.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Packet.swift; sourceTree = "<group>"; };
-		0EFEB43F2006D3C800F81029 /* PointerBasedDataPath.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PointerBasedDataPath.h; sourceTree = "<group>"; };
 		0EFEB4402006D3C800F81029 /* CryptoBox.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CryptoBox.h; sourceTree = "<group>"; };
 		0EFEB4412006D3C800F81029 /* ZeroingData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZeroingData.h; sourceTree = "<group>"; };
 		0EFEB4422006D3C800F81029 /* module.modulemap */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = "sourcecode.module-map"; path = module.modulemap; sourceTree = "<group>"; };
@@ -417,6 +412,7 @@
 				0EFEB4432006D3C800F81029 /* Data+Manipulation.swift */,
 				0EFEB4352006D3C800F81029 /* DataPath.h */,
 				0EFEB44C2006D3C800F81029 /* DataPath.m */,
+				0EE7A79D20F6488400B42E6A /* DataPathEncryption.h */,
 				0E07596A20EF79AB00F38FD8 /* Encryption.h */,
 				0EFEB42A2006D3C800F81029 /* EncryptionProxy.swift */,
 				0EFEB4362006D3C800F81029 /* Errors.h */,
@@ -429,8 +425,6 @@
 				0EFEB43E2006D3C800F81029 /* Packet.swift */,
 				0EE7A79420F61EDC00B42E6A /* PacketMacros.h */,
 				0EE7A79720F6296F00B42E6A /* PacketMacros.m */,
-				0EFEB43F2006D3C800F81029 /* PointerBasedDataPath.h */,
-				0EFEB4332006D3C800F81029 /* PointerBasedDataPath.m */,
 				0EFEB4382006D3C800F81029 /* ProtocolMacros.swift */,
 				0EFEB4392006D3C800F81029 /* ReplayProtector.h */,
 				0EFEB4482006D3C800F81029 /* ReplayProtector.m */,
@@ -522,7 +516,6 @@
 				0E07596E20EF79B400F38FD8 /* CryptoCBC.h in Headers */,
 				0E07596320EF733F00F38FD8 /* CryptoMacros.h in Headers */,
 				0EFEB46E2006D3C800F81029 /* TLSBox.h in Headers */,
-				0EFEB46A2006D3C800F81029 /* PointerBasedDataPath.h in Headers */,
 				0E07596B20EF79AB00F38FD8 /* Encryption.h in Headers */,
 				0EFEB46B2006D3C800F81029 /* CryptoBox.h in Headers */,
 				0EFEB4592006D3C800F81029 /* Allocation.h in Headers */,
@@ -541,7 +534,6 @@
 				0EEC49E520B5F7F6008FEB91 /* Errors.h in Headers */,
 				0E07596F20EF79B400F38FD8 /* CryptoCBC.h in Headers */,
 				0E07596420EF733F00F38FD8 /* CryptoMacros.h in Headers */,
-				0EEC49E720B5F7F6008FEB91 /* PointerBasedDataPath.h in Headers */,
 				0EEC49EA20B5F7F6008FEB91 /* ZeroingData.h in Headers */,
 				0E07596C20EF79AB00F38FD8 /* Encryption.h in Headers */,
 				0EEC49E120B5F7EA008FEB91 /* Allocation.h in Headers */,
@@ -846,7 +838,6 @@
 			files = (
 				0EBBF2F5208505D700E36B40 /* NETunnelInterface.swift in Sources */,
 				0EAAD70920E4F2BC0088754A /* CommunicationType.swift in Sources */,
-				0EFEB45E2006D3C800F81029 /* PointerBasedDataPath.m in Sources */,
 				0EFEB4732006D3C800F81029 /* LinkInterface.swift in Sources */,
 				0EBBF2F8208505DD00E36B40 /* NWUDPSessionState+Description.swift in Sources */,
 				0EFEB4652006D3C800F81029 /* Authenticator.swift in Sources */,
@@ -932,7 +923,6 @@
 				0EFEB48E2006D7F300F81029 /* SessionKey.swift in Sources */,
 				0EFEB4AF2007627700F81029 /* InterfaceObserver.swift in Sources */,
 				0EFEB4A42006D7F300F81029 /* DataPath.m in Sources */,
-				0EFEB4942006D7F300F81029 /* PointerBasedDataPath.m in Sources */,
 				0EBBF2E62084FE6F00E36B40 /* GenericSocket.swift in Sources */,
 				0EFEB4912006D7F300F81029 /* TLSBox.m in Sources */,
 				0EFEB49D2006D7F300F81029 /* IOInterface.swift in Sources */,

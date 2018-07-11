@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 
 #import "Encryption.h"
+#import "DataPathEncryption.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -16,6 +17,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithCipherName:(nonnull NSString *)cipherName
                         digestName:(nonnull NSString *)digestName;
+
+@end
+
+@interface DataPathCryptoCBC : NSObject <DataPathEncrypter, DataPathDecrypter>
+
+- (instancetype)initWithCrypto:(nonnull CryptoCBC *)crypto;
 
 @end
 

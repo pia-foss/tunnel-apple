@@ -1059,18 +1059,13 @@ public class SessionProxy {
             deferStop(.shutdown, e)
             return
         }
-        let encrypter = proxy.encrypter()
-        let decrypter = proxy.decrypter()
-//        if Configuration.usesDataOptimization {
-            negotiationKey.dataPath = PointerBasedDataPath(encrypter: encrypter,
-                                                           decrypter: decrypter,
-                                                           maxPackets: link?.packetBufferSize ?? 200,
-                                                           usesReplayProtection: Configuration.usesReplayProtection)
-//        } else {
-//            negotiationKey.dataPath = HighLevelDataPath(encrypter: encrypter,
-//                                                        decrypter: decrypter,
-//                                                        usesReplayProtection: Configuration.usesReplayProtection)
-//        }
+
+        negotiationKey.dataPath = DataPath(
+            encrypter: proxy.encrypter(),
+            decrypter: proxy.decrypter(),
+            maxPackets: link?.packetBufferSize ?? 200,
+            usesReplayProtection: Configuration.usesReplayProtection
+        )
     }
     
     // MARK: Data

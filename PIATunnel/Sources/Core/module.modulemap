@@ -8,6 +8,6 @@ module __PIATunnelNative {
     header "PacketMacros.h"
     header "ReplayProtector.h"
     header "DataPath.h"
-    header "PointerBasedDataPath.h"
+    header "DataPathEncryption.h"
     export *
 }

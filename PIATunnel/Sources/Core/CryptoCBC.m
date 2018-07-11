@@ -132,40 +132,9 @@ const NSInteger CryptoCBCMaxHMACLength = 100;
     PIA_CRYPTO_RETURN_STATUS(code)
 }
 
-- (void)assembleDataPacketWithPacketId:(uint32_t)packetId compression:(uint8_t)compression payload:(NSData *)payload into:(uint8_t *)dest length:(int *)length
+- (id<DataPathEncrypter>)dataPathEncrypter
 {
-    uint8_t *ptr = dest;
-    *(uint32_t *)ptr = htonl(packetId);
-    ptr += sizeof(uint32_t);
-    *ptr = compression;
-    ptr += sizeof(uint8_t);
-    memcpy(ptr, payload.bytes, payload.length);
-    *length = (int)(ptr - dest + payload.length);
-}
-
-- (NSData *)encryptedDataPacketWithHeader:(uint8_t)header packetId:(uint32_t)packetId payload:(const uint8_t *)payload payloadLength:(int)payloadLength error:(NSError *__autoreleasing *)error
-{
-    const int capacity = 1 + (int)safe_crypto_capacity(payloadLength, self.overheadLength);
-    NSMutableData *encryptedPacket = [[NSMutableData alloc] initWithLength:capacity];
-    uint8_t *ptr = encryptedPacket.mutableBytes;
-    int encryptedPayloadLength = INT_MAX;
-    const BOOL success = [self encryptBytes:payload
-                                     length:payloadLength
-                                       dest:(ptr + 1) // skip header byte
-                                 destLength:&encryptedPayloadLength
-                                   packetId:packetId
-                                      error:error];
-    
-    NSAssert(encryptedPayloadLength <= capacity, @"Did not allocate enough bytes for payload");
-    
-    if (!success) {
-        return nil;
-    }
-    
-    // set header byte
-    *ptr = header;
-    encryptedPacket.length = 1 + encryptedPayloadLength;
-    return encryptedPacket;
+    return [[DataPathCryptoCBC alloc] initWithCrypto:self];
 }
 
 #pragma mark Decrypter
@@ -225,15 +194,85 @@ const NSInteger CryptoCBCMaxHMACLength = 100;
     PIA_CRYPTO_RETURN_STATUS(code)
 }
 
+- (id<DataPathDecrypter>)dataPathDecrypter
+{
+    return [[DataPathCryptoCBC alloc] initWithCrypto:self];
+}
+
+@end
+
+#pragma mark -
+
+@interface DataPathCryptoCBC ()
+
+@property (nonatomic, strong) CryptoCBC *crypto;
+
+@end
+
+@implementation DataPathCryptoCBC
+
+- (instancetype)initWithCrypto:(CryptoCBC *)crypto
+{
+    if ((self = [super init])) {
+        self.crypto = crypto;
+    }
+    return self;
+}
+
+- (int)overheadLength
+{
+    return self.crypto.overheadLength;
+}
+
+#pragma mark DataPathEncrypter
+
+- (void)assembleDataPacketWithPacketId:(uint32_t)packetId compression:(uint8_t)compression payload:(NSData *)payload into:(uint8_t *)dest length:(int *)length
+{
+    uint8_t *ptr = dest;
+    *(uint32_t *)ptr = htonl(packetId);
+    ptr += sizeof(uint32_t);
+    *ptr = compression;
+    ptr += sizeof(uint8_t);
+    memcpy(ptr, payload.bytes, payload.length);
+    *length = (int)(ptr - dest + payload.length);
+}
+
+- (NSData *)encryptedDataPacketWithHeader:(uint8_t)header packetId:(uint32_t)packetId payload:(const uint8_t *)payload payloadLength:(int)payloadLength error:(NSError *__autoreleasing *)error
+{
+    const int capacity = 1 + (int)safe_crypto_capacity(payloadLength, self.crypto.overheadLength);
+    NSMutableData *encryptedPacket = [[NSMutableData alloc] initWithLength:capacity];
+    uint8_t *ptr = encryptedPacket.mutableBytes;
+    int encryptedPayloadLength = INT_MAX;
+    const BOOL success = [self.crypto encryptBytes:payload
+                                            length:payloadLength
+                                              dest:(ptr + 1) // skip header byte
+                                        destLength:&encryptedPayloadLength
+                                          packetId:packetId
+                                             error:error];
+    
+    NSAssert(encryptedPayloadLength <= capacity, @"Did not allocate enough bytes for payload");
+    
+    if (!success) {
+        return nil;
+    }
+    
+    // set header byte
+    *ptr = header;
+    encryptedPacket.length = 1 + encryptedPayloadLength;
+    return encryptedPacket;
+}
+
+#pragma mark DataPathDecrypter
+
 - (BOOL)decryptDataPacket:(NSData *)packet into:(uint8_t *)dest length:(int *)length packetId:(nonnull uint32_t *)packetId error:(NSError *__autoreleasing *)error
 {
     // skip header byte = (code, key)
-    const BOOL success = [self decryptBytes:(packet.bytes + 1)
-                                     length:(int)(packet.length - 1)
-                                       dest:dest
-                                 destLength:length
-                                   packetId:0   // ignored
-                                      error:error];
+    const BOOL success = [self.crypto decryptBytes:(packet.bytes + 1)
+                                            length:(int)(packet.length - 1)
+                                              dest:dest
+                                        destLength:length
+                                          packetId:0   // ignored
+                                             error:error];
     if (!success) {
         return NO;
     }

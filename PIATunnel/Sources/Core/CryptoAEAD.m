@@ -121,39 +121,9 @@ const NSInteger CryptoAEADTagLength     = 16;
     PIA_CRYPTO_RETURN_STATUS(code)
 }
 
-- (void)assembleDataPacketWithPacketId:(uint32_t)packetId compression:(uint8_t)compression payload:(NSData *)payload into:(uint8_t *)dest length:(int *)length
+- (id<DataPathEncrypter>)dataPathEncrypter
 {
-    uint8_t *ptr = dest;
-    *ptr = compression;
-    ptr += sizeof(uint8_t);
-    memcpy(ptr, payload.bytes, payload.length);
-    *length = (int)(ptr - dest + payload.length);
-}
-
-- (NSData *)encryptedDataPacketWithHeader:(uint8_t)header packetId:(uint32_t)packetId payload:(const uint8_t *)payload payloadLength:(int)payloadLength error:(NSError *__autoreleasing *)error
-{
-    const int capacity = 5 + (int)safe_crypto_capacity(payloadLength, self.overheadLength);
-    NSMutableData *encryptedPacket = [[NSMutableData alloc] initWithLength:capacity];
-    uint8_t *ptr = encryptedPacket.mutableBytes;
-    int encryptedPayloadLength = INT_MAX;
-    const BOOL success = [self encryptBytes:payload
-                                     length:payloadLength
-                                       dest:(ptr + 5) // skip header and packet id
-                                 destLength:&encryptedPayloadLength
-                                   packetId:htonl(packetId)
-                                      error:error];
-    
-    NSAssert(encryptedPayloadLength <= capacity, @"Did not allocate enough bytes for payload");
-    
-    if (!success) {
-        return nil;
-    }
-    
-    // set header byte
-    *ptr = header;
-    *(uint32_t *)(ptr + 1) = htonl(packetId);
-    encryptedPacket.length = 5 + encryptedPayloadLength;
-    return encryptedPacket;
+    return [[DataPathCryptoAEAD alloc] initWithCrypto:self];
 }
 
 #pragma mark Decrypter
@@ -210,18 +180,95 @@ const NSInteger CryptoAEADTagLength     = 16;
     PIA_CRYPTO_RETURN_STATUS(code)
 }
 
+- (id<DataPathDecrypter>)dataPathDecrypter
+{
+    return [[DataPathCryptoAEAD alloc] initWithCrypto:self];
+}
+
+#pragma mark Helpers
+
+- (void)prepareIV:(uint8_t *)iv withHMACKey:(ZeroingData *)hmacKey
+{
+    bzero(iv, CryptoAEADADLength);
+    memcpy(iv + CryptoAEADADLength, hmacKey.bytes, self.cipherIVLength - CryptoAEADADLength);
+}
+
+@end
+
+#pragma mark -
+
+@interface DataPathCryptoAEAD ()
+
+@property (nonatomic, strong) CryptoAEAD *crypto;
+
+@end
+
+@implementation DataPathCryptoAEAD
+
+- (instancetype)initWithCrypto:(CryptoAEAD *)crypto
+{
+    if ((self = [super init])) {
+        self.crypto = crypto;
+    }
+    return self;
+}
+
+- (int)overheadLength
+{
+    return self.crypto.overheadLength;
+}
+
+#pragma mark DataPathEncrypter
+
+- (void)assembleDataPacketWithPacketId:(uint32_t)packetId compression:(uint8_t)compression payload:(NSData *)payload into:(uint8_t *)dest length:(int *)length
+{
+    uint8_t *ptr = dest;
+    *ptr = compression;
+    ptr += sizeof(uint8_t);
+    memcpy(ptr, payload.bytes, payload.length);
+    *length = (int)(ptr - dest + payload.length);
+}
+
+- (NSData *)encryptedDataPacketWithHeader:(uint8_t)header packetId:(uint32_t)packetId payload:(const uint8_t *)payload payloadLength:(int)payloadLength error:(NSError *__autoreleasing *)error
+{
+    const int capacity = 5 + (int)safe_crypto_capacity(payloadLength, self.crypto.overheadLength);
+    NSMutableData *encryptedPacket = [[NSMutableData alloc] initWithLength:capacity];
+    uint8_t *ptr = encryptedPacket.mutableBytes;
+    int encryptedPayloadLength = INT_MAX;
+    const BOOL success = [self.crypto encryptBytes:payload
+                                            length:payloadLength
+                                              dest:(ptr + 5) // skip header and packet id
+                                        destLength:&encryptedPayloadLength
+                                          packetId:htonl(packetId)
+                                             error:error];
+    
+    NSAssert(encryptedPayloadLength <= capacity, @"Did not allocate enough bytes for payload");
+    
+    if (!success) {
+        return nil;
+    }
+    
+    // set header byte
+    *ptr = header;
+    *(uint32_t *)(ptr + 1) = htonl(packetId);
+    encryptedPacket.length = 5 + encryptedPayloadLength;
+    return encryptedPacket;
+}
+
+#pragma mark DataPathDecrypter
+
 - (BOOL)decryptDataPacket:(NSData *)packet into:(uint8_t *)dest length:(int *)length packetId:(uint32_t *)packetId error:(NSError *__autoreleasing *)error
 {
     // associated data from packet id after header
     const uint32_t ad = *(const uint32_t *)(packet.bytes + 1);
 
     // skip header byte + packet id
-    const BOOL success = [self decryptBytes:(packet.bytes + 5)
-                                     length:(int)(packet.length - 5)
-                                       dest:dest
-                                 destLength:length
-                                   packetId:ad
-                                      error:error];
+    const BOOL success = [self.crypto decryptBytes:(packet.bytes + 5)
+                                            length:(int)(packet.length - 5)
+                                              dest:dest
+                                        destLength:length
+                                          packetId:ad
+                                             error:error];
     if (!success) {
         return NO;
     }
@@ -236,14 +283,6 @@ const NSInteger CryptoAEADTagLength     = 16;
     ptr += sizeof(uint8_t); // compression byte
     *length = packetLength - (int)(ptr - packet);
     return ptr;
-}
-
-#pragma mark Helpers
-
-- (void)prepareIV:(uint8_t *)iv withHMACKey:(ZeroingData *)hmacKey
-{
-    bzero(iv, CryptoAEADADLength);
-    memcpy(iv + CryptoAEADADLength, hmacKey.bytes, self.cipherIVLength - CryptoAEADADLength);
 }
 
 @end

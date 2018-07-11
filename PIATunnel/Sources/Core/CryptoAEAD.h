@@ -9,12 +9,19 @@
 #import <Foundation/Foundation.h>
 
 #import "Encryption.h"
+#import "DataPathEncryption.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface CryptoAEAD : NSObject <Encrypter, Decrypter>
 
 - (instancetype)initWithCipherName:(nonnull NSString *)cipherName;
+
+@end
+
+@interface DataPathCryptoAEAD : NSObject <DataPathEncrypter, DataPathDecrypter>
+
+- (instancetype)initWithCrypto:(nonnull CryptoAEAD *)crypto;
 
 @end
 

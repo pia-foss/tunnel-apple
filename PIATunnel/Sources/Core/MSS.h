@@ -8,4 +8,4 @@
 
 #import <stdint.h>
 
-void MSSFix(uint8_t *data, int data_len);
+void MSSFix(uint8_t *data, NSInteger data_len);

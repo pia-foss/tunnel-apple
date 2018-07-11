@@ -149,7 +149,7 @@
         [self adjustEncBufferToPacketSize:(int)raw.length];
         
         uint8_t *payload = self.encBufferAligned;
-        int payloadLength;
+        NSInteger payloadLength;
         [self.encrypter assembleDataPacketWithPacketId:self.outPacketId
                                            compression:DataPacketCompressNone
                                                payload:raw
@@ -183,7 +183,7 @@
         [self adjustDecBufferToPacketSize:(int)encryptedPacket.length];
         
         uint8_t *packet = self.decBufferAligned;
-        int packetLength = INT_MAX;
+        NSInteger packetLength = INT_MAX;
         uint32_t packetId;
         const BOOL success = [self.decrypter decryptDataPacket:encryptedPacket
                                                           into:packet
@@ -203,12 +203,12 @@
             continue;
         }
         
-        int payloadLength;
+        NSInteger payloadLength;
         uint8_t compression;
-        uint8_t *payload = [self.decrypter parsePayloadWithDataPacket:packet
-                                                         packetLength:packetLength
-                                                               length:&payloadLength
-                                                          compression:&compression];
+        const uint8_t *payload = [self.decrypter parsePayloadWithDataPacket:packet
+                                                               packetLength:packetLength
+                                                                     length:&payloadLength
+                                                                compression:&compression];
         
         if ((payloadLength == sizeof(DataPacketPingData)) && !memcmp(payload, DataPacketPingData, payloadLength)) {
             if (keepAlive) {
@@ -217,7 +217,7 @@
             continue;
         }
         
-        MSSFix(payload, payloadLength);
+//        MSSFix(payload, payloadLength);
         
         NSData *raw = [[NSData alloc] initWithBytes:payload length:payloadLength];
         [self.inPackets addObject:raw];

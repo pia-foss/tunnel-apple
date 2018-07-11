@@ -97,7 +97,7 @@ const NSInteger CryptoCBCMaxHMACLength = 100;
     const int maxOutputSize = (int)safe_crypto_capacity(data.length, self.overheadLength);
     
     NSMutableData *dest = [[NSMutableData alloc] initWithLength:maxOutputSize];
-    int encryptedLength = INT_MAX;
+    NSInteger encryptedLength = INT_MAX;
     if (![self encryptBytes:bytes length:length dest:dest.mutableBytes destLength:&encryptedLength packetId:packetId error:error]) {
         return nil;
     }
@@ -105,7 +105,7 @@ const NSInteger CryptoCBCMaxHMACLength = 100;
     return dest;
 }
 
-- (BOOL)encryptBytes:(const uint8_t *)bytes length:(int)length dest:(uint8_t *)dest destLength:(int *)destLength packetId:(uint32_t)packetId error:(NSError *__autoreleasing *)error
+- (BOOL)encryptBytes:(const uint8_t *)bytes length:(NSInteger)length dest:(uint8_t *)dest destLength:(NSInteger *)destLength packetId:(uint32_t)packetId error:(NSError *__autoreleasing *)error
 {
     uint8_t *outIV = dest + self.digestLength;
     uint8_t *outEncrypted = dest + self.digestLength + self.cipherIVLength;
@@ -121,7 +121,7 @@ const NSInteger CryptoCBCMaxHMACLength = 100;
     }
     
     PIA_CRYPTO_TRACK_STATUS(code) EVP_CipherInit(self.cipherCtxEnc, NULL, NULL, outIV, -1);
-    PIA_CRYPTO_TRACK_STATUS(code) EVP_CipherUpdate(self.cipherCtxEnc, outEncrypted, &l1, bytes, length);
+    PIA_CRYPTO_TRACK_STATUS(code) EVP_CipherUpdate(self.cipherCtxEnc, outEncrypted, &l1, bytes, (int)length);
     PIA_CRYPTO_TRACK_STATUS(code) EVP_CipherFinal(self.cipherCtxEnc, outEncrypted + l1, &l2);
     
     PIA_CRYPTO_TRACK_STATUS(code) HMAC_Init_ex(self.hmacCtxEnc, NULL, 0, NULL, NULL);
@@ -160,7 +160,7 @@ const NSInteger CryptoCBCMaxHMACLength = 100;
     const int maxOutputSize = (int)safe_crypto_capacity(data.length, self.overheadLength);
     
     NSMutableData *dest = [[NSMutableData alloc] initWithLength:maxOutputSize];
-    int decryptedLength;
+    NSInteger decryptedLength;
     if (![self decryptBytes:bytes length:length dest:dest.mutableBytes destLength:&decryptedLength packetId:packetId error:error]) {
         return nil;
     }
@@ -168,7 +168,7 @@ const NSInteger CryptoCBCMaxHMACLength = 100;
     return dest;
 }
 
-- (BOOL)decryptBytes:(const uint8_t *)bytes length:(int)length dest:(uint8_t *)dest destLength:(int *)destLength packetId:(uint32_t)packetId error:(NSError *__autoreleasing *)error
+- (BOOL)decryptBytes:(const uint8_t *)bytes length:(NSInteger)length dest:(uint8_t *)dest destLength:(NSInteger *)destLength packetId:(uint32_t)packetId error:(NSError *__autoreleasing *)error
 {
     const uint8_t *iv = bytes + self.digestLength;
     const uint8_t *encrypted = bytes + self.digestLength + self.cipherIVLength;
@@ -187,7 +187,7 @@ const NSInteger CryptoCBCMaxHMACLength = 100;
     }
     
     PIA_CRYPTO_TRACK_STATUS(code) EVP_CipherInit(self.cipherCtxDec, NULL, NULL, iv, -1);
-    PIA_CRYPTO_TRACK_STATUS(code) EVP_CipherUpdate(self.cipherCtxDec, dest, &l1, encrypted, length - self.digestLength - self.cipherIVLength);
+    PIA_CRYPTO_TRACK_STATUS(code) EVP_CipherUpdate(self.cipherCtxDec, dest, &l1, encrypted, (int)length - self.digestLength - self.cipherIVLength);
     PIA_CRYPTO_TRACK_STATUS(code) EVP_CipherFinal(self.cipherCtxDec, dest + l1, &l2);
     
     *destLength = l1 + l2;
@@ -252,7 +252,7 @@ const NSInteger CryptoCBCMaxHMACLength = 100;
 
 #pragma mark DataPathEncrypter
 
-- (void)assembleDataPacketWithPacketId:(uint32_t)packetId compression:(uint8_t)compression payload:(NSData *)payload into:(uint8_t *)dest length:(int *)length
+- (void)assembleDataPacketWithPacketId:(uint32_t)packetId compression:(uint8_t)compression payload:(NSData *)payload into:(uint8_t *)dest length:(NSInteger *)length
 {
     uint8_t *ptr = dest;
     *(uint32_t *)ptr = htonl(packetId);
@@ -263,12 +263,12 @@ const NSInteger CryptoCBCMaxHMACLength = 100;
     *length = (int)(ptr - dest + payload.length);
 }
 
-- (NSData *)encryptedDataPacketWithKey:(uint8_t)key packetId:(uint32_t)packetId payload:(const uint8_t *)payload payloadLength:(int)payloadLength error:(NSError *__autoreleasing *)error
+- (NSData *)encryptedDataPacketWithKey:(uint8_t)key packetId:(uint32_t)packetId payload:(const uint8_t *)payload payloadLength:(NSInteger)payloadLength error:(NSError *__autoreleasing *)error
 {
     const int capacity = self.headerLength + (int)safe_crypto_capacity(payloadLength, self.crypto.overheadLength);
     NSMutableData *encryptedPacket = [[NSMutableData alloc] initWithLength:capacity];
     uint8_t *ptr = encryptedPacket.mutableBytes;
-    int encryptedPayloadLength = INT_MAX;
+    NSInteger encryptedPayloadLength = INT_MAX;
     const BOOL success = [self.crypto encryptBytes:payload
                                             length:payloadLength
                                               dest:(ptr + self.headerLength) // skip header byte
@@ -289,7 +289,7 @@ const NSInteger CryptoCBCMaxHMACLength = 100;
 
 #pragma mark DataPathDecrypter
 
-- (BOOL)decryptDataPacket:(NSData *)packet into:(uint8_t *)dest length:(int *)length packetId:(nonnull uint32_t *)packetId error:(NSError *__autoreleasing *)error
+- (BOOL)decryptDataPacket:(NSData *)packet into:(uint8_t *)dest length:(NSInteger *)length packetId:(nonnull uint32_t *)packetId error:(NSError *__autoreleasing *)error
 {
     // skip header = (code, key)
     const BOOL success = [self.crypto decryptBytes:(packet.bytes + self.headerLength)
@@ -311,9 +311,9 @@ const NSInteger CryptoCBCMaxHMACLength = 100;
     return YES;
 }
 
-- (uint8_t *)parsePayloadWithDataPacket:(uint8_t *)packet packetLength:(int)packetLength length:(int *)length compression:(uint8_t *)compression
+- (const uint8_t *)parsePayloadWithDataPacket:(const uint8_t *)packet packetLength:(NSInteger)packetLength length:(NSInteger *)length compression:(uint8_t *)compression
 {
-    uint8_t *ptr = packet;
+    const uint8_t *ptr = packet;
     ptr += sizeof(uint32_t); // packet id
     *compression = *ptr;
     ptr += sizeof(uint8_t); // compression byte

@@ -88,7 +88,7 @@ const NSInteger CryptoAEADTagLength     = 16;
     const int maxOutputSize = (int)safe_crypto_capacity(data.length, self.overheadLength);
 
     NSMutableData *dest = [[NSMutableData alloc] initWithLength:maxOutputSize];
-    int encryptedLength = INT_MAX;
+    NSInteger encryptedLength = INT_MAX;
     if (![self encryptBytes:bytes length:length dest:dest.mutableBytes destLength:&encryptedLength packetId:packetId error:error]) {
         return nil;
     }
@@ -96,7 +96,7 @@ const NSInteger CryptoAEADTagLength     = 16;
     return dest;
 }
 
-- (BOOL)encryptBytes:(const uint8_t *)bytes length:(int)length dest:(uint8_t *)dest destLength:(int *)destLength packetId:(uint32_t)packetId error:(NSError *__autoreleasing *)error
+- (BOOL)encryptBytes:(const uint8_t *)bytes length:(NSInteger)length dest:(uint8_t *)dest destLength:(NSInteger *)destLength packetId:(uint32_t)packetId error:(NSError *__autoreleasing *)error
 {
     int l1 = 0, l2 = 0;
     int x = 0;
@@ -107,7 +107,7 @@ const NSInteger CryptoAEADTagLength     = 16;
     
     PIA_CRYPTO_TRACK_STATUS(code) EVP_CipherInit(self.cipherCtxEnc, NULL, NULL, self.cipherIVEnc, -1);
     PIA_CRYPTO_TRACK_STATUS(code) EVP_CipherUpdate(self.cipherCtxEnc, NULL, &x, ad, CryptoAEADADLength);
-    PIA_CRYPTO_TRACK_STATUS(code) EVP_CipherUpdate(self.cipherCtxEnc, dest + CryptoAEADTagLength, &l1, bytes, length);
+    PIA_CRYPTO_TRACK_STATUS(code) EVP_CipherUpdate(self.cipherCtxEnc, dest + CryptoAEADTagLength, &l1, bytes, (int)length);
     PIA_CRYPTO_TRACK_STATUS(code) EVP_CipherFinal(self.cipherCtxEnc, dest + CryptoAEADTagLength + l1, &l2);
     PIA_CRYPTO_TRACK_STATUS(code) EVP_CIPHER_CTX_ctrl(self.cipherCtxEnc, EVP_CTRL_GCM_GET_TAG, CryptoAEADTagLength, dest);
 
@@ -147,7 +147,7 @@ const NSInteger CryptoAEADTagLength     = 16;
     const int maxOutputSize = (int)safe_crypto_capacity(data.length, self.overheadLength);
 
     NSMutableData *dest = [[NSMutableData alloc] initWithLength:maxOutputSize];
-    int decryptedLength;
+    NSInteger decryptedLength;
     if (![self decryptBytes:bytes length:length dest:dest.mutableBytes destLength:&decryptedLength packetId:packetId error:error]) {
         return nil;
     }
@@ -155,7 +155,7 @@ const NSInteger CryptoAEADTagLength     = 16;
     return dest;
 }
 
-- (BOOL)decryptBytes:(const uint8_t *)bytes length:(int)length dest:(uint8_t *)dest destLength:(int *)destLength packetId:(uint32_t)packetId error:(NSError *__autoreleasing *)error
+- (BOOL)decryptBytes:(const uint8_t *)bytes length:(NSInteger)length dest:(uint8_t *)dest destLength:(NSInteger *)destLength packetId:(uint32_t)packetId error:(NSError *__autoreleasing *)error
 {
     int l1 = 0, l2 = 0;
     int x = 0;
@@ -167,7 +167,7 @@ const NSInteger CryptoAEADTagLength     = 16;
     PIA_CRYPTO_TRACK_STATUS(code) EVP_CipherInit(self.cipherCtxDec, NULL, NULL, self.cipherIVDec, -1);
     PIA_CRYPTO_TRACK_STATUS(code) EVP_CIPHER_CTX_ctrl(self.cipherCtxDec, EVP_CTRL_GCM_SET_TAG, CryptoAEADTagLength, (uint8_t *)bytes);
     PIA_CRYPTO_TRACK_STATUS(code) EVP_CipherUpdate(self.cipherCtxDec, NULL, &x, ad, CryptoAEADADLength);
-    PIA_CRYPTO_TRACK_STATUS(code) EVP_CipherUpdate(self.cipherCtxDec, dest, &l1, bytes + CryptoAEADTagLength, length - CryptoAEADTagLength);
+    PIA_CRYPTO_TRACK_STATUS(code) EVP_CipherUpdate(self.cipherCtxDec, dest, &l1, bytes + CryptoAEADTagLength, (int)length - CryptoAEADTagLength);
     PIA_CRYPTO_TRACK_STATUS(code) EVP_CipherFinal(self.cipherCtxDec, dest + l1, &l2);
 
     *destLength = l1 + l2;
@@ -245,7 +245,7 @@ const NSInteger CryptoAEADTagLength     = 16;
 
 #pragma mark DataPathEncrypter
 
-- (void)assembleDataPacketWithPacketId:(uint32_t)packetId compression:(uint8_t)compression payload:(NSData *)payload into:(uint8_t *)dest length:(int *)length
+- (void)assembleDataPacketWithPacketId:(uint32_t)packetId compression:(uint8_t)compression payload:(NSData *)payload into:(uint8_t *)dest length:(NSInteger *)length
 {
     uint8_t *ptr = dest;
     *ptr = compression;
@@ -254,12 +254,12 @@ const NSInteger CryptoAEADTagLength     = 16;
     *length = (int)(ptr - dest + payload.length);
 }
 
-- (NSData *)encryptedDataPacketWithKey:(uint8_t)key packetId:(uint32_t)packetId payload:(const uint8_t *)payload payloadLength:(int)payloadLength error:(NSError *__autoreleasing *)error
+- (NSData *)encryptedDataPacketWithKey:(uint8_t)key packetId:(uint32_t)packetId payload:(const uint8_t *)payload payloadLength:(NSInteger)payloadLength error:(NSError *__autoreleasing *)error
 {
     const int capacity = self.headerLength + PacketIdLength + (int)safe_crypto_capacity(payloadLength, self.crypto.overheadLength);
     NSMutableData *encryptedPacket = [[NSMutableData alloc] initWithLength:capacity];
     uint8_t *ptr = encryptedPacket.mutableBytes;
-    int encryptedPayloadLength = INT_MAX;
+    NSInteger encryptedPayloadLength = INT_MAX;
     const BOOL success = [self.crypto encryptBytes:payload
                                             length:payloadLength
                                               dest:(ptr + self.headerLength + PacketIdLength) // skip header and packet id
@@ -281,7 +281,7 @@ const NSInteger CryptoAEADTagLength     = 16;
 
 #pragma mark DataPathDecrypter
 
-- (BOOL)decryptDataPacket:(NSData *)packet into:(uint8_t *)dest length:(int *)length packetId:(uint32_t *)packetId error:(NSError *__autoreleasing *)error
+- (BOOL)decryptDataPacket:(NSData *)packet into:(uint8_t *)dest length:(NSInteger *)length packetId:(uint32_t *)packetId error:(NSError *__autoreleasing *)error
 {
     // associated data from packet id after header
     const uint32_t ad = *(const uint32_t *)(packet.bytes + self.headerLength);
@@ -306,9 +306,9 @@ const NSInteger CryptoAEADTagLength     = 16;
     return YES;
 }
 
-- (uint8_t *)parsePayloadWithDataPacket:(uint8_t *)packet packetLength:(int)packetLength length:(int *)length compression:(uint8_t *)compression
+- (const uint8_t *)parsePayloadWithDataPacket:(const uint8_t *)packet packetLength:(NSInteger)packetLength length:(NSInteger *)length compression:(uint8_t *)compression
 {
-    uint8_t *ptr = packet;
+    const uint8_t *ptr = packet;
     *compression = *ptr;
     ptr += sizeof(uint8_t); // compression byte
     *length = packetLength - (int)(ptr - packet);

@@ -20,7 +20,7 @@
 - (int)overheadLength;
 
 - (NSData *)encryptData:(nonnull NSData *)data offset:(NSInteger)offset packetId:(uint32_t)packetId error:(NSError **)error;
-- (BOOL)encryptBytes:(nonnull const uint8_t *)bytes length:(int)length dest:(nonnull uint8_t *)dest destLength:(nonnull int *)destLength packetId:(uint32_t)packetId error:(NSError **)error;
+- (BOOL)encryptBytes:(nonnull const uint8_t *)bytes length:(NSInteger)length dest:(nonnull uint8_t *)dest destLength:(nonnull NSInteger *)destLength packetId:(uint32_t)packetId error:(NSError **)error;
 
 - (nonnull id<DataPathEncrypter>)dataPathEncrypter;
 
@@ -33,7 +33,7 @@
 - (int)overheadLength;
 
 - (NSData *)decryptData:(nonnull NSData *)data offset:(NSInteger)offset packetId:(uint32_t)packetId error:(NSError **)error;
-- (BOOL)decryptBytes:(nonnull const uint8_t *)bytes length:(int)length dest:(nonnull uint8_t *)dest destLength:(nonnull int *)destLength packetId:(uint32_t)packetId error:(NSError **)error;
+- (BOOL)decryptBytes:(nonnull const uint8_t *)bytes length:(NSInteger)length dest:(nonnull uint8_t *)dest destLength:(nonnull NSInteger *)destLength packetId:(uint32_t)packetId error:(NSError **)error;
 
 - (nonnull id<DataPathDecrypter>)dataPathDecrypter;
 

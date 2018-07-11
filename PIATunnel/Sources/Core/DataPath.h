@@ -17,10 +17,10 @@
 
 @property (nonatomic, assign) uint32_t maxPacketId;
 
-- (instancetype)initWithEncrypter:(id<DataPathEncrypter>)encrypter
-                        decrypter:(id<DataPathDecrypter>)decrypter
-                       maxPackets:(NSInteger)maxPackets
-             usesReplayProtection:(BOOL)usesReplayProtection;
+- (nonnull instancetype)initWithEncrypter:(nonnull id<DataPathEncrypter>)encrypter
+                                decrypter:(nonnull id<DataPathDecrypter>)decrypter
+                               maxPackets:(NSInteger)maxPackets
+                     usesReplayProtection:(BOOL)usesReplayProtection;
 
 - (void)setPeerId:(uint32_t)peerId; // 24-bit, discard most significant byte
 

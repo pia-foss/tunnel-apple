@@ -200,6 +200,9 @@ const NSInteger CryptoAEADTagLength     = 16;
 @interface DataPathCryptoAEAD ()
 
 @property (nonatomic, strong) CryptoAEAD *crypto;
+@property (nonatomic, assign) int headerLength;
+@property (nonatomic, copy) void (^setDataHeader)(uint8_t *, uint8_t);
+@property (nonatomic, copy) BOOL (^checkPeerId)(const uint8_t *);
 
 @end
 
@@ -209,6 +212,7 @@ const NSInteger CryptoAEADTagLength     = 16;
 {
     if ((self = [super init])) {
         self.crypto = crypto;
+        self.peerId = PacketPeerIdDisabled;
     }
     return self;
 }
@@ -216,6 +220,27 @@ const NSInteger CryptoAEADTagLength     = 16;
 - (int)overheadLength
 {
     return self.crypto.overheadLength;
+}
+
+- (void)setPeerId:(uint32_t)peerId
+{
+    _peerId = peerId & 0xffffff;
+    
+    if (_peerId == PacketPeerIdDisabled) {
+        self.headerLength = 1;
+        self.setDataHeader = ^(uint8_t *to, uint8_t key) {
+            PacketHeaderSet(to, PacketCodeDataV1, key);
+        };
+    }
+    else {
+        self.headerLength = 4;
+        self.setDataHeader = ^(uint8_t *to, uint8_t key) {
+            PacketHeaderSetDataV2(to, key, peerId);
+        };
+        self.checkPeerId = ^BOOL(const uint8_t *ptr) {
+            return (PacketHeaderGetDataV2PeerId(ptr) == self.peerId);
+        };
+    }
 }
 
 #pragma mark DataPathEncrypter
@@ -231,13 +256,13 @@ const NSInteger CryptoAEADTagLength     = 16;
 
 - (NSData *)encryptedDataPacketWithKey:(uint8_t)key packetId:(uint32_t)packetId payload:(const uint8_t *)payload payloadLength:(int)payloadLength error:(NSError *__autoreleasing *)error
 {
-    const int capacity = PacketHeaderLength + PacketIdLength + (int)safe_crypto_capacity(payloadLength, self.crypto.overheadLength);
+    const int capacity = self.headerLength + PacketIdLength + (int)safe_crypto_capacity(payloadLength, self.crypto.overheadLength);
     NSMutableData *encryptedPacket = [[NSMutableData alloc] initWithLength:capacity];
     uint8_t *ptr = encryptedPacket.mutableBytes;
     int encryptedPayloadLength = INT_MAX;
     const BOOL success = [self.crypto encryptBytes:payload
                                             length:payloadLength
-                                              dest:(ptr + PacketHeaderLength + PacketIdLength) // skip header and packet id
+                                              dest:(ptr + self.headerLength + PacketIdLength) // skip header and packet id
                                         destLength:&encryptedPayloadLength
                                           packetId:htonl(packetId)
                                              error:error];
@@ -248,10 +273,9 @@ const NSInteger CryptoAEADTagLength     = 16;
         return nil;
     }
     
-    // set header byte
-    PacketHeaderSet(ptr, PacketCodeDataV1, key);
-    *(uint32_t *)(ptr + PacketHeaderLength) = htonl(packetId);
-    encryptedPacket.length = PacketHeaderLength + PacketIdLength + encryptedPayloadLength;
+    self.setDataHeader(ptr, key);
+    *(uint32_t *)(ptr + self.headerLength) = htonl(packetId);
+    encryptedPacket.length = self.headerLength + PacketIdLength + encryptedPayloadLength;
     return encryptedPacket;
 }
 
@@ -260,16 +284,22 @@ const NSInteger CryptoAEADTagLength     = 16;
 - (BOOL)decryptDataPacket:(NSData *)packet into:(uint8_t *)dest length:(int *)length packetId:(uint32_t *)packetId error:(NSError *__autoreleasing *)error
 {
     // associated data from packet id after header
-    const uint32_t ad = *(const uint32_t *)(packet.bytes + PacketHeaderLength);
+    const uint32_t ad = *(const uint32_t *)(packet.bytes + self.headerLength);
 
     // skip header + packet id
-    const BOOL success = [self.crypto decryptBytes:(packet.bytes + PacketHeaderLength + PacketIdLength)
-                                            length:(int)(packet.length - (PacketHeaderLength + PacketIdLength))
+    const BOOL success = [self.crypto decryptBytes:(packet.bytes + self.headerLength + PacketIdLength)
+                                            length:(int)(packet.length - (self.headerLength + PacketIdLength))
                                               dest:dest
                                         destLength:length
                                           packetId:ad
                                              error:error];
     if (!success) {
+        return NO;
+    }
+    if (self.checkPeerId && !self.checkPeerId(packet.bytes)) {
+        if (error) {
+            *error = PIATunnelErrorWithCode(PIATunnelErrorCodeDataPathPeerIdMismatch);
+        }
         return NO;
     }
     *packetId = ntohl(ad);

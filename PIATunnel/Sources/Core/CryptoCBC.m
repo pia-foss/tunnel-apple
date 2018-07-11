@@ -207,6 +207,9 @@ const NSInteger CryptoCBCMaxHMACLength = 100;
 @interface DataPathCryptoCBC ()
 
 @property (nonatomic, strong) CryptoCBC *crypto;
+@property (nonatomic, assign) int headerLength;
+@property (nonatomic, copy) void (^setDataHeader)(uint8_t *, uint8_t);
+@property (nonatomic, copy) BOOL (^checkPeerId)(const uint8_t *);
 
 @end
 
@@ -216,6 +219,7 @@ const NSInteger CryptoCBCMaxHMACLength = 100;
 {
     if ((self = [super init])) {
         self.crypto = crypto;
+        self.peerId = PacketPeerIdDisabled;
     }
     return self;
 }
@@ -223,6 +227,27 @@ const NSInteger CryptoCBCMaxHMACLength = 100;
 - (int)overheadLength
 {
     return self.crypto.overheadLength;
+}
+
+- (void)setPeerId:(uint32_t)peerId
+{
+    _peerId = peerId & 0xffffff;
+
+    if (_peerId == PacketPeerIdDisabled) {
+        self.headerLength = 1;
+        self.setDataHeader = ^(uint8_t *to, uint8_t key) {
+            PacketHeaderSet(to, PacketCodeDataV1, key);
+        };
+    }
+    else {
+        self.headerLength = 4;
+        self.setDataHeader = ^(uint8_t *to, uint8_t key) {
+            PacketHeaderSetDataV2(to, key, peerId);
+        };
+        self.checkPeerId = ^BOOL(const uint8_t *ptr) {
+            return (PacketHeaderGetDataV2PeerId(ptr) == self.peerId);
+        };
+    }
 }
 
 #pragma mark DataPathEncrypter
@@ -240,13 +265,13 @@ const NSInteger CryptoCBCMaxHMACLength = 100;
 
 - (NSData *)encryptedDataPacketWithKey:(uint8_t)key packetId:(uint32_t)packetId payload:(const uint8_t *)payload payloadLength:(int)payloadLength error:(NSError *__autoreleasing *)error
 {
-    const int capacity = PacketHeaderLength + (int)safe_crypto_capacity(payloadLength, self.crypto.overheadLength);
+    const int capacity = self.headerLength + (int)safe_crypto_capacity(payloadLength, self.crypto.overheadLength);
     NSMutableData *encryptedPacket = [[NSMutableData alloc] initWithLength:capacity];
     uint8_t *ptr = encryptedPacket.mutableBytes;
     int encryptedPayloadLength = INT_MAX;
     const BOOL success = [self.crypto encryptBytes:payload
                                             length:payloadLength
-                                              dest:(ptr + PacketHeaderLength) // skip header byte
+                                              dest:(ptr + self.headerLength) // skip header byte
                                         destLength:&encryptedPayloadLength
                                           packetId:packetId
                                              error:error];
@@ -256,10 +281,9 @@ const NSInteger CryptoCBCMaxHMACLength = 100;
     if (!success) {
         return nil;
     }
-    
-    // set header byte
-    PacketHeaderSet(ptr, PacketCodeDataV1, key);
-    encryptedPacket.length = PacketHeaderLength + encryptedPayloadLength;
+
+    self.setDataHeader(ptr, key);
+    encryptedPacket.length = self.headerLength + encryptedPayloadLength;
     return encryptedPacket;
 }
 
@@ -268,13 +292,19 @@ const NSInteger CryptoCBCMaxHMACLength = 100;
 - (BOOL)decryptDataPacket:(NSData *)packet into:(uint8_t *)dest length:(int *)length packetId:(nonnull uint32_t *)packetId error:(NSError *__autoreleasing *)error
 {
     // skip header = (code, key)
-    const BOOL success = [self.crypto decryptBytes:(packet.bytes + PacketHeaderLength)
-                                            length:(int)(packet.length - PacketHeaderLength)
+    const BOOL success = [self.crypto decryptBytes:(packet.bytes + self.headerLength)
+                                            length:(int)(packet.length - self.headerLength)
                                               dest:dest
                                         destLength:length
                                           packetId:0   // ignored
                                              error:error];
     if (!success) {
+        return NO;
+    }
+    if (self.checkPeerId && !self.checkPeerId(packet.bytes)) {
+        if (error) {
+            *error = PIATunnelErrorWithCode(PIATunnelErrorCodeDataPathPeerIdMismatch);
+        }
         return NO;
     }
     *packetId = ntohl(*(uint32_t *)dest);

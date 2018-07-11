@@ -22,6 +22,8 @@
                        maxPackets:(NSInteger)maxPackets
              usesReplayProtection:(BOOL)usesReplayProtection;
 
+- (void)setPeerId:(uint32_t)peerId; // 24-bit, discard most significant byte
+
 - (NSArray<NSData *> *)encryptPackets:(nonnull NSArray<NSData *> *)packets key:(uint8_t)key error:(NSError **)error;
 - (NSArray<NSData *> *)decryptPackets:(nonnull NSArray<NSData *> *)packets keepAlive:(nullable bool *)keepAlive error:(NSError **)error;
 

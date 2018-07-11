@@ -123,6 +123,12 @@
     return [[self class] alignedPointer:self.decBuffer];
 }
 
+- (void)setPeerId:(uint32_t)peerId
+{
+    [self.encrypter setPeerId:peerId];
+    [self.decrypter setPeerId:peerId];
+}
+
 #pragma mark DataPath
 
 - (NSArray<NSData *> *)encryptPackets:(NSArray<NSData *> *)packets key:(uint8_t)key error:(NSError *__autoreleasing *)error

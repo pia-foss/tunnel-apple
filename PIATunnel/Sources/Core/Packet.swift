@@ -7,30 +7,9 @@
 //
 
 import Foundation
+import __PIATunnelNative
 
-enum PacketCode: UInt8 {
-    case softResetV1            = 0x03
-    
-    case controlV1              = 0x04
-    
-    case ackV1                  = 0x05
-    
-    case dataV1                 = 0x06
-    
-    case hardResetClientV2      = 0x07
-    
-    case hardResetServerV2      = 0x08
-
-    case unknown
-}
-
-protocol Packet {
-    var packetId: UInt32 { get }
-    
-    var code: PacketCode { get }
-}
-
-class ControlPacket: Packet {
+class ControlPacket {
     let packetId: UInt32
     
     let code: PacketCode
@@ -87,8 +66,7 @@ class ControlPacket: Packet {
 
     // Ruby: send_ctrl
     func toBuffer() -> Data {
-        var raw = Data()
-        ProtocolMacros.appendHeader(to: &raw, code, key, sessionId)
+        var raw = PacketWithHeader(code, key, sessionId)
         raw.append(UInt8(0))
         raw.append(UInt32(packetId).bigEndian)
         if let payload = payload {
@@ -96,4 +74,8 @@ class ControlPacket: Packet {
         }
         return raw
     }
+}
+
+class DataPacket {
+    static let pingString = Data(hex: "2a187bf3641eb4cb07ed2d0a981fc748")
 }

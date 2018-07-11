@@ -454,7 +454,7 @@ public class SessionProxy {
             }
             let key = firstByte & 0b111
 
-//            log.verbose("Parsed packet with (code, key) = (\(code), \(key))")
+//            log.verbose("Parsed packet with (code, key) = (\(code.rawValue), \(key))")
             
             if (code == .dataV1) {
                 guard let _ = keys[key] else {
@@ -486,7 +486,7 @@ public class SessionProxy {
             let ackSize = packet[offset]
             offset += 1
 
-            log.debug("Packet has code \(code), sessionId \(sessionId.toHex()) and \(ackSize) acks entries")
+            log.debug("Packet has code \(code.rawValue), sessionId \(sessionId.toHex()) and \(ackSize) acks entries")
 
             if (ackSize > 0) {
                 guard packet.count >= (offset + Int(ackSize) * ProtocolMacros.packetIdLength) else {
@@ -601,7 +601,7 @@ public class SessionProxy {
 
         log.debug("Send ping")
         
-        sendDataPackets([ProtocolMacros.pingString])
+        sendDataPackets([DataPacket.pingString])
         lastPingOut = Date()
         queue.asyncAfter(deadline: .now() + Configuration.pingInterval) { [weak self] in
             self?.ping()
@@ -737,7 +737,7 @@ public class SessionProxy {
             return
         }
         
-        log.debug("Handle control packet with code \(packet.code) and id \(packet.packetId)")
+        log.debug("Handle control packet with code \(packet.code.rawValue) and id \(packet.packetId)")
 
         if (((packet.code == .hardResetServerV2) && (negotiationKey.state == .hardReset)) ||
             ((packet.code == .softResetV1) && (negotiationKey.state == .softReset))) {
@@ -993,7 +993,7 @@ public class SessionProxy {
                 }
             }
 
-            log.debug("Send control packet with code \(controlPacket.code)")
+            log.debug("Send control packet with code \(controlPacket.code.rawValue)")
 
             if let payload = controlPacket.payload {
                 if Configuration.logsSensitiveData {
@@ -1157,8 +1157,7 @@ public class SessionProxy {
     private func sendAck(key: UInt8, packetId: UInt32, remoteSessionId: Data) {
         log.debug("Send ack for received packetId \(packetId)")
 
-        var raw = Data()
-        ProtocolMacros.appendHeader(to: &raw, .ackV1, key, sessionId)
+        var raw = PacketWithHeader(.ackV1, key, sessionId)
         raw.append(UInt8(1)) // ackSize
         raw.append(UInt32(packetId).bigEndian)
         raw.append(remoteSessionId)

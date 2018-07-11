@@ -64,6 +64,10 @@
 		0EC1BBA620D712DE007C4C7B /* DNSResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EC1BBA420D71190007C4C7B /* DNSResolver.swift */; };
 		0EC1BBA820D7D803007C4C7B /* ConnectionStrategy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EC1BBA720D7D803007C4C7B /* ConnectionStrategy.swift */; };
 		0EC1BBA920D7D803007C4C7B /* ConnectionStrategy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EC1BBA720D7D803007C4C7B /* ConnectionStrategy.swift */; };
+		0EE7A79520F61EDC00B42E6A /* PacketMacros.h in Sources */ = {isa = PBXBuildFile; fileRef = 0EE7A79420F61EDC00B42E6A /* PacketMacros.h */; };
+		0EE7A79620F61EDC00B42E6A /* PacketMacros.h in Sources */ = {isa = PBXBuildFile; fileRef = 0EE7A79420F61EDC00B42E6A /* PacketMacros.h */; };
+		0EE7A79820F6296F00B42E6A /* PacketMacros.m in Sources */ = {isa = PBXBuildFile; fileRef = 0EE7A79720F6296F00B42E6A /* PacketMacros.m */; };
+		0EE7A79920F6296F00B42E6A /* PacketMacros.m in Sources */ = {isa = PBXBuildFile; fileRef = 0EE7A79720F6296F00B42E6A /* PacketMacros.m */; };
 		0EEC49DC20B5E732008FEB91 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EEC49DB20B5E732008FEB91 /* Utils.swift */; };
 		0EEC49DD20B5E732008FEB91 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EEC49DB20B5E732008FEB91 /* Utils.swift */; };
 		0EEC49E120B5F7EA008FEB91 /* Allocation.h in Headers */ = {isa = PBXBuildFile; fileRef = 0EFEB42E2006D3C800F81029 /* Allocation.h */; };
@@ -216,6 +220,8 @@
 		0EBBF2FF2085196000E36B40 /* NWTCPConnectionState+Description.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NWTCPConnectionState+Description.swift"; sourceTree = "<group>"; };
 		0EC1BBA420D71190007C4C7B /* DNSResolver.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DNSResolver.swift; sourceTree = "<group>"; };
 		0EC1BBA720D7D803007C4C7B /* ConnectionStrategy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionStrategy.swift; sourceTree = "<group>"; };
+		0EE7A79420F61EDC00B42E6A /* PacketMacros.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PacketMacros.h; sourceTree = "<group>"; };
+		0EE7A79720F6296F00B42E6A /* PacketMacros.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PacketMacros.m; sourceTree = "<group>"; };
 		0EEC49DB20B5E732008FEB91 /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 		0EFEB42A2006D3C800F81029 /* EncryptionProxy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EncryptionProxy.swift; sourceTree = "<group>"; };
 		0EFEB42B2006D3C800F81029 /* SessionKey.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SessionKey.swift; sourceTree = "<group>"; };
@@ -421,6 +427,8 @@
 				0EFEB42D2006D3C800F81029 /* MSS.h */,
 				0EFEB43D2006D3C800F81029 /* MSS.m */,
 				0EFEB43E2006D3C800F81029 /* Packet.swift */,
+				0EE7A79420F61EDC00B42E6A /* PacketMacros.h */,
+				0EE7A79720F6296F00B42E6A /* PacketMacros.m */,
 				0EFEB43F2006D3C800F81029 /* PointerBasedDataPath.h */,
 				0EFEB4332006D3C800F81029 /* PointerBasedDataPath.m */,
 				0EFEB4382006D3C800F81029 /* ProtocolMacros.swift */,
@@ -842,6 +850,7 @@
 				0EFEB4732006D3C800F81029 /* LinkInterface.swift in Sources */,
 				0EBBF2F8208505DD00E36B40 /* NWUDPSessionState+Description.swift in Sources */,
 				0EFEB4652006D3C800F81029 /* Authenticator.swift in Sources */,
+				0EE7A79820F6296F00B42E6A /* PacketMacros.m in Sources */,
 				0EEC49DC20B5E732008FEB91 /* Utils.swift in Sources */,
 				0EAAD70C20E4F85A0088754A /* LinkInterface+Strategy.swift in Sources */,
 				0EFEB4562006D3C800F81029 /* SessionKey.swift in Sources */,
@@ -850,6 +859,7 @@
 				0EFEB4AE2007625E00F81029 /* Keychain.swift in Sources */,
 				0EBBF3002085196000E36B40 /* NWTCPConnectionState+Description.swift in Sources */,
 				0EFEB4622006D3C800F81029 /* SecureRandom.swift in Sources */,
+				0EE7A79520F61EDC00B42E6A /* PacketMacros.h in Sources */,
 				0EFEB45D2006D3C800F81029 /* CryptoBox.m in Sources */,
 				0EBBF2FA2085061600E36B40 /* NETCPInterface.swift in Sources */,
 				0EFEB4552006D3C800F81029 /* EncryptionProxy.swift in Sources */,
@@ -891,6 +901,7 @@
 				0EFEB4872006D7C400F81029 /* PIATunnelProvider+Configuration.swift in Sources */,
 				0EBBF2F7208505DD00E36B40 /* NWUDPSessionState+Description.swift in Sources */,
 				0EFEB4882006D7C400F81029 /* PIATunnelProvider+Interaction.swift in Sources */,
+				0EE7A79920F6296F00B42E6A /* PacketMacros.m in Sources */,
 				0EEC49DD20B5E732008FEB91 /* Utils.swift in Sources */,
 				0EAAD70D20E4F85A0088754A /* LinkInterface+Strategy.swift in Sources */,
 				0EFEB4B12007627700F81029 /* MemoryDestination.swift in Sources */,
@@ -899,6 +910,7 @@
 				0EFEB4992006D7F300F81029 /* SessionProxy.swift in Sources */,
 				0EBBF3012085196000E36B40 /* NWTCPConnectionState+Description.swift in Sources */,
 				0EFEB4962006D7F300F81029 /* ProtocolMacros.swift in Sources */,
+				0EE7A79620F61EDC00B42E6A /* PacketMacros.h in Sources */,
 				0EFEB48A2006D7C400F81029 /* PIATunnelProvider.swift in Sources */,
 				0EBBF2FB2085061600E36B40 /* NETCPInterface.swift in Sources */,
 				0EFEB4982006D7F300F81029 /* ZeroingData.swift in Sources */,

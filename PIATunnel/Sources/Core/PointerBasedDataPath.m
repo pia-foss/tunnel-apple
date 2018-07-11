@@ -14,10 +14,6 @@
 #import "Allocation.h"
 #import "Errors.h"
 
-static const uint8_t DataPathCodeDataV1         = 0x06;
-static const uint8_t DataPathCodeNoCompress     = 0xfa;
-static const uint8_t DataPathPingData[]         = { 0x2a, 0x18, 0x7b, 0xf3, 0x64, 0x1e, 0xb4, 0xcb, 0x07, 0xed, 0x2d, 0x0a, 0x98, 0x1f, 0xc7, 0x48 };
-
 #define DataPathByteAlignment   16
 
 @interface PointerBasedDataPath ()
@@ -148,13 +144,13 @@ static const uint8_t DataPathPingData[]         = { 0x2a, 0x18, 0x7b, 0xf3, 0x64
         uint8_t *payload = self.encBufferAligned;
         int payloadLength;
         [self.encrypter assembleDataPacketWithPacketId:self.outPacketId
-                                           compression:DataPathCodeNoCompress
+                                           compression:DataPacketCompressNone
                                                payload:raw
                                                   into:payload
                                                 length:&payloadLength];
         MSSFix(payload, payloadLength);
 
-        const uint8_t header = (DataPathCodeDataV1 << 3 | (key & 0b111));
+        const uint8_t header = (PacketCodeDataV1 << 3 | (key & 0b111));
         NSData *encryptedPacket = [self.encrypter encryptedDataPacketWithHeader:header
                                                                        packetId:self.outPacketId
                                                                         payload:payload
@@ -208,7 +204,7 @@ static const uint8_t DataPathPingData[]         = { 0x2a, 0x18, 0x7b, 0xf3, 0x64
                                                                length:&payloadLength
                                                           compression:&compression];
 
-        if ((payloadLength == sizeof(DataPathPingData)) && !memcmp(payload, DataPathPingData, payloadLength)) {
+        if ((payloadLength == sizeof(DataPacketPingData)) && !memcmp(payload, DataPacketPingData, payloadLength)) {
             if (keepAlive) {
                 *keepAlive = true;
             }

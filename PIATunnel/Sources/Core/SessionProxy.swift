@@ -459,7 +459,16 @@ public class SessionProxy {
 
 //            log.verbose("Parsed packet with (code, key) = (\(code.rawValue), \(key))")
             
-            if (code == .dataV1) {
+            var offset = 1
+            if (code == .dataV2) {
+                guard packet.count >= offset + ProtocolMacros.peerIdLength else {
+                    log.warning("Dropped malformed packet (missing peerId)")
+                    continue
+                }
+                offset += ProtocolMacros.peerIdLength
+            }
+
+            if (code == .dataV1) || (code == .dataV2) {
                 guard let _ = keys[key] else {
                     log.error("Key with id \(key) not found")
                     deferStop(.shutdown, SessionError.badKey)
@@ -474,7 +483,6 @@ public class SessionProxy {
                 continue
             }
             
-            var offset = 1
             guard packet.count >= offset + ProtocolMacros.sessionIdLength else {
                 log.warning("Dropped malformed packet (missing sessionId)")
                 continue

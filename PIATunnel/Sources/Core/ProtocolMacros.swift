@@ -10,6 +10,8 @@ import Foundation
 import __PIATunnelNative
 
 class ProtocolMacros {
+    static let peerIdLength = 3
+
     static let sessionIdLength = 8
     
     static let packetIdLength = 4

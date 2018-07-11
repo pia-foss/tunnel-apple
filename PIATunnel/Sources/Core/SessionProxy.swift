@@ -444,12 +444,13 @@ public class SessionProxy {
 //            log.verbose("Received data from LINK (\(packet.count) bytes): \(packet.toHex())")
 
             guard let firstByte = packet.first else {
-                return
+                log.warning("Dropped malformed packet (missing header)")
+                continue
             }
             let codeValue = firstByte >> 3
             guard let code = PacketCode(rawValue: codeValue) else {
-                log.warning("Ignored unknown packet code \(codeValue)")
-                return
+                log.warning("Dropped malformed packet (unknown code: \(codeValue))")
+                continue
             }
             let key = firstByte & 0b111
 
@@ -471,20 +472,37 @@ public class SessionProxy {
             }
             
             var offset = 1
+            guard packet.count >= offset + ProtocolMacros.sessionIdLength else {
+                log.warning("Dropped malformed packet (missing sessionId)")
+                continue
+            }
             let sessionId = packet.subdata(offset: offset, count: ProtocolMacros.sessionIdLength)
             offset += ProtocolMacros.sessionIdLength
             
+            guard packet.count >= offset + 1 else {
+                log.warning("Dropped malformed packet (missing ackSize)")
+                continue
+            }
             let ackSize = packet[offset]
             offset += 1
 
             log.debug("Packet has code \(code), sessionId \(sessionId.toHex()) and \(ackSize) acks entries")
 
             if (ackSize > 0) {
+                guard packet.count >= (offset + Int(ackSize) * ProtocolMacros.packetIdLength) else {
+                    log.warning("Dropped malformed packet (missing acks)")
+                    continue
+                }
                 var ackedPacketIds = [UInt32]()
                 for _ in 0..<ackSize {
                     let ackedPacketId = packet.networkUInt32Value(from: offset)
                     ackedPacketIds.append(ackedPacketId)
                     offset += ProtocolMacros.packetIdLength
+                }
+
+                guard packet.count >= offset + ProtocolMacros.sessionIdLength else {
+                    log.warning("Dropped malformed packet (missing remoteSessionId)")
+                    continue
                 }
                 let remoteSessionId = packet.subdata(offset: offset, count: ProtocolMacros.sessionIdLength)
                 offset += ProtocolMacros.sessionIdLength
@@ -498,6 +516,10 @@ public class SessionProxy {
                 return
             }
 
+            guard packet.count >= offset + ProtocolMacros.packetIdLength else {
+                log.warning("Dropped malformed packet (missing packetId)")
+                continue
+            }
             let packetId = packet.networkUInt32Value(from: offset)
             log.debug("Control packet has packetId \(packetId)")
             offset += ProtocolMacros.packetIdLength

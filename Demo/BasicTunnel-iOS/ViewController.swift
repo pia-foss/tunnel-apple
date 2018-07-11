@@ -118,7 +118,7 @@ class ViewController: UIViewController, URLSessionDataDelegate {
         let domain = textDomain.text!
         
         let hostname = ((domain == "") ? server : [server, domain].joined(separator: "."))
-        let port = textPort.text!
+        let port = UInt16(textPort.text!)!
         let username = textUsername.text!
         let password = textPassword.text!
 

@@ -231,13 +231,13 @@ const NSInteger CryptoAEADTagLength     = 16;
 
 - (NSData *)encryptedDataPacketWithHeader:(uint8_t)header packetId:(uint32_t)packetId payload:(const uint8_t *)payload payloadLength:(int)payloadLength error:(NSError *__autoreleasing *)error
 {
-    const int capacity = 5 + (int)safe_crypto_capacity(payloadLength, self.crypto.overheadLength);
+    const int capacity = PacketHeaderLength + PacketIdLength + (int)safe_crypto_capacity(payloadLength, self.crypto.overheadLength);
     NSMutableData *encryptedPacket = [[NSMutableData alloc] initWithLength:capacity];
     uint8_t *ptr = encryptedPacket.mutableBytes;
     int encryptedPayloadLength = INT_MAX;
     const BOOL success = [self.crypto encryptBytes:payload
                                             length:payloadLength
-                                              dest:(ptr + 5) // skip header and packet id
+                                              dest:(ptr + PacketHeaderLength + PacketIdLength) // skip header and packet id
                                         destLength:&encryptedPayloadLength
                                           packetId:htonl(packetId)
                                              error:error];
@@ -250,8 +250,8 @@ const NSInteger CryptoAEADTagLength     = 16;
     
     // set header byte
     *ptr = header;
-    *(uint32_t *)(ptr + 1) = htonl(packetId);
-    encryptedPacket.length = 5 + encryptedPayloadLength;
+    *(uint32_t *)(ptr + PacketHeaderLength) = htonl(packetId);
+    encryptedPacket.length = PacketHeaderLength + PacketIdLength + encryptedPayloadLength;
     return encryptedPacket;
 }
 
@@ -260,11 +260,11 @@ const NSInteger CryptoAEADTagLength     = 16;
 - (BOOL)decryptDataPacket:(NSData *)packet into:(uint8_t *)dest length:(int *)length packetId:(uint32_t *)packetId error:(NSError *__autoreleasing *)error
 {
     // associated data from packet id after header
-    const uint32_t ad = *(const uint32_t *)(packet.bytes + 1);
+    const uint32_t ad = *(const uint32_t *)(packet.bytes + PacketHeaderLength);
 
     // skip header byte + packet id
-    const BOOL success = [self.crypto decryptBytes:(packet.bytes + 5)
-                                            length:(int)(packet.length - 5)
+    const BOOL success = [self.crypto decryptBytes:(packet.bytes + PacketHeaderLength + PacketIdLength)
+                                            length:(int)(packet.length - (PacketHeaderLength + PacketIdLength))
                                               dest:dest
                                         destLength:length
                                           packetId:ad

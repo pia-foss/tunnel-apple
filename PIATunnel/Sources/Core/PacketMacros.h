@@ -8,6 +8,9 @@
 
 #import <Foundation/Foundation.h>
 
+#define PacketHeaderLength      1
+#define PacketIdLength          4
+
 typedef NS_ENUM(uint8_t, PacketCode) {
     PacketCodeSoftResetV1           = 0x03,
     PacketCodeControlV1             = 0x04,

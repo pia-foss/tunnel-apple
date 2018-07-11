@@ -239,13 +239,13 @@ const NSInteger CryptoCBCMaxHMACLength = 100;
 
 - (NSData *)encryptedDataPacketWithHeader:(uint8_t)header packetId:(uint32_t)packetId payload:(const uint8_t *)payload payloadLength:(int)payloadLength error:(NSError *__autoreleasing *)error
 {
-    const int capacity = 1 + (int)safe_crypto_capacity(payloadLength, self.crypto.overheadLength);
+    const int capacity = PacketHeaderLength + (int)safe_crypto_capacity(payloadLength, self.crypto.overheadLength);
     NSMutableData *encryptedPacket = [[NSMutableData alloc] initWithLength:capacity];
     uint8_t *ptr = encryptedPacket.mutableBytes;
     int encryptedPayloadLength = INT_MAX;
     const BOOL success = [self.crypto encryptBytes:payload
                                             length:payloadLength
-                                              dest:(ptr + 1) // skip header byte
+                                              dest:(ptr + PacketHeaderLength) // skip header byte
                                         destLength:&encryptedPayloadLength
                                           packetId:packetId
                                              error:error];
@@ -258,7 +258,7 @@ const NSInteger CryptoCBCMaxHMACLength = 100;
     
     // set header byte
     *ptr = header;
-    encryptedPacket.length = 1 + encryptedPayloadLength;
+    encryptedPacket.length = PacketHeaderLength + encryptedPayloadLength;
     return encryptedPacket;
 }
 
@@ -267,8 +267,8 @@ const NSInteger CryptoCBCMaxHMACLength = 100;
 - (BOOL)decryptDataPacket:(NSData *)packet into:(uint8_t *)dest length:(int *)length packetId:(nonnull uint32_t *)packetId error:(NSError *__autoreleasing *)error
 {
     // skip header byte = (code, key)
-    const BOOL success = [self.crypto decryptBytes:(packet.bytes + 1)
-                                            length:(int)(packet.length - 1)
+    const BOOL success = [self.crypto decryptBytes:(packet.bytes + PacketHeaderLength)
+                                            length:(int)(packet.length - PacketHeaderLength)
                                               dest:dest
                                         destLength:length
                                           packetId:0   // ignored

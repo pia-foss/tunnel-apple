@@ -77,7 +77,6 @@
 		0EEC49EA20B5F7F6008FEB91 /* ZeroingData.h in Headers */ = {isa = PBXBuildFile; fileRef = 0EFEB4412006D3C800F81029 /* ZeroingData.h */; };
 		0EFEB4552006D3C800F81029 /* EncryptionProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EFEB42A2006D3C800F81029 /* EncryptionProxy.swift */; };
 		0EFEB4562006D3C800F81029 /* SessionKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EFEB42B2006D3C800F81029 /* SessionKey.swift */; };
-		0EFEB4572006D3C800F81029 /* HighLevelDataPath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EFEB42C2006D3C800F81029 /* HighLevelDataPath.swift */; };
 		0EFEB4582006D3C800F81029 /* MSS.h in Headers */ = {isa = PBXBuildFile; fileRef = 0EFEB42D2006D3C800F81029 /* MSS.h */; };
 		0EFEB4592006D3C800F81029 /* Allocation.h in Headers */ = {isa = PBXBuildFile; fileRef = 0EFEB42E2006D3C800F81029 /* Allocation.h */; };
 		0EFEB45A2006D3C800F81029 /* TunnelInterface.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EFEB42F2006D3C800F81029 /* TunnelInterface.swift */; };
@@ -119,7 +118,6 @@
 		0EFEB48A2006D7C400F81029 /* PIATunnelProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EFEB4522006D3C800F81029 /* PIATunnelProvider.swift */; };
 		0EFEB48D2006D7F300F81029 /* EncryptionProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EFEB42A2006D3C800F81029 /* EncryptionProxy.swift */; };
 		0EFEB48E2006D7F300F81029 /* SessionKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EFEB42B2006D3C800F81029 /* SessionKey.swift */; };
-		0EFEB48F2006D7F300F81029 /* HighLevelDataPath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EFEB42C2006D3C800F81029 /* HighLevelDataPath.swift */; };
 		0EFEB4902006D7F300F81029 /* TunnelInterface.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EFEB42F2006D3C800F81029 /* TunnelInterface.swift */; };
 		0EFEB4912006D7F300F81029 /* TLSBox.m in Sources */ = {isa = PBXBuildFile; fileRef = 0EFEB4302006D3C800F81029 /* TLSBox.m */; };
 		0EFEB4922006D7F300F81029 /* ZeroingData.m in Sources */ = {isa = PBXBuildFile; fileRef = 0EFEB4312006D3C800F81029 /* ZeroingData.m */; };
@@ -221,7 +219,6 @@
 		0EEC49DB20B5E732008FEB91 /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 		0EFEB42A2006D3C800F81029 /* EncryptionProxy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EncryptionProxy.swift; sourceTree = "<group>"; };
 		0EFEB42B2006D3C800F81029 /* SessionKey.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SessionKey.swift; sourceTree = "<group>"; };
-		0EFEB42C2006D3C800F81029 /* HighLevelDataPath.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HighLevelDataPath.swift; sourceTree = "<group>"; };
 		0EFEB42D2006D3C800F81029 /* MSS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MSS.h; sourceTree = "<group>"; };
 		0EFEB42E2006D3C800F81029 /* Allocation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Allocation.h; sourceTree = "<group>"; };
 		0EFEB42F2006D3C800F81029 /* TunnelInterface.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TunnelInterface.swift; sourceTree = "<group>"; };
@@ -418,7 +415,6 @@
 				0EFEB42A2006D3C800F81029 /* EncryptionProxy.swift */,
 				0EFEB4362006D3C800F81029 /* Errors.h */,
 				0EFEB44B2006D3C800F81029 /* Errors.m */,
-				0EFEB42C2006D3C800F81029 /* HighLevelDataPath.swift */,
 				0EFEB4452006D3C800F81029 /* IOInterface.swift */,
 				0EFEB4492006D3C800F81029 /* LinkInterface.swift */,
 				0EFEB4422006D3C800F81029 /* module.modulemap */,
@@ -881,7 +877,6 @@
 				0EBBF2E52084FE6F00E36B40 /* GenericSocket.swift in Sources */,
 				0EFEB4762006D3C800F81029 /* DataPath.m in Sources */,
 				0EFEB4692006D3C800F81029 /* Packet.swift in Sources */,
-				0EFEB4572006D3C800F81029 /* HighLevelDataPath.swift in Sources */,
 				0EFEB45A2006D3C800F81029 /* TunnelInterface.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -926,7 +921,6 @@
 				0EFEB4AF2007627700F81029 /* InterfaceObserver.swift in Sources */,
 				0EFEB4A42006D7F300F81029 /* DataPath.m in Sources */,
 				0EFEB4942006D7F300F81029 /* PointerBasedDataPath.m in Sources */,
-				0EFEB48F2006D7F300F81029 /* HighLevelDataPath.swift in Sources */,
 				0EBBF2E62084FE6F00E36B40 /* GenericSocket.swift in Sources */,
 				0EFEB4912006D7F300F81029 /* TLSBox.m in Sources */,
 				0EFEB49D2006D7F300F81029 /* IOInterface.swift in Sources */,

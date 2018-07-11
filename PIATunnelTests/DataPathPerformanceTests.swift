@@ -11,7 +11,7 @@ import XCTest
 @testable import __PIATunnelNative
 
 class DataPathPerformanceTests: XCTestCase {
-    private var swiftDP: HighLevelDataPath!
+//    private var swiftDP: HighLevelDataPath!
 
     private var pointerDP: PointerBasedDataPath!
 
@@ -27,7 +27,7 @@ class DataPathPerformanceTests: XCTestCase {
         encrypter = crypto.encrypter()
         decrypter = crypto.decrypter()
         
-        swiftDP = HighLevelDataPath(encrypter: encrypter, decrypter: decrypter, usesReplayProtection: false)
+//        swiftDP = HighLevelDataPath(encrypter: encrypter, decrypter: decrypter, usesReplayProtection: false)
         pointerDP = PointerBasedDataPath(encrypter: encrypter, decrypter: decrypter, maxPackets: 200, usesReplayProtection: false)!
     }
 
@@ -35,20 +35,20 @@ class DataPathPerformanceTests: XCTestCase {
         // Put teardown code here. This method is called after the invocation of each test method in the class.
     }
 
-    // 28ms
-    func testHighLevel() {
-        let packets = TestUtils.generateDataSuite(1200, 1000)
-        var encryptedPackets: [Data]!
-        var decryptedPackets: [Data]!
-        
-        measure {
-            encryptedPackets = try! self.swiftDP.encryptPackets(packets, key: 0)
-            decryptedPackets = try! self.swiftDP.decryptPackets(encryptedPackets, keepAlive: nil)
-        }
-        
-//        print(">>> \(packets?.count) packets")
-        XCTAssertEqual(decryptedPackets, packets)
-    }
+//    // 28ms
+//    func testHighLevel() {
+//        let packets = TestUtils.generateDataSuite(1200, 1000)
+//        var encryptedPackets: [Data]!
+//        var decryptedPackets: [Data]!
+//        
+//        measure {
+//            encryptedPackets = try! self.swiftDP.encryptPackets(packets, key: 0)
+//            decryptedPackets = try! self.swiftDP.decryptPackets(encryptedPackets, keepAlive: nil)
+//        }
+//        
+////        print(">>> \(packets?.count) packets")
+//        XCTAssertEqual(decryptedPackets, packets)
+//    }
     
     // 16ms
     func testPointerBased() {

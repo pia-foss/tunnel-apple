@@ -183,7 +183,7 @@ class NETCPInterface: NSObject, GenericSocket, LinkInterface {
 
                 var newBuffer = buffer
                 newBuffer.append(contentsOf: data)
-                let (until, packets) = ControlPacket.parsed(newBuffer)
+                let (until, packets) = CommonPacket.parsed(newBuffer)
                 newBuffer = newBuffer.subdata(in: until..<newBuffer.count)
                 self?.loopReadPackets(queue, newBuffer, handler)
 
@@ -193,14 +193,14 @@ class NETCPInterface: NSObject, GenericSocket, LinkInterface {
     }
 
     func writePacket(_ packet: Data, completionHandler: ((Error?) -> Void)?) {
-        let stream = ControlPacket.stream(packet)
+        let stream = CommonPacket.stream(packet)
         impl.write(stream) { (error) in
             completionHandler?(error)
         }
     }
     
     func writePackets(_ packets: [Data], completionHandler: ((Error?) -> Void)?) {
-        let stream = ControlPacket.stream(packets)
+        let stream = CommonPacket.stream(packets)
         impl.write(stream) { (error) in
             completionHandler?(error)
         }

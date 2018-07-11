@@ -191,9 +191,9 @@ public class SessionProxy {
     
     private let controlPlainBuffer: ZeroingData
 
-    private var controlQueueOut: [ControlPacket]
+    private var controlQueueOut: [CommonPacket]
 
-    private var controlQueueIn: [ControlPacket]
+    private var controlQueueIn: [CommonPacket]
 
     private var controlPendingAcks: Set<UInt32>
     
@@ -539,7 +539,7 @@ public class SessionProxy {
                 }
             }
 
-            let controlPacket = ControlPacket(packetId, code, key, sessionId, payload)
+            let controlPacket = CommonPacket(packetId, code, key, sessionId, payload)
             controlQueueIn.append(controlPacket)
             controlQueueIn.sort { $0.packetId < $1.packetId }
             
@@ -730,7 +730,7 @@ public class SessionProxy {
     // MARK: Control
 
     // Ruby: handle_ctrl_pkt
-    private func handleControlPacket(_ packet: ControlPacket) {
+    private func handleControlPacket(_ packet: CommonPacket) {
         guard (packet.key == negotiationKey.id) else {
             log.error("Bad key in control packet (\(packet.key) != \(negotiationKey.id))")
 //            deferStop(.shutdown, SessionError.badKey)
@@ -962,7 +962,7 @@ public class SessionProxy {
         repeat {
             let subPayloadLength = min(maxCount, payload.count - offset)
             let subPayloadData = payload.subdata(offset: offset, count: subPayloadLength)
-            let packet = ControlPacket(controlPacketIdOut, code, key, sessionId, subPayloadData)
+            let packet = CommonPacket(controlPacketIdOut, code, key, sessionId, subPayloadData)
             
             controlQueueOut.append(packet)
             controlPacketIdOut += 1

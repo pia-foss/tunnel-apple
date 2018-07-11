@@ -9,7 +9,7 @@
 import Foundation
 import __PIATunnelNative
 
-class ControlPacket {
+class CommonPacket {
     let packetId: UInt32
     
     let code: PacketCode

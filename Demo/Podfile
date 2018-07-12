@@ -11,12 +11,12 @@ abstract_target 'iOS' do
     end
 end
 
-#abstract_target 'macOS' do
-#    platform :osx, '10.11'
-#
-#    target 'BasicTunnelExtension-macOS' do
-#        pod 'PIATunnel', :path => '..'
-#    end
-#    target 'BasicTunnel-macOS' do
-#    end
-#end
+abstract_target 'macOS' do
+    platform :osx, '10.11'
+
+    target 'BasicTunnelExtension-macOS' do
+        pod 'PIATunnel', :path => '..'
+    end
+    target 'BasicTunnel-macOS' do
+    end
+end

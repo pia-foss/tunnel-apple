@@ -33,7 +33,7 @@ struct Configuration {
     // MARK: Authentication
     
     static let peerInfo = [
-        "IV_VER=2.3.98",
+        "IV_VER=2.3.99",
         "IV_PROTO=2",
         ""
     ].joined(separator: "\n")

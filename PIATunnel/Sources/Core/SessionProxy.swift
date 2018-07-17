@@ -639,7 +639,8 @@ public class SessionProxy {
             return
         }
         negotiationKeyIdx = 0
-        keys[negotiationKeyIdx] = SessionKey(id: UInt8(negotiationKeyIdx))
+        let newKey = SessionKey(id: UInt8(negotiationKeyIdx))
+        keys[negotiationKeyIdx] = newKey
         log.debug("Negotiation key index is \(negotiationKeyIdx)")
 
         let payload = link?.hardReset(with: encryption) ?? Data()
@@ -653,7 +654,8 @@ public class SessionProxy {
         
         resetControlChannel()
         negotiationKeyIdx = max(1, (negotiationKeyIdx + 1) % ProtocolMacros.numberOfKeys)
-        keys[negotiationKeyIdx] = SessionKey(id: UInt8(negotiationKeyIdx))
+        let newKey = SessionKey(id: UInt8(negotiationKeyIdx))
+        keys[negotiationKeyIdx] = newKey
         log.debug("Negotiation key index is \(negotiationKeyIdx)")
 
         negotiationKey.state = .softReset
@@ -709,6 +711,7 @@ public class SessionProxy {
         
         if negotiationKey.softReset {
             authenticator = nil
+            negotiationKey.startHandlingPackets(withPeerId: peerId)
             negotiationKey.controlState = .connected
             connectedDate = Date()
             transitionKeys()
@@ -930,6 +933,7 @@ public class SessionProxy {
             })
             
             authenticator = nil
+            negotiationKey.startHandlingPackets(withPeerId: peerId)
             negotiationKey.controlState = .connected
             connectedDate = Date()
             transitionKeys()

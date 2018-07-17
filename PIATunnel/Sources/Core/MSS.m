@@ -41,7 +41,7 @@ static inline void MSSUpdateSum(uint16_t* sum_ptr, uint16_t* val_ptr, uint16_t n
     *val_ptr = htons(new_val);
 }
 
-void MSSFix(uint8_t *data, int data_len)
+void MSSFix(uint8_t *data, NSInteger data_len)
 {
     ip_hdr_t *iph = (ip_hdr_t*)data;
     if (iph->proto != PROTO_TCP)  return;

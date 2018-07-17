@@ -44,6 +44,8 @@ class SessionKey {
 
     private var isTLSConnected: Bool
     
+    private var canHandlePackets: Bool
+    
     init(id: UInt8) {
         self.id = id
 
@@ -51,6 +53,7 @@ class SessionKey {
         state = .invalid
         softReset = false
         isTLSConnected = false
+        canHandlePackets = false
     }
 
     // Ruby: Key.hard_reset_timeout
@@ -76,13 +79,34 @@ class SessionKey {
         return isTLSConnected
     }
     
+    func startHandlingPackets(withPeerId peerId: UInt32? = nil) {
+        dataPath?.setPeerId(peerId ?? PacketPeerIdDisabled)
+        canHandlePackets = true
+    }
+    
     func encrypt(packets: [Data]) throws -> [Data]? {
-        return try dataPath?.encryptPackets(packets, key: id)
+        guard let dataPath = dataPath else {
+            log.warning("Data: Set dataPath first")
+            return nil
+        }
+        guard canHandlePackets else {
+            log.warning("Data: Invoke startHandlingPackets() before encrypting")
+            return nil
+        }
+        return try dataPath.encryptPackets(packets, key: id)
     }
     
     func decrypt(packets: [Data]) throws -> [Data]? {
+        guard let dataPath = dataPath else {
+            log.warning("Data: Set dataPath first")
+            return nil
+        }
+        guard canHandlePackets else {
+            log.warning("Data: Invoke startHandlingPackets() before decrypting")
+            return nil
+        }
         var keepAlive = false
-        let decrypted = try dataPath?.decryptPackets(packets, keepAlive: &keepAlive)
+        let decrypted = try dataPath.decryptPackets(packets, keepAlive: &keepAlive)
         if keepAlive {
             log.debug("Data: Received ping, do nothing")
         }

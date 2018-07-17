@@ -26,6 +26,12 @@ extension PIATunnelProvider {
         
         /// AES encryption with 256-bit key size and CBC.
         case aes256cbc = "AES-256-CBC"
+
+        /// AES encryption with 128-bit key size and GCM.
+        case aes128gcm = "AES-128-GCM"
+
+        /// AES encryption with 256-bit key size and GCM.
+        case aes256gcm = "AES-256-GCM"
     }
     
     /// The available message digest algorithms.

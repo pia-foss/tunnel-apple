@@ -14,10 +14,12 @@ typedef NS_ENUM(int, PIATunnelErrorCode) {
     PIATunnelErrorCodeCryptoBoxRandomGenerator = 101,
     PIATunnelErrorCodeCryptoBoxHMAC,
     PIATunnelErrorCodeCryptoBoxEncryption,
+    PIATunnelErrorCodeCryptoBoxAlgorithm,
     PIATunnelErrorCodeTLSBoxCA = 201,
     PIATunnelErrorCodeTLSBoxHandshake,
     PIATunnelErrorCodeTLSBoxGeneric,
-    PIATunnelErrorCodeDataPathOverflow = 301
+    PIATunnelErrorCodeDataPathOverflow = 301,
+    PIATunnelErrorCodeDataPathPeerIdMismatch
 };
 
 static inline NSError *PIATunnelErrorWithCode(PIATunnelErrorCode code) {

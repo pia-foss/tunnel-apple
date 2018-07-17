@@ -16,7 +16,7 @@ struct Configuration {
 
     static let usesReplayProtection = true
 
-    static let usesDataOptimization = true
+//    static let usesDataOptimization = true
 
     static let tickInterval = 0.2
     
@@ -32,7 +32,11 @@ struct Configuration {
 
     // MARK: Authentication
     
-    static let peerInfo = "IV_VER=2.3.98\n"
+    static let peerInfo = [
+        "IV_VER=2.3.99",
+        "IV_PROTO=2",
+        ""
+    ].joined(separator: "\n")
     
     static let randomLength = 32
     

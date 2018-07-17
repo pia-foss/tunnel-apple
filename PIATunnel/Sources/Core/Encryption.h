@@ -8,22 +8,35 @@
 
 #import <Foundation/Foundation.h>
 
-@protocol Encrypter
+#import "ZeroingData.h"
 
-- (int)overheadLength;
-- (NSData *)encryptData:(nonnull NSData *)data offset:(NSInteger)offset error:(NSError **)error;
+@protocol DataPathEncrypter;
+@protocol DataPathDecrypter;
 
 // WARNING: dest must be able to hold ciphertext
-- (BOOL)encryptBytes:(nonnull const uint8_t *)bytes length:(int)length dest:(nonnull uint8_t *)dest destLength:(int *)destLength error:(NSError **)error;
+@protocol Encrypter
+
+- (void)configureEncryptionWithCipherKey:(nonnull ZeroingData *)cipherKey hmacKey:(nonnull ZeroingData *)hmacKey;
+- (int)overheadLength;
+- (int)extraLength;
+
+- (NSData *)encryptData:(nonnull NSData *)data offset:(NSInteger)offset extra:(const uint8_t *)extra error:(NSError **)error;
+- (BOOL)encryptBytes:(nonnull const uint8_t *)bytes length:(NSInteger)length dest:(nonnull uint8_t *)dest destLength:(nonnull NSInteger *)destLength extra:(const uint8_t *)extra error:(NSError **)error;
+
+- (nonnull id<DataPathEncrypter>)dataPathEncrypter;
 
 @end
 
+// WARNING: dest must be able to hold plaintext
 @protocol Decrypter
 
+- (void)configureDecryptionWithCipherKey:(nonnull ZeroingData *)cipherKey hmacKey:(nonnull ZeroingData *)hmacKey;
 - (int)overheadLength;
-- (NSData *)decryptData:(nonnull NSData *)data offset:(NSInteger)offset error:(NSError **)error;
+- (int)extraLength;
 
-// WARNING: dest must be able to hold plaintext
-- (BOOL)decryptBytes:(nonnull const uint8_t *)bytes length:(int)length dest:(nonnull uint8_t *)dest destLength:(int *)destLength error:(NSError **)error;
+- (NSData *)decryptData:(nonnull NSData *)data offset:(NSInteger)offset extra:(const uint8_t *)extra error:(NSError **)error;
+- (BOOL)decryptBytes:(nonnull const uint8_t *)bytes length:(NSInteger)length dest:(nonnull uint8_t *)dest destLength:(nonnull NSInteger *)destLength extra:(const uint8_t *)extra error:(NSError **)error;
+
+- (nonnull id<DataPathDecrypter>)dataPathDecrypter;
 
 @end

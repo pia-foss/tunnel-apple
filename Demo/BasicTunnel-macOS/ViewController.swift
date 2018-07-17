@@ -100,7 +100,7 @@ class ViewController: NSViewController {
         let domain = textDomain.stringValue
         
         let hostname = ((domain == "") ? server : [server, domain].joined(separator: "."))
-        let port = textPort.stringValue
+        let port = UInt16(textPort.stringValue)!
         let username = textUsername.stringValue
         let password = textPassword.stringValue
         

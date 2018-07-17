@@ -174,6 +174,8 @@ public class SessionProxy {
 
     private var authToken: String?
     
+    private var peerId: UInt32?
+    
     private var nextPushRequestDate: Date?
     
     private var connectedDate: Date?
@@ -191,9 +193,9 @@ public class SessionProxy {
     
     private let controlPlainBuffer: ZeroingData
 
-    private var controlQueueOut: [ControlPacket]
+    private var controlQueueOut: [CommonPacket]
 
-    private var controlQueueIn: [ControlPacket]
+    private var controlQueueIn: [CommonPacket]
 
     private var controlPendingAcks: Set<UInt32>
     
@@ -343,6 +345,7 @@ public class SessionProxy {
         nextPushRequestDate = nil
         connectedDate = nil
         authenticator = nil
+        peerId = nil
         link = nil
         if !(tunnel?.isPersistent ?? false) {
             tunnel = nil
@@ -444,18 +447,28 @@ public class SessionProxy {
 //            log.verbose("Received data from LINK (\(packet.count) bytes): \(packet.toHex())")
 
             guard let firstByte = packet.first else {
-                return
+                log.warning("Dropped malformed packet (missing header)")
+                continue
             }
             let codeValue = firstByte >> 3
             guard let code = PacketCode(rawValue: codeValue) else {
-                log.warning("Ignored unknown packet code \(codeValue)")
-                return
+                log.warning("Dropped malformed packet (unknown code: \(codeValue))")
+                continue
             }
             let key = firstByte & 0b111
 
-//            log.verbose("Parsed packet with (code, key) = (\(code), \(key))")
+//            log.verbose("Parsed packet with (code, key) = (\(code.rawValue), \(key))")
             
-            if (code == .dataV1) {
+            var offset = 1
+            if (code == .dataV2) {
+                guard packet.count >= offset + ProtocolMacros.peerIdLength else {
+                    log.warning("Dropped malformed packet (missing peerId)")
+                    continue
+                }
+                offset += ProtocolMacros.peerIdLength
+            }
+
+            if (code == .dataV1) || (code == .dataV2) {
                 guard let _ = keys[key] else {
                     log.error("Key with id \(key) not found")
                     deferStop(.shutdown, SessionError.badKey)
@@ -470,21 +483,37 @@ public class SessionProxy {
                 continue
             }
             
-            var offset = 1
+            guard packet.count >= offset + ProtocolMacros.sessionIdLength else {
+                log.warning("Dropped malformed packet (missing sessionId)")
+                continue
+            }
             let sessionId = packet.subdata(offset: offset, count: ProtocolMacros.sessionIdLength)
             offset += ProtocolMacros.sessionIdLength
             
+            guard packet.count >= offset + 1 else {
+                log.warning("Dropped malformed packet (missing ackSize)")
+                continue
+            }
             let ackSize = packet[offset]
             offset += 1
 
-            log.debug("Packet has code \(code), sessionId \(sessionId.toHex()) and \(ackSize) acks entries")
+            log.debug("Packet has code \(code.rawValue), key \(key), sessionId \(sessionId.toHex()) and \(ackSize) acks entries")
 
             if (ackSize > 0) {
+                guard packet.count >= (offset + Int(ackSize) * ProtocolMacros.packetIdLength) else {
+                    log.warning("Dropped malformed packet (missing acks)")
+                    continue
+                }
                 var ackedPacketIds = [UInt32]()
                 for _ in 0..<ackSize {
                     let ackedPacketId = packet.networkUInt32Value(from: offset)
                     ackedPacketIds.append(ackedPacketId)
                     offset += ProtocolMacros.packetIdLength
+                }
+
+                guard packet.count >= offset + ProtocolMacros.sessionIdLength else {
+                    log.warning("Dropped malformed packet (missing remoteSessionId)")
+                    continue
                 }
                 let remoteSessionId = packet.subdata(offset: offset, count: ProtocolMacros.sessionIdLength)
                 offset += ProtocolMacros.sessionIdLength
@@ -498,6 +527,10 @@ public class SessionProxy {
                 return
             }
 
+            guard packet.count >= offset + ProtocolMacros.packetIdLength else {
+                log.warning("Dropped malformed packet (missing packetId)")
+                continue
+            }
             let packetId = packet.networkUInt32Value(from: offset)
             log.debug("Control packet has packetId \(packetId)")
             offset += ProtocolMacros.packetIdLength
@@ -517,7 +550,7 @@ public class SessionProxy {
                 }
             }
 
-            let controlPacket = ControlPacket(packetId, code, key, sessionId, payload)
+            let controlPacket = CommonPacket(packetId, code, key, sessionId, payload)
             controlQueueIn.append(controlPacket)
             controlQueueIn.sort { $0.packetId < $1.packetId }
             
@@ -579,7 +612,7 @@ public class SessionProxy {
 
         log.debug("Send ping")
         
-        sendDataPackets([ProtocolMacros.pingString])
+        sendDataPackets([DataPacket.pingString])
         lastPingOut = Date()
         queue.asyncAfter(deadline: .now() + Configuration.pingInterval) { [weak self] in
             self?.ping()
@@ -597,6 +630,7 @@ public class SessionProxy {
         controlPacketIdOut = 0
         controlPacketIdIn = 0
         authenticator = nil
+        peerId = nil
         bytesIn = 0
         bytesOut = 0
     }
@@ -613,7 +647,8 @@ public class SessionProxy {
             return
         }
         negotiationKeyIdx = 0
-        keys[negotiationKeyIdx] = SessionKey(id: UInt8(negotiationKeyIdx))
+        let newKey = SessionKey(id: UInt8(negotiationKeyIdx))
+        keys[negotiationKeyIdx] = newKey
         log.debug("Negotiation key index is \(negotiationKeyIdx)")
 
         let payload = link?.hardReset(with: encryption) ?? Data()
@@ -627,7 +662,8 @@ public class SessionProxy {
         
         resetControlChannel()
         negotiationKeyIdx = max(1, (negotiationKeyIdx + 1) % ProtocolMacros.numberOfKeys)
-        keys[negotiationKeyIdx] = SessionKey(id: UInt8(negotiationKeyIdx))
+        let newKey = SessionKey(id: UInt8(negotiationKeyIdx))
+        keys[negotiationKeyIdx] = newKey
         log.debug("Negotiation key index is \(negotiationKeyIdx)")
 
         negotiationKey.state = .softReset
@@ -683,6 +719,7 @@ public class SessionProxy {
         
         if negotiationKey.softReset {
             authenticator = nil
+            negotiationKey.startHandlingPackets(withPeerId: peerId)
             negotiationKey.controlState = .connected
             connectedDate = Date()
             transitionKeys()
@@ -708,14 +745,14 @@ public class SessionProxy {
     // MARK: Control
 
     // Ruby: handle_ctrl_pkt
-    private func handleControlPacket(_ packet: ControlPacket) {
+    private func handleControlPacket(_ packet: CommonPacket) {
         guard (packet.key == negotiationKey.id) else {
             log.error("Bad key in control packet (\(packet.key) != \(negotiationKey.id))")
 //            deferStop(.shutdown, SessionError.badKey)
             return
         }
         
-        log.debug("Handle control packet with code \(packet.code) and id \(packet.packetId)")
+        log.debug("Handle control packet with code \(packet.code.rawValue) and id \(packet.packetId)")
 
         if (((packet.code == .hardResetServerV2) && (negotiationKey.state == .hardReset)) ||
             ((packet.code == .softResetV1) && (negotiationKey.state == .softReset))) {
@@ -848,11 +885,12 @@ public class SessionProxy {
         }
         
         if ((negotiationKey.controlState == .preIfConfig) && message.hasPrefix("PUSH_REPLY")) {
-            log.debug("Received PUSH_REPLY")
+            log.debug("Received PUSH_REPLY: \"\(message)\"")
 
             let ifconfigRegexp = try! NSRegularExpression(pattern: "ifconfig [\\d\\.]+ [\\d\\.]+", options: [])
             let dnsRegexp = try! NSRegularExpression(pattern: "dhcp-option DNS [\\d\\.]+", options: [])
             let authTokenRegexp = try! NSRegularExpression(pattern: "auth-token [a-zA-Z0-9/=+]+", options: [])
+            let peerIdRegexp = try! NSRegularExpression(pattern: "peer-id [0-9]+", options: [])
 
             var ifconfigComponents: [String]?
             ifconfigRegexp.enumerateMatches(in: message, options: [], range: NSMakeRange(0, message.count), using: { (result, flags, _) in
@@ -891,7 +929,19 @@ public class SessionProxy {
                 }
             })
             
+            peerIdRegexp.enumerateMatches(in: message, options: [], range: NSMakeRange(0, message.count), using: { (result, flags, _) in
+                guard let range = result?.range else { return }
+                
+                let match = (message as NSString).substring(with: range)
+                let tokenComponents = match.components(separatedBy: " ")
+                
+                if (tokenComponents.count > 1) {
+                    self.peerId = UInt32(tokenComponents[1])
+                }
+            })
+            
             authenticator = nil
+            negotiationKey.startHandlingPackets(withPeerId: peerId)
             negotiationKey.controlState = .connected
             connectedDate = Date()
             transitionKeys()
@@ -940,7 +990,7 @@ public class SessionProxy {
         repeat {
             let subPayloadLength = min(maxCount, payload.count - offset)
             let subPayloadData = payload.subdata(offset: offset, count: subPayloadLength)
-            let packet = ControlPacket(controlPacketIdOut, code, key, sessionId, subPayloadData)
+            let packet = CommonPacket(controlPacketIdOut, code, key, sessionId, subPayloadData)
             
             controlQueueOut.append(packet)
             controlPacketIdOut += 1
@@ -971,7 +1021,7 @@ public class SessionProxy {
                 }
             }
 
-            log.debug("Send control packet with code \(controlPacket.code)")
+            log.debug("Send control packet with code \(controlPacket.code.rawValue)")
 
             if let payload = controlPacket.payload {
                 if Configuration.logsSensitiveData {
@@ -1037,18 +1087,13 @@ public class SessionProxy {
             deferStop(.shutdown, e)
             return
         }
-        let encrypter = proxy.encrypter()
-        let decrypter = proxy.decrypter()
-        if Configuration.usesDataOptimization {
-            negotiationKey.dataPath = PointerBasedDataPath(encrypter: encrypter,
-                                                           decrypter: decrypter,
-                                                           maxPackets: link?.packetBufferSize ?? 200,
-                                                           usesReplayProtection: Configuration.usesReplayProtection)
-        } else {
-            negotiationKey.dataPath = HighLevelDataPath(encrypter: encrypter,
-                                                        decrypter: decrypter,
-                                                        usesReplayProtection: Configuration.usesReplayProtection)
-        }
+
+        negotiationKey.dataPath = DataPath(
+            encrypter: proxy.encrypter(),
+            decrypter: proxy.decrypter(),
+            maxPackets: link?.packetBufferSize ?? 200,
+            usesReplayProtection: Configuration.usesReplayProtection
+        )
     }
     
     // MARK: Data
@@ -1058,7 +1103,7 @@ public class SessionProxy {
         bytesIn += packets.flatCount
         do {
             guard let decryptedPackets = try key.decrypt(packets: packets) else {
-                log.warning("Could not decrypt packets, is data path set?")
+                log.warning("Could not decrypt packets, is SessionKey properly configured (dataPath, peerId)?")
                 return
             }
             guard !decryptedPackets.isEmpty else {
@@ -1078,7 +1123,7 @@ public class SessionProxy {
         }
         do {
             guard let encryptedPackets = try key.encrypt(packets: packets) else {
-                log.warning("Could not encrypt packets, is data path set?")
+                log.warning("Could not encrypt packets, is SessionKey properly configured (dataPath, peerId)?")
                 return
             }
             guard !encryptedPackets.isEmpty else {
@@ -1135,8 +1180,7 @@ public class SessionProxy {
     private func sendAck(key: UInt8, packetId: UInt32, remoteSessionId: Data) {
         log.debug("Send ack for received packetId \(packetId)")
 
-        var raw = Data()
-        ProtocolMacros.appendHeader(to: &raw, .ackV1, key, sessionId)
+        var raw = PacketWithHeader(.ackV1, key, sessionId)
         raw.append(UInt8(1)) // ackSize
         raw.append(UInt32(packetId).bigEndian)
         raw.append(remoteSessionId)

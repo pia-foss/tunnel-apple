@@ -1,12 +1,13 @@
 module __PIATunnelNative {
     header "Errors.h"
     header "ZeroingData.h"
-    header "Encryption.h"
     header "TLSBox.h"
     header "CryptoBox.h"
+    header "Encryption.h"
     header "MSS.h"
+    header "PacketMacros.h"
     header "ReplayProtector.h"
     header "DataPath.h"
-    header "PointerBasedDataPath.h"
+    header "DataPathEncryption.h"
     export *
 }

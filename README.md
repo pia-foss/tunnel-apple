@@ -16,13 +16,15 @@ The client is known to work with [OpenVPN®][openvpn] 2.3+ servers. Key renegoti
 - [x] Client-initiated renegotiation
 - [x] Replay protection (hardcoded window)
 - [x] Data encryption
-    - AES (128 and 256 bit CBC)
+    - AES-CBC (128 and 256 bit)
+    - AES-GCM (128 and 256 bit)
 - [x] HMAC digest
     - SHA-1
     - SHA-256
 - [x] TLS CA validation (read below)
     - RSA (2048, 3072 and 4096 bit)
     - ECC (sec256r1, sec521r1)
+    - Custom certificate
 
 Theoretically, any custom CA can be fed to the client for TLS validation. When using the AppExtension module though, the handshake is restricted to the embedded root certificates from PIA.
 

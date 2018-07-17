@@ -5,8 +5,9 @@ module __PIATunnelNative {
     header "CryptoBox.h"
     header "Encryption.h"
     header "MSS.h"
+    header "PacketMacros.h"
     header "ReplayProtector.h"
     header "DataPath.h"
-    header "PointerBasedDataPath.h"
+    header "DataPathEncryption.h"
     export *
 }

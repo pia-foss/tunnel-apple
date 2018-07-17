@@ -43,7 +43,7 @@ class EncryptionPerformanceTests: XCTestCase {
         let suite = TestUtils.generateDataSuite(1000, 100000)
         measure {
             for data in suite {
-                let _ = try! self.cbcEncrypter.encryptData(data, offset: 0, packetId: 0)
+                let _ = try! self.cbcEncrypter.encryptData(data, offset: 0, extra: nil)
             }
         }
     }
@@ -51,9 +51,10 @@ class EncryptionPerformanceTests: XCTestCase {
     // 0.684s
     func testGCMEncryption() {
         let suite = TestUtils.generateDataSuite(1000, 100000)
+        let extra: [UInt8] = [0x11, 0x22, 0x33, 0x44]
         measure {
             for data in suite {
-                let _ = try! self.gcmEncrypter.encryptData(data, offset: 0, packetId: 0)
+                let _ = try! self.gcmEncrypter.encryptData(data, offset: 0, extra: extra)
             }
         }
     }

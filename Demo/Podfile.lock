@@ -1,12 +1,12 @@
 PODS:
   - OpenSSL-Apple (1.1.0h)
-  - PIATunnel (1.1.4):
-    - PIATunnel/AppExtension (= 1.1.4)
-    - PIATunnel/Core (= 1.1.4)
-  - PIATunnel/AppExtension (1.1.4):
+  - PIATunnel (1.1.5):
+    - PIATunnel/AppExtension (= 1.1.5)
+    - PIATunnel/Core (= 1.1.5)
+  - PIATunnel/AppExtension (1.1.5):
     - PIATunnel/Core
     - SwiftyBeaver
-  - PIATunnel/Core (1.1.4):
+  - PIATunnel/Core (1.1.5):
     - OpenSSL-Apple (~> 1.1.0h)
     - SwiftyBeaver
   - SwiftyBeaver (1.6.0)
@@ -25,7 +25,7 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   OpenSSL-Apple: cd153d705ef350eb834ae7ff5f21f792b51ed208
-  PIATunnel: 86b631a66894d85ad37373f3e406e6304731a173
+  PIATunnel: 4ce2589e00d76943eaf5341e1ed0ece404dddb15
   SwiftyBeaver: e45759613e50b522b0e6f53b1f0f14389b45ca34
 
 PODFILE CHECKSUM: 371da118c4fd5937763c16ea185815a848d982b6

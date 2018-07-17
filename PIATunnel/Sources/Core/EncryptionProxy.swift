@@ -140,11 +140,11 @@ public class EncryptionProxy {
         )
     }
     
-    func encrypter() -> Encrypter {
-        return box.encrypter()
+    func encrypter() -> DataPathEncrypter {
+        return box.encrypter().dataPathEncrypter()
     }
 
-    func decrypter() -> Decrypter {
-        return box.decrypter()
+    func decrypter() -> DataPathDecrypter {
+        return box.decrypter().dataPathDecrypter()
     }
 }

@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
     s.name              = "PIATunnel"
-    s.version           = "1.1.4"
+    s.version           = "1.1.5"
     s.summary           = "PIA tunnel implementation in Swift."
 
     s.homepage          = "https://www.privateinternetaccess.com/"

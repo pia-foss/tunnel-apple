@@ -125,6 +125,9 @@
 
 - (void)setPeerId:(uint32_t)peerId
 {
+    NSAssert(self.encrypter, @"Setting peer-id to nil encrypter");
+    NSAssert(self.decrypter, @"Setting peer-id to nil decrypter");
+
     [self.encrypter setPeerId:peerId];
     [self.decrypter setPeerId:peerId];
 }
@@ -133,6 +136,8 @@
 
 - (NSArray<NSData *> *)encryptPackets:(NSArray<NSData *> *)packets key:(uint8_t)key error:(NSError *__autoreleasing *)error
 {
+    NSAssert(self.encrypter.peerId == self.decrypter.peerId, @"Peer-id mismatch in DataPath encrypter/decrypter");
+    
     if (self.outPacketId > self.maxPacketId) {
         if (error) {
             *error = PIATunnelErrorWithCode(PIATunnelErrorCodeDataPathOverflow);
@@ -175,6 +180,8 @@
 //- (NSArray<NSData *> *)decryptPackets:(NSArray<NSData *> *)packets error:(NSError *__autoreleasing *)error
 - (NSArray<NSData *> *)decryptPackets:(NSArray<NSData *> *)packets keepAlive:(bool *)keepAlive error:(NSError *__autoreleasing *)error
 {
+    NSAssert(self.encrypter.peerId == self.decrypter.peerId, @"Peer-id mismatch in DataPath encrypter/decrypter");
+
     [self.inPackets removeAllObjects];
     
     for (NSData *encryptedPacket in packets) {

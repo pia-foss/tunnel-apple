@@ -489,7 +489,7 @@ public class SessionProxy {
             let ackSize = packet[offset]
             offset += 1
 
-            log.debug("Packet has code \(code.rawValue), sessionId \(sessionId.toHex()) and \(ackSize) acks entries")
+            log.debug("Packet has code \(code.rawValue), key \(key), sessionId \(sessionId.toHex()) and \(ackSize) acks entries")
 
             if (ackSize > 0) {
                 guard packet.count >= (offset + Int(ackSize) * ProtocolMacros.packetIdLength) else {
@@ -1095,7 +1095,7 @@ public class SessionProxy {
         bytesIn += packets.flatCount
         do {
             guard let decryptedPackets = try key.decrypt(packets: packets) else {
-                log.warning("Could not decrypt packets, is data path set?")
+                log.warning("Could not decrypt packets, is SessionKey properly configured (dataPath, peerId)?")
                 return
             }
             guard !decryptedPackets.isEmpty else {
@@ -1115,7 +1115,7 @@ public class SessionProxy {
         }
         do {
             guard let encryptedPackets = try key.encrypt(packets: packets) else {
-                log.warning("Could not encrypt packets, is data path set?")
+                log.warning("Could not encrypt packets, is SessionKey properly configured (dataPath, peerId)?")
                 return
             }
             guard !encryptedPackets.isEmpty else {

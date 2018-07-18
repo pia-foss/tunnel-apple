@@ -119,6 +119,10 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
         strategy = ConnectionStrategy(hostname: endpoint.hostname, configuration: cfg)
 
         if var existingLog = cfg.existingLog {
+            if let i = existingLog.firstIndex(of: logSeparator) {
+                existingLog.removeFirst(i + 2)
+            }
+            
             existingLog.append("")
             existingLog.append(logSeparator)
             existingLog.append("")

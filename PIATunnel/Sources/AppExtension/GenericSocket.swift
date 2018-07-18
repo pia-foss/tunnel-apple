@@ -32,6 +32,8 @@ protocol GenericSocket: LinkProducer {
     
     var hasBetterPath: Bool { get }
     
+    var isShutdown: Bool { get }
+
     var delegate: GenericSocketDelegate? { get set }
 
     func observe(queue: DispatchQueue, activeTimeout: Int)

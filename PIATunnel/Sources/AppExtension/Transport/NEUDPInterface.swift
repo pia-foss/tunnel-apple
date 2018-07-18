@@ -126,6 +126,9 @@ class NEUDPInterface: NSObject, GenericSocket, LinkInterface {
             
             switch impl.state {
             case .ready:
+                guard !isActive else {
+                    return
+                }
                 isActive = true
                 delegate?.socketDidBecomeActive(self)
                 

@@ -123,6 +123,9 @@ class NETCPInterface: NSObject, GenericSocket, LinkInterface {
             
             switch impl.state {
             case .connected:
+                guard !isActive else {
+                    return
+                }
                 isActive = true
                 delegate?.socketDidBecomeActive(self)
                 

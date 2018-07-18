@@ -323,7 +323,7 @@ extension PIATunnelProvider: GenericSocketDelegate {
     }
     
     func socketDidBecomeActive(_ socket: GenericSocket) {
-        proxy?.setLink(link: socket.link())
+        proxy?.setLink(socket.link())
     }
     
     func socket(_ socket: GenericSocket, didShutdownWithFailure failure: Bool) {

@@ -434,7 +434,12 @@ public class SessionProxy {
 
     // Ruby: udp_loop
     private func loopLink() {
-        link?.setReadHandler(queue: queue) { [weak self] (newPackets, error) in
+        let loopedLink = link
+        loopedLink?.setReadHandler(queue: queue) { [weak self] (newPackets, error) in
+            guard loopedLink === self?.link else {
+                log.warning("Ignoring read from outdated LINK")
+                return
+            }
             if let error = error {
                 log.error("Failed LINK read: \(error)")
                 return

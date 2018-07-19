@@ -76,6 +76,19 @@ For the VPN to work properly, the `BasicTunnel` demo requires:
 
 both in the main app and the tunnel extension target.
 
+If you want to connect to your own server, modify the file 
+`Demo/BasicTunnel-iOS/ViewController.swift` and set at least the following:
+
+Change `builder.endpointProtocols` and change `.pia` to `.vanilla`. Set 
+`builder.handshake` to `.custom`, and `builder.ca` to contain the PEM formatted
+certificate of your VPN server's CA, e.g.:
+
+    builder.ca = """
+    -----BEGIN CERTIFICATE-----
+    MIIFJDCC...
+    -----END CERTIFICATE-----
+    """
+
 ## Documentation
 
 The library is split into two modules, in order to decouple the low-level protocol implementation from the platform-specific bridging, namely the [NetworkExtension][ne-home] VPN framework.

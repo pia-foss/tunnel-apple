@@ -97,7 +97,8 @@ int TLSBoxVerifyPeer(int ok, X509_STORE_CTX *ctx) {
     else {
         SSL_CTX_set_verify(self.ctx, SSL_VERIFY_NONE, NULL);
     }
-    
+    SSL_CTX_set1_curves_list(self.ctx, "X25519:prime256v1:secp521r1:secp384r1:secp256k1");
+
     self.ssl = SSL_new(self.ctx);
     
     self.bioPlainText = BIO_new(BIO_f_ssl());

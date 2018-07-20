@@ -54,7 +54,7 @@ class ViewController: NSViewController {
         textDomain.stringValue = "privateinternetaccess.com"
 //        textServer.text = "159.122.133.238"
 //        textDomain.text = ""
-        textPort.stringValue = "1194"
+        textPort.stringValue = "1198"
 //        textPort.text = "8080"
         textUsername.stringValue = "myusername"
         textPassword.stringValue = "mypassword"
@@ -116,6 +116,7 @@ class ViewController: NSViewController {
             )
             
             var builder = PIATunnelProvider.ConfigurationBuilder(appGroup: ViewController.APP_GROUP)
+            builder.endpointProtocols = [PIATunnelProvider.EndpointProtocol(.udp, port, .vanilla)]
             builder.cipher = ViewController.CIPHER
             builder.digest = ViewController.DIGEST
             builder.handshake = ViewController.HANDSHAKE

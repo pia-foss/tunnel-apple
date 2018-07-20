@@ -64,7 +64,7 @@ class ViewController: UIViewController, URLSessionDataDelegate {
         textDomain.text = "privateinternetaccess.com"
 //        textServer.text = "159.122.133.238"
 //        textDomain.text = ""
-        textPort.text = "8080"
+        textPort.text = "1198"
         switchTCP.isOn = false
         textUsername.text = "myusername"
         textPassword.text = "mypassword"
@@ -134,7 +134,7 @@ class ViewController: UIViewController, URLSessionDataDelegate {
 
             var builder = PIATunnelProvider.ConfigurationBuilder(appGroup: ViewController.APP_GROUP)
             let socketType: PIATunnelProvider.SocketType = (self.switchTCP.isOn ? .tcp : .udp)
-            builder.endpointProtocols = [PIATunnelProvider.EndpointProtocol(socketType, port, .pia)]
+            builder.endpointProtocols = [PIATunnelProvider.EndpointProtocol(socketType, port, .vanilla)]
             builder.cipher = ViewController.CIPHER
             builder.digest = ViewController.DIGEST
             builder.handshake = ViewController.HANDSHAKE

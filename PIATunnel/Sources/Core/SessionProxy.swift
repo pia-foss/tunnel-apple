@@ -12,6 +12,13 @@ import __PIATunnelNative
 
 private let log = SwiftyBeaver.self
 
+private extension Error {
+    func isDataPathOverflow() -> Bool {
+        let te = self as NSError
+        return te.domain == PIATunnelErrorDomain && te.code == PIATunnelErrorCode.dataPathOverflow.rawValue
+    }
+}
+
 /// The possible errors raised/thrown during `SessionProxy` operation.
 public enum SessionError: Error {
 
@@ -1148,6 +1155,10 @@ public class SessionProxy {
 
             tunnel?.writePackets(decryptedPackets, completionHandler: nil)
         } catch let e {
+            guard !e.isDataPathOverflow() else {
+                deferStop(.shutdown, e)
+                return
+            }
             deferStop(.reconnect, e)
         }
     }
@@ -1179,6 +1190,10 @@ public class SessionProxy {
 //                log.verbose("Data: \(encryptedPackets.count) packets successfully written to LINK")
             }
         } catch let e {
+            guard !e.isDataPathOverflow() else {
+                deferStop(.shutdown, e)
+                return
+            }
             deferStop(.reconnect, e)
         }
     }

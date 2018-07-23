@@ -28,6 +28,7 @@ class NETCPInterface: NSObject, GenericSocket, LinkInterface {
         }
         endpoint = hostEndpoint
         isActive = false
+        isShutdown = false
     }
     
     // MARK: GenericSocket
@@ -35,6 +36,8 @@ class NETCPInterface: NSObject, GenericSocket, LinkInterface {
     private weak var queue: DispatchQueue?
     
     private var isActive: Bool
+    
+    private(set) var isShutdown: Bool
     
     let endpoint: NWHostEndpoint
     
@@ -123,13 +126,18 @@ class NETCPInterface: NSObject, GenericSocket, LinkInterface {
             
             switch impl.state {
             case .connected:
+                guard !isActive else {
+                    return
+                }
                 isActive = true
                 delegate?.socketDidBecomeActive(self)
                 
             case .cancelled:
+                isShutdown = true
                 delegate?.socket(self, didShutdownWithFailure: false)
                 
             case .disconnected:
+                isShutdown = true
                 delegate?.socket(self, didShutdownWithFailure: true)
                 
             default:

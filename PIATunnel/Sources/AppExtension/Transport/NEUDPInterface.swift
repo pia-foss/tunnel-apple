@@ -33,6 +33,7 @@ class NEUDPInterface: NSObject, GenericSocket, LinkInterface {
         }
         endpoint = hostEndpoint
         isActive = false
+        isShutdown = false
     }
     
     // MARK: GenericSocket
@@ -41,6 +42,8 @@ class NEUDPInterface: NSObject, GenericSocket, LinkInterface {
     
     private var isActive: Bool
     
+    private(set) var isShutdown: Bool
+
     let endpoint: NWHostEndpoint
     
     var remoteAddress: String? {
@@ -126,13 +129,18 @@ class NEUDPInterface: NSObject, GenericSocket, LinkInterface {
             
             switch impl.state {
             case .ready:
+                guard !isActive else {
+                    return
+                }
                 isActive = true
                 delegate?.socketDidBecomeActive(self)
                 
             case .cancelled:
+                isShutdown = true
                 delegate?.socket(self, didShutdownWithFailure: false)
                 
             case .failed:
+                isShutdown = true
 //                if timedOut {
 //                    delegate?.socketShouldChangeProtocol(self)
 //                }

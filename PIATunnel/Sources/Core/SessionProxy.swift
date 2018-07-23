@@ -257,7 +257,7 @@ public class SessionProxy {
      - Postcondition: The VPN negotiation is started.
      - Parameter link: The `LinkInterface` on which to establish the VPN session.
      */
-    public func setLink(link: LinkInterface) {
+    public func setLink(_ link: LinkInterface) {
         guard (self.link == nil) else {
             log.warning("Link interface already set!")
             return
@@ -276,6 +276,37 @@ public class SessionProxy {
         start()
     }
     
+    /**
+     Returns `true` if the current session can rebind to a new link with `rebindLink(...)`.
+
+     - Returns: `true` if supports link rebinding.
+     */
+    public func canRebindLink() -> Bool {
+        return (peerId != nil)
+    }
+    
+    /**
+     Rebinds the session to a new link if supported.
+     
+     - Precondition: `link` is an active network interface.
+     - Postcondition: The VPN session is active.
+     - Parameter link: The `LinkInterface` on which to establish the VPN session.
+     - Seealso: `canRebindLink()`.
+     */
+    public func rebindLink(_ link: LinkInterface) {
+        guard let _ = peerId else {
+            log.warning("Session doesn't support link rebinding!")
+            return
+        }
+
+        isStopping = false
+        stopError = nil
+
+        log.debug("Rebinding VPN session to a new link")
+        self.link = link
+        loopLink()
+    }
+
     /**
      Establishes the tunnel interface for this session. The interface must be up and running for sending and receiving packets.
      
@@ -403,7 +434,12 @@ public class SessionProxy {
 
     // Ruby: udp_loop
     private func loopLink() {
-        link?.setReadHandler(queue: queue) { [weak self] (newPackets, error) in
+        let loopedLink = link
+        loopedLink?.setReadHandler(queue: queue) { [weak self] (newPackets, error) in
+            guard loopedLink === self?.link else {
+                log.warning("Ignoring read from outdated LINK")
+                return
+            }
             if let error = error {
                 log.error("Failed LINK read: \(error)")
                 return

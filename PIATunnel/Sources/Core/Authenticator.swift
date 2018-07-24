@@ -86,7 +86,9 @@ class Authenticator {
     
     func parseAuthReply() throws -> Bool {
         let prefixLength = ProtocolMacros.tlsPrefix.count
-        guard (controlBuffer.count >= prefixLength + 2 * Configuration.randomLength) else {
+
+        // TLS prefix + random (x2) + opts length [+ opts]
+        guard (controlBuffer.count >= prefixLength + 2 * Configuration.randomLength + 2) else {
             return false
         }
         
@@ -106,6 +108,9 @@ class Authenticator {
         let serverOptsLength = Int(controlBuffer.networkUInt16Value(fromOffset: offset))
         offset += 2
         
+        guard controlBuffer.count >= offset + serverOptsLength else {
+            return false
+        }
         let serverOpts = controlBuffer.withOffset(offset, count: serverOptsLength)
         offset += serverOptsLength
 

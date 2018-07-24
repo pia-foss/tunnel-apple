@@ -895,11 +895,12 @@ public class SessionProxy {
         auth.appendControlData(data)
 
         if (negotiationKey.controlState == .preAuth) {
-            guard auth.isAuthReplyComplete() else {
-                return
-            }
-            guard auth.parseAuthReply() else {
-                deferStop(.shutdown, SessionError.wrongControlDataPrefix)
+            do {
+                guard try auth.parseAuthReply() else {
+                    return
+                }
+            } catch let e {
+                deferStop(.shutdown, e)
                 return
             }
             

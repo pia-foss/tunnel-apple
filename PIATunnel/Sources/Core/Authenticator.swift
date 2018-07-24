@@ -84,18 +84,15 @@ class Authenticator {
         controlBuffer.append(data)
     }
     
-    func isAuthReplyComplete() -> Bool {
+    func parseAuthReply() throws -> Bool {
         let prefixLength = ProtocolMacros.tlsPrefix.count
-        
-        return (controlBuffer.count >= prefixLength + 2 * Configuration.randomLength)
-    }
-    
-    func parseAuthReply() -> Bool {
-        let prefixLength = ProtocolMacros.tlsPrefix.count
-        let prefix = controlBuffer.withOffset(0, count: prefixLength)
-        
-        guard prefix.isEqual(to: ProtocolMacros.tlsPrefix) else {
+        guard (controlBuffer.count >= prefixLength + 2 * Configuration.randomLength) else {
             return false
+        }
+        
+        let prefix = controlBuffer.withOffset(0, count: prefixLength)
+        guard prefix.isEqual(to: ProtocolMacros.tlsPrefix) else {
+            throw SessionError.wrongControlDataPrefix
         }
         
         var offset = ProtocolMacros.tlsPrefix.count

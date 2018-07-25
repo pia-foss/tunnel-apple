@@ -37,27 +37,27 @@ struct PushReply {
         var authToken: String?
         var peerId: UInt32?
 
-        PushReply.ifconfigRegexp.enumerateMatches(in: message, options: [], range: NSMakeRange(0, message.count), using: { (result, flags, _) in
+        PushReply.ifconfigRegexp.enumerateMatches(in: message, options: [], range: NSMakeRange(0, message.count)) { (result, flags, _) in
             guard let range = result?.range else { return }
             
             let match = (message as NSString).substring(with: range)
             ifconfigComponents = match.components(separatedBy: " ")
-        })
+        }
         
         guard let addresses = ifconfigComponents, addresses.count >= 2 else {
             throw SessionError.malformedPushReply
         }
         
-        PushReply.dnsRegexp.enumerateMatches(in: message, options: [], range: NSMakeRange(0, message.count), using: { (result, flags, _) in
+        PushReply.dnsRegexp.enumerateMatches(in: message, options: [], range: NSMakeRange(0, message.count)) { (result, flags, _) in
             guard let range = result?.range else { return }
             
             let match = (message as NSString).substring(with: range)
             let dnsEntryComponents = match.components(separatedBy: " ")
             
             dnsServers.append(dnsEntryComponents[2])
-        })
+        }
         
-        PushReply.authTokenRegexp.enumerateMatches(in: message, options: [], range: NSMakeRange(0, message.count), using: { (result, flags, _) in
+        PushReply.authTokenRegexp.enumerateMatches(in: message, options: [], range: NSMakeRange(0, message.count)) { (result, flags, _) in
             guard let range = result?.range else { return }
             
             let match = (message as NSString).substring(with: range)
@@ -66,9 +66,9 @@ struct PushReply {
             if (tokenComponents.count > 1) {
                 authToken = tokenComponents[1]
             }
-        })
+        }
         
-        PushReply.peerIdRegexp.enumerateMatches(in: message, options: [], range: NSMakeRange(0, message.count), using: { (result, flags, _) in
+        PushReply.peerIdRegexp.enumerateMatches(in: message, options: [], range: NSMakeRange(0, message.count)) { (result, flags, _) in
             guard let range = result?.range else { return }
             
             let match = (message as NSString).substring(with: range)
@@ -77,7 +77,7 @@ struct PushReply {
             if (tokenComponents.count > 1) {
                 peerId = UInt32(tokenComponents[1])
             }
-        })
+        }
 
         address = addresses[1]
         gatewayAddress = addresses[2]

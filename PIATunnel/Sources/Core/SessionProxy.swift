@@ -567,7 +567,7 @@ public class SessionProxy {
             }
 
             if (code == .ackV1) {
-                return
+                continue
             }
 
             guard packet.count >= offset + ProtocolMacros.packetIdLength else {
@@ -603,7 +603,7 @@ public class SessionProxy {
                     continue
                 }
                 if (queuedControlPacket.packetId != controlPacketIdIn) {
-                    return
+                    continue
                 }
 
                 handleControlPacket(queuedControlPacket)

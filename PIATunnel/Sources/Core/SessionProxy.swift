@@ -567,7 +567,7 @@ public class SessionProxy {
             }
 
             if (code == .ackV1) {
-                return
+                continue
             }
 
             guard packet.count >= offset + ProtocolMacros.packetIdLength else {
@@ -603,7 +603,7 @@ public class SessionProxy {
                     continue
                 }
                 if (queuedControlPacket.packetId != controlPacketIdIn) {
-                    return
+                    continue
                 }
 
                 handleControlPacket(queuedControlPacket)
@@ -895,11 +895,12 @@ public class SessionProxy {
         auth.appendControlData(data)
 
         if (negotiationKey.controlState == .preAuth) {
-            guard auth.isAuthReplyComplete() else {
-                return
-            }
-            guard auth.parseAuthReply() else {
-                deferStop(.shutdown, SessionError.wrongControlDataPrefix)
+            do {
+                guard try auth.parseAuthReply() else {
+                    return
+                }
+            } catch let e {
+                deferStop(.shutdown, e)
                 return
             }
             
@@ -927,76 +928,46 @@ public class SessionProxy {
             return
         }
         
-        if ((negotiationKey.controlState == .preIfConfig) && message.hasPrefix("PUSH_REPLY")) {
-            log.debug("Received PUSH_REPLY: \"\(message)\"")
+        guard (negotiationKey.controlState == .preIfConfig) else {
+            return
+        }
 
-            let ifconfigRegexp = try! NSRegularExpression(pattern: "ifconfig [\\d\\.]+ [\\d\\.]+", options: [])
-            let dnsRegexp = try! NSRegularExpression(pattern: "dhcp-option DNS [\\d\\.]+", options: [])
-            let authTokenRegexp = try! NSRegularExpression(pattern: "auth-token [a-zA-Z0-9/=+]+", options: [])
-            let peerIdRegexp = try! NSRegularExpression(pattern: "peer-id [0-9]+", options: [])
-
-            var ifconfigComponents: [String]?
-            ifconfigRegexp.enumerateMatches(in: message, options: [], range: NSMakeRange(0, message.count), using: { (result, flags, _) in
-                guard let range = result?.range else { return }
-                
-                let match = (message as NSString).substring(with: range)
-                ifconfigComponents = match.components(separatedBy: " ")
-            })
-            
-            guard let addresses = ifconfigComponents else {
-                deferStop(.shutdown, SessionError.malformedPushReply)
+        log.debug("Received control message: \"\(message)\"")
+        
+        let reply: PushReply
+        do {
+            guard let optionalReply = try PushReply(message: message) else {
                 return
             }
-            
-            let address = addresses[1]
-            let gatewayAddress = addresses[2]
+            reply = optionalReply
+        } catch let e {
+            deferStop(.shutdown, e)
+            return
+        }
+        
+        authenticator = nil
+        negotiationKey.startHandlingPackets(withPeerId: peerId)
+        negotiationKey.controlState = .connected
+        connectedDate = Date()
+        transitionKeys()
 
-            var dnsServers = [String]()
-            dnsRegexp.enumerateMatches(in: message, options: [], range: NSMakeRange(0, message.count), using: { (result, flags, _) in
-                guard let range = result?.range else { return }
+        guard let remoteAddress = link?.remoteAddress else {
+            fatalError("Could not resolve link remote address")
+        }
 
-                let match = (message as NSString).substring(with: range)
-                let dnsEntryComponents = match.components(separatedBy: " ")
+        authToken = reply.authToken
+        peerId = reply.peerId
 
-                dnsServers.append(dnsEntryComponents[2])
-            })
-            
-            authTokenRegexp.enumerateMatches(in: message, options: [], range: NSMakeRange(0, message.count), using: { (result, flags, _) in
-                guard let range = result?.range else { return }
+        delegate?.sessionDidStart(
+            self,
+            remoteAddress: remoteAddress,
+            address: reply.address,
+            gatewayAddress: reply.gatewayAddress,
+            dnsServers: reply.dnsServers
+        )
 
-                let match = (message as NSString).substring(with: range)
-                let tokenComponents = match.components(separatedBy: " ")
-                
-                if (tokenComponents.count > 1) {
-                    self.authToken = tokenComponents[1]
-                }
-            })
-            
-            peerIdRegexp.enumerateMatches(in: message, options: [], range: NSMakeRange(0, message.count), using: { (result, flags, _) in
-                guard let range = result?.range else { return }
-                
-                let match = (message as NSString).substring(with: range)
-                let tokenComponents = match.components(separatedBy: " ")
-                
-                if (tokenComponents.count > 1) {
-                    self.peerId = UInt32(tokenComponents[1])
-                }
-            })
-            
-            authenticator = nil
-            negotiationKey.startHandlingPackets(withPeerId: peerId)
-            negotiationKey.controlState = .connected
-            connectedDate = Date()
-            transitionKeys()
-
-            guard let remoteAddress = link?.remoteAddress else {
-                fatalError("Could not resolve link remote address")
-            }
-            delegate?.sessionDidStart(self, remoteAddress: remoteAddress, address: address, gatewayAddress: gatewayAddress, dnsServers: dnsServers)
-
-            queue.asyncAfter(deadline: .now() + Configuration.pingInterval) { [weak self] in
-                self?.ping()
-            }
+        queue.asyncAfter(deadline: .now() + Configuration.pingInterval) { [weak self] in
+            self?.ping()
         }
     }
     

@@ -30,6 +30,9 @@ int TLSBoxVerifyPeer(int ok, X509_STORE_CTX *ctx) {
 @interface TLSBox ()
 
 @property (nonatomic, strong) NSString *caPath;
+@property (nonatomic, strong) NSString *certPath;
+@property (nonatomic, strong) NSString *keyPath;
+
 @property (nonatomic, assign) BOOL isConnected;
 
 @property (nonatomic, unsafe_unretained) SSL_CTX *ctx;
@@ -46,13 +49,19 @@ int TLSBoxVerifyPeer(int ok, X509_STORE_CTX *ctx) {
 
 - (instancetype)init
 {
-    return [self initWithCAPath:nil];
+    if((self = [super init])) {
+        self.bufferCipherText = allocate_safely(TLSBoxMaxBufferLength);
+    }
+    
+    return self;
 }
 
-- (instancetype)initWithCAPath:(NSString *)caPath
+- (instancetype)initWithCAPath:(NSString *)caPath certPath:(NSString *) certPath_ keyPath:(NSString *) keyPath_
 {
     if ((self = [super init])) {
         self.caPath = caPath;
+        self.certPath = certPath_;
+        self.keyPath = keyPath_;
         self.bufferCipherText = allocate_safely(TLSBoxMaxBufferLength);
     }
     return self;
@@ -87,6 +96,21 @@ int TLSBoxVerifyPeer(int ok, X509_STORE_CTX *ctx) {
     if (peerVerification && self.caPath) {
         SSL_CTX_set_verify(self.ctx, SSL_VERIFY_PEER, TLSBoxVerifyPeer);
         if (!SSL_CTX_load_verify_locations(self.ctx, [self.caPath cStringUsingEncoding:NSASCIIStringEncoding], NULL)) {
+            ERR_print_errors_fp(stdout);
+            if (error) {
+                *error = PIATunnelErrorWithCode(PIATunnelErrorCodeTLSBoxCA);
+            }
+            return NO;
+        }
+        
+        if(!SSL_CTX_use_certificate_file(self.ctx, [self.certPath cStringUsingEncoding:NSASCIIStringEncoding], SSL_FILETYPE_PEM)) {
+            ERR_print_errors_fp(stdout);
+            if (error) {
+                *error = PIATunnelErrorWithCode(PIATunnelErrorCodeTLSBoxCA);
+            }
+            return NO;
+        }
+        if(!SSL_CTX_use_PrivateKey_file(self.ctx, [self.keyPath cStringUsingEncoding:NSASCIIStringEncoding], SSL_FILETYPE_PEM)) {
             ERR_print_errors_fp(stdout);
             if (error) {
                 *error = PIATunnelErrorWithCode(PIATunnelErrorCodeTLSBoxCA);

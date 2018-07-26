@@ -225,6 +225,12 @@ extension PIATunnelProvider {
         /// The custom CA certificate in PEM format in case `handshake == .custom`. Ignored otherwise.
         public var ca: String?
         
+        /// The client certificate
+        public var cert: String?
+        
+        /// The key for the client certificate
+        public var key: String?
+        
         /// The MTU of the tunnel.
         public var mtu: NSNumber
         
@@ -258,6 +264,8 @@ extension PIATunnelProvider {
             digest = .sha1
             handshake = .rsa2048
             ca = nil
+            cert = nil
+            key = nil
             mtu = 1500
             renegotiatesAfterSeconds = nil
             shouldDebug = false
@@ -289,6 +297,16 @@ extension PIATunnelProvider {
                     throw ProviderError.configuration(field: "protocolConfiguration.providerConfiguration[\(S.ca)]")
                 }
                 self.ca = ca
+                
+                guard let cert = providerConfiguration[S.cert] as? String else {
+                        throw ProviderError.configuration(field: "protocolConfiguration.providerConfiguration[\(S.cert)]")
+                }
+                self.cert = cert
+                
+                guard let key = providerConfiguration[S.key] as? String else {
+                        throw ProviderError.configuration(field: "protocolConfiguration.providerConfiguration[\(S.key)]")
+                }
+                self.key = key
             }
 
             self.appGroup = appGroup
@@ -355,6 +373,8 @@ extension PIATunnelProvider {
                 digest: digest,
                 handshake: handshake,
                 ca: ca,
+                cert: cert,
+                key: key,
                 mtu: mtu,
                 renegotiatesAfterSeconds: renegotiatesAfterSeconds,
                 shouldDebug: shouldDebug,
@@ -382,6 +402,10 @@ extension PIATunnelProvider {
             static let handshakeCertificate = "HandshakeCertificate"
             
             static let ca = "CA"
+            
+            static let cert = "CERT"
+            
+            static let key = "KEY"
             
             static let mtu = "MTU"
             
@@ -417,6 +441,10 @@ extension PIATunnelProvider {
         
         /// - Seealso: `PIATunnelProvider.ConfigurationBuilder.ca`
         public let ca: String?
+        
+        public let cert: String?
+        
+        public let key: String?
         
         /// - Seealso: `PIATunnelProvider.ConfigurationBuilder.mtu`
         public let mtu: NSNumber
@@ -482,6 +510,12 @@ extension PIATunnelProvider {
             ]
             if let ca = ca {
                 dict[S.ca] = ca
+            }
+            if let cert = cert {
+                dict[S.cert] = cert
+            }
+            if let key = key {
+                dict[S.key] = key
             }
             if let resolvedAddresses = resolvedAddresses {
                 dict[S.resolvedAddresses] = resolvedAddresses

@@ -93,15 +93,21 @@ public class SessionProxy {
         /// The path to the CA for TLS negotiation (PEM format).
         public let caPath: String
 
+        public let certPath: String
+        
+        public let keyPath: String
+        
         /// The MD5 digest of the CA (computed from DER format).
         public let caDigest: String?
 
         /// :nodoc:
-        public init(_ cipherName: String, _ digestName: String, _ caPath: String, _ caDigest: String?) {
+        public init(_ cipherName: String, _ digestName: String, _ caPath: String, _ certPath: String, _ keyPath: String, _ caDigest: String?) {
             self.cipherName = cipherName
             self.digestName = digestName
             self.caPath = caPath
             self.caDigest = caDigest
+            self.certPath = certPath
+            self.keyPath = keyPath
         }
     }
     
@@ -825,7 +831,7 @@ public class SessionProxy {
             log.debug("Remote sessionId is \(remoteSessionId.toHex())")
             log.debug("Start TLS handshake")
 
-            negotiationKey.tlsOptional = TLSBox(caPath: encryption.caPath)
+            negotiationKey.tlsOptional = TLSBox(caPath: encryption.caPath, certPath: encryption.certPath, keyPath: encryption.keyPath)
             do {
                 try negotiationKey.tls.start(withPeerVerification: true)
             } catch let e {

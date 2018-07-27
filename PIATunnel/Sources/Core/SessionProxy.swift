@@ -434,7 +434,7 @@ public class SessionProxy {
         }
         
         guard (negotiationKey.controlState == .connected) else {
-            queue.asyncAfter(deadline: .now() + Configuration.tickInterval) { [weak self] in
+            queue.asyncAfter(deadline: .now() + CoreConfiguration.tickInterval) { [weak self] in
                 self?.loopNegotiation()
             }
             return
@@ -589,7 +589,7 @@ public class SessionProxy {
                 payload = packet.subdata(in: offset..<packet.count)
 
                 if let payload = payload {
-                    if Configuration.logsSensitiveData {
+                    if CoreConfiguration.logsSensitiveData {
                         log.debug("Control packet payload (\(payload.count) bytes): \(payload.toHex())")
                     } else {
                         log.debug("Control packet payload (\(payload.count) bytes)")
@@ -643,7 +643,7 @@ public class SessionProxy {
         }
         
         let now = Date()
-        guard (now.timeIntervalSince(lastPingIn) <= Configuration.pingTimeout) else {
+        guard (now.timeIntervalSince(lastPingIn) <= CoreConfiguration.pingTimeout) else {
             deferStop(.shutdown, SessionError.pingTimeout)
             return
         }
@@ -775,7 +775,7 @@ public class SessionProxy {
             connectedDate = Date()
             transitionKeys()
         }
-        nextPushRequestDate = Date().addingTimeInterval(Configuration.retransmissionLimit)
+        nextPushRequestDate = Date().addingTimeInterval(CoreConfiguration.retransmissionLimit)
     }
     
     private func maybeRenegotiate() {
@@ -894,7 +894,7 @@ public class SessionProxy {
     private func handleControlData(_ data: ZeroingData) {
         guard let auth = authenticator else { return }
 
-        if Configuration.logsSensitiveData {
+        if CoreConfiguration.logsSensitiveData {
             log.debug("Pulled plain control data (\(data.count) bytes): \(data.toHex())")
         } else {
             log.debug("Pulled plain control data (\(data.count) bytes)")
@@ -915,12 +915,12 @@ public class SessionProxy {
             setupKeys()
 
             negotiationKey.controlState = .preIfConfig
-            nextPushRequestDate = Date().addingTimeInterval(negotiationKey.softReset ? Configuration.softResetDelay : Configuration.retransmissionLimit)
+            nextPushRequestDate = Date().addingTimeInterval(negotiationKey.softReset ? CoreConfiguration.softResetDelay : CoreConfiguration.retransmissionLimit)
             pushRequest()
         }
         
         for message in auth.parseMessages() {
-            if Configuration.logsSensitiveData {
+            if CoreConfiguration.logsSensitiveData {
                 log.debug("Parsed control message (\(message.count) bytes): \"\(message)\"")
             } else {
                 log.debug("Parsed control message (\(message.count) bytes)")
@@ -1039,7 +1039,7 @@ public class SessionProxy {
         for controlPacket in controlQueueOut {
             if let sentDate = controlPacket.sentDate {
                 let timeAgo = -sentDate.timeIntervalSinceNow
-                guard (timeAgo >= Configuration.retransmissionLimit) else {
+                guard (timeAgo >= CoreConfiguration.retransmissionLimit) else {
                     log.debug("Skip control packet with id \(controlPacket.packetId) (sent on \(sentDate), \(timeAgo) seconds ago)")
                     continue
                 }
@@ -1048,7 +1048,7 @@ public class SessionProxy {
             log.debug("Send control packet with code \(controlPacket.code.rawValue)")
 
             if let payload = controlPacket.payload {
-                if Configuration.logsSensitiveData {
+                if CoreConfiguration.logsSensitiveData {
                     log.debug("Control packet has payload (\(payload.count) bytes): \(payload.toHex())")
                 } else {
                     log.debug("Control packet has payload (\(payload.count) bytes)")
@@ -1091,7 +1091,7 @@ public class SessionProxy {
             fatalError("Setting up keys without server randoms")
         }
         
-        if Configuration.logsSensitiveData {
+        if CoreConfiguration.logsSensitiveData {
             log.debug("Setup keys from the following components:")
             log.debug("\tpreMaster: \(auth.preMaster.toHex())")
             log.debug("\trandom1: \(auth.random1.toHex())")
@@ -1116,7 +1116,7 @@ public class SessionProxy {
             encrypter: proxy.encrypter(),
             decrypter: proxy.decrypter(),
             maxPackets: link?.packetBufferSize ?? 200,
-            usesReplayProtection: Configuration.usesReplayProtection
+            usesReplayProtection: CoreConfiguration.usesReplayProtection
         )
     }
     

@@ -37,9 +37,9 @@ class Authenticator {
     let password: ZeroingData
     
     init(_ username: String, _ password: String) throws {
-        preMaster = try SecureRandom.safeData(length: Configuration.preMasterLength)
-        random1 = try SecureRandom.safeData(length: Configuration.randomLength)
-        random2 = try SecureRandom.safeData(length: Configuration.randomLength)
+        preMaster = try SecureRandom.safeData(length: CoreConfiguration.preMasterLength)
+        random1 = try SecureRandom.safeData(length: CoreConfiguration.randomLength)
+        random2 = try SecureRandom.safeData(length: CoreConfiguration.randomLength)
         
         // XXX: not 100% secure, can't erase input username/password
         self.username = Z(username, nullTerminated: true)
@@ -67,9 +67,9 @@ class Authenticator {
         raw.appendSized(password)
 
         // peer info
-        raw.appendSized(Z(Configuration.peerInfo))
+        raw.appendSized(Z(CoreConfiguration.peerInfo))
 
-        if Configuration.logsSensitiveData {
+        if CoreConfiguration.logsSensitiveData {
             log.debug("TLS.auth: Put plaintext (\(raw.count) bytes): \(raw.toHex())")
         } else {
             log.debug("TLS.auth: Put plaintext (\(raw.count) bytes)")
@@ -88,7 +88,7 @@ class Authenticator {
         let prefixLength = ProtocolMacros.tlsPrefix.count
 
         // TLS prefix + random (x2) + opts length [+ opts]
-        guard (controlBuffer.count >= prefixLength + 2 * Configuration.randomLength + 2) else {
+        guard (controlBuffer.count >= prefixLength + 2 * CoreConfiguration.randomLength + 2) else {
             return false
         }
         
@@ -99,11 +99,11 @@ class Authenticator {
         
         var offset = ProtocolMacros.tlsPrefix.count
         
-        let serverRandom1 = controlBuffer.withOffset(offset, count: Configuration.randomLength)
-        offset += Configuration.randomLength
+        let serverRandom1 = controlBuffer.withOffset(offset, count: CoreConfiguration.randomLength)
+        offset += CoreConfiguration.randomLength
         
-        let serverRandom2 = controlBuffer.withOffset(offset, count: Configuration.randomLength)
-        offset += Configuration.randomLength
+        let serverRandom2 = controlBuffer.withOffset(offset, count: CoreConfiguration.randomLength)
+        offset += CoreConfiguration.randomLength
         
         let serverOptsLength = Int(controlBuffer.networkUInt16Value(fromOffset: offset))
         offset += 2
@@ -114,7 +114,7 @@ class Authenticator {
         let serverOpts = controlBuffer.withOffset(offset, count: serverOptsLength)
         offset += serverOptsLength
 
-        if Configuration.logsSensitiveData {
+        if CoreConfiguration.logsSensitiveData {
             log.debug("TLS.auth: Parsed server random: [\(serverRandom1.toHex()), \(serverRandom2.toHex())]")
         } else {
             log.debug("TLS.auth: Parsed server random")

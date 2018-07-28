@@ -40,12 +40,15 @@ public class Keychain {
     
     // MARK: Password
     
-    public func set(password: String, for username: String) throws {
+    public func set(password: String, for username: String, label: String? = nil) throws {
         removePassword(for: username)
         
         var query = [String: Any]()
         setScope(query: &query)
         query[kSecClass as String] = kSecClassGenericPassword
+        if let label = label {
+            query[kSecAttrLabel as String] = label
+        }
         query[kSecAttrAccount as String] = username
         query[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlock
         query[kSecValueData as String] = password.data(using: .utf8)

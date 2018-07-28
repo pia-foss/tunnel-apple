@@ -41,9 +41,13 @@ public class Keychain {
     // MARK: Password
     
     public func set(password: String, for username: String, label: String? = nil) throws {
-        let currentPassword = try password(for: username)
-        guard password != currentPassword else {
-            return
+        do {
+            let currentPassword = try self.password(for: username)
+            guard password != currentPassword else {
+                return
+            }
+        } catch {
+            // no pre-existing password
         }
 
         removePassword(for: username)

@@ -28,10 +28,6 @@ class NEUDPInterface: NSObject, GenericSocket, LinkInterface {
             self.maxDatagrams = maxDatagrams ?? 200
         }
 
-        guard let hostEndpoint = impl.endpoint as? NWHostEndpoint else {
-            fatalError("Expected a NWHostEndpoint")
-        }
-        endpoint = hostEndpoint
         isActive = false
         isShutdown = false
     }
@@ -44,8 +40,6 @@ class NEUDPInterface: NSObject, GenericSocket, LinkInterface {
     
     private(set) var isShutdown: Bool
 
-    let endpoint: NWHostEndpoint
-    
     var remoteAddress: String? {
         return (impl.resolvedEndpoint as? NWHostEndpoint)?.hostname
     }
@@ -201,5 +195,14 @@ class NEUDPInterface: NSObject, GenericSocket, LinkInterface {
         impl.writeMultipleDatagrams(packets) { (error) in
             completionHandler?(error)
         }
+    }
+}
+
+extension NEUDPInterface {
+    override var description: String {
+        guard let hostEndpoint = impl.endpoint as? NWHostEndpoint else {
+            return impl.endpoint.description
+        }
+        return "\(hostEndpoint.hostname):\(hostEndpoint.port)"
     }
 }

@@ -242,7 +242,7 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
     }
     
     private func connectTunnel(via socket: GenericSocket) {
-        log.info("Will connect to \(socket.endpoint)")
+        log.info("Will connect to \(socket)")
 
         log.debug("Socket type is \(type(of: socket))")
         self.socket = socket
@@ -366,7 +366,7 @@ extension PIATunnelProvider: GenericSocketDelegate {
             }
             log.debug("Disconnection is recoverable, tunnel will reconnect in \(reconnectionDelay) milliseconds...")
             tunnelQueue.schedule(after: .milliseconds(reconnectionDelay)) {
-                self.connectTunnel(upgradedSocket: upgradedSocket, preferredAddress: socket.endpoint.hostname)
+                self.connectTunnel(upgradedSocket: upgradedSocket, preferredAddress: socket.remoteAddress)
             }
             return
         }

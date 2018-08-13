@@ -10,7 +10,7 @@
 
 extern NSString *const PIATunnelErrorDomain;
 
-typedef NS_ENUM(int, PIATunnelErrorCode) {
+typedef NS_ENUM(NSInteger, PIATunnelErrorCode) {
     PIATunnelErrorCodeCryptoBoxRandomGenerator = 101,
     PIATunnelErrorCodeCryptoBoxHMAC,
     PIATunnelErrorCodeCryptoBoxEncryption,

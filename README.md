@@ -21,12 +21,10 @@ The client is known to work with [OpenVPN®][openvpn] 2.3+ servers. Key renegoti
 - [x] HMAC digest
     - SHA-1
     - SHA-256
-- [x] TLS CA validation (read below)
+- [x] TLS CA validation
     - RSA (2048, 3072 and 4096 bit)
-    - ECC (sec256r1, sec521r1)
+    - ECC (secp256r1, secp521r1, secp256k1)
     - Custom certificate
-
-Theoretically, any custom CA can be fed to the client for TLS validation. When using the AppExtension module though, the handshake is restricted to the embedded root certificates from PIA.
 
 ## Installation
 
@@ -75,6 +73,22 @@ For the VPN to work properly, the `BasicTunnel` demo requires:
 - App IDs with _Packet Tunnel_ entitlements
 
 both in the main app and the tunnel extension target.
+
+In order to test connection to your own server rather than a PIA server, modify the file `Demo/BasicTunnel-[iOS|macOS]/ViewController.swift` and make sure to:
+
+- Replace `.pia` with `.vanilla` in `builder.endpointProtocols`.
+- Set `builder.handshake` to `.custom`.
+- Set `builder.ca` to the PEM formatted certificate of your VPN server's CA.
+
+Example:
+
+    builder.endpointProtocols = [PIATunnelProvider.EndpointProtocol(.udp, 1194, .vanilla)]
+    builder.handshake = .custom
+    builder.ca = """
+    -----BEGIN CERTIFICATE-----
+    MIIFJDCC...
+    -----END CERTIFICATE-----
+    """
 
 ## Documentation
 

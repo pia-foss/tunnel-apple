@@ -22,17 +22,10 @@ class NEUDPInterface: NSObject, GenericSocket, LinkInterface {
     init(impl: NWUDPSession, communicationType: CommunicationType, maxDatagrams: Int? = nil) {
         self.impl = impl
         self.communicationType = communicationType
-        if #available(iOS 12, *) {
-            self.maxDatagrams = 1
-        } else {
-            self.maxDatagrams = maxDatagrams ?? 200
-        }
+        self.maxDatagrams = maxDatagrams ?? 200
 
-        guard let hostEndpoint = impl.endpoint as? NWHostEndpoint else {
-            fatalError("Expected a NWHostEndpoint")
-        }
-        endpoint = hostEndpoint
         isActive = false
+        isShutdown = false
     }
     
     // MARK: GenericSocket
@@ -41,8 +34,8 @@ class NEUDPInterface: NSObject, GenericSocket, LinkInterface {
     
     private var isActive: Bool
     
-    let endpoint: NWHostEndpoint
-    
+    private(set) var isShutdown: Bool
+
     var remoteAddress: String? {
         return (impl.resolvedEndpoint as? NWHostEndpoint)?.hostname
     }
@@ -126,13 +119,18 @@ class NEUDPInterface: NSObject, GenericSocket, LinkInterface {
             
             switch impl.state {
             case .ready:
+                guard !isActive else {
+                    return
+                }
                 isActive = true
                 delegate?.socketDidBecomeActive(self)
                 
             case .cancelled:
+                isShutdown = true
                 delegate?.socket(self, didShutdownWithFailure: false)
                 
             case .failed:
+                isShutdown = true
 //                if timedOut {
 //                    delegate?.socketShouldChangeProtocol(self)
 //                }
@@ -193,5 +191,14 @@ class NEUDPInterface: NSObject, GenericSocket, LinkInterface {
         impl.writeMultipleDatagrams(packets) { (error) in
             completionHandler?(error)
         }
+    }
+}
+
+extension NEUDPInterface {
+    override var description: String {
+        guard let hostEndpoint = impl.endpoint as? NWHostEndpoint else {
+            return impl.endpoint.description
+        }
+        return "\(hostEndpoint.hostname):\(hostEndpoint.port)"
     }
 }

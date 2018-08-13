@@ -23,11 +23,8 @@ class NETCPInterface: NSObject, GenericSocket, LinkInterface {
         self.impl = impl
         self.communicationType = communicationType
         self.maxPacketSize = maxPacketSize ?? (512 * 1024)
-        guard let hostEndpoint = impl.endpoint as? NWHostEndpoint else {
-            fatalError("Expected a NWHostEndpoint")
-        }
-        endpoint = hostEndpoint
         isActive = false
+        isShutdown = false
     }
     
     // MARK: GenericSocket
@@ -36,7 +33,7 @@ class NETCPInterface: NSObject, GenericSocket, LinkInterface {
     
     private var isActive: Bool
     
-    let endpoint: NWHostEndpoint
+    private(set) var isShutdown: Bool
     
     var remoteAddress: String? {
         return (impl.remoteAddress as? NWHostEndpoint)?.hostname
@@ -123,13 +120,18 @@ class NETCPInterface: NSObject, GenericSocket, LinkInterface {
             
             switch impl.state {
             case .connected:
+                guard !isActive else {
+                    return
+                }
                 isActive = true
                 delegate?.socketDidBecomeActive(self)
                 
             case .cancelled:
+                isShutdown = true
                 delegate?.socket(self, didShutdownWithFailure: false)
                 
             case .disconnected:
+                isShutdown = true
                 delegate?.socket(self, didShutdownWithFailure: true)
                 
             default:
@@ -204,5 +206,14 @@ class NETCPInterface: NSObject, GenericSocket, LinkInterface {
         impl.write(stream) { (error) in
             completionHandler?(error)
         }
+    }
+}
+
+extension NETCPInterface {
+    override var description: String {
+        guard let hostEndpoint = impl.endpoint as? NWHostEndpoint else {
+            return impl.endpoint.description
+        }
+        return "\(hostEndpoint.hostname):\(hostEndpoint.port)"
     }
 }

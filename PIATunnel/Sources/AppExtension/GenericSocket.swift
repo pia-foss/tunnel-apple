@@ -7,7 +7,6 @@
 //
 
 import Foundation
-import NetworkExtension
 
 protocol LinkProducer {
     func link() -> LinkInterface
@@ -26,12 +25,12 @@ protocol GenericSocketDelegate: class {
 }
 
 protocol GenericSocket: LinkProducer {
-    var endpoint: NWHostEndpoint { get }
-    
     var remoteAddress: String? { get }
     
     var hasBetterPath: Bool { get }
     
+    var isShutdown: Bool { get }
+
     var delegate: GenericSocketDelegate? { get set }
 
     func observe(queue: DispatchQueue, activeTimeout: Int)

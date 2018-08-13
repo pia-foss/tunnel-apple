@@ -1,5 +1,5 @@
 //
-//  Configuration.swift
+//  CoreConfiguration.swift
 //  PIATunnel
 //
 //  Created by Davide De Rosa on 9/1/17.
@@ -8,7 +8,7 @@
 
 import Foundation
 
-struct Configuration {
+struct CoreConfiguration {
     
     // MARK: Session
     

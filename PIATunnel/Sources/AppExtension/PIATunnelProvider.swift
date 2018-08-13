@@ -75,8 +75,6 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
     
     private var socket: GenericSocket?
 
-    private var upgradedSocket: GenericSocket?
-    
     private var linkFailures = 0
 
     private var pendingStartHandler: ((Error?) -> Void)?
@@ -119,6 +117,10 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
         strategy = ConnectionStrategy(hostname: endpoint.hostname, configuration: cfg)
 
         if var existingLog = cfg.existingLog {
+            if let i = existingLog.index(of: logSeparator) {
+                existingLog.removeFirst(i + 2)
+            }
+            
             existingLog.append("")
             existingLog.append(logSeparator)
             existingLog.append("")
@@ -161,6 +163,7 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
         if let renegotiatesAfterSeconds = cfg.renegotiatesAfterSeconds {
             proxy.renegotiatesAfter = Double(renegotiatesAfterSeconds)
         }
+        proxy.keepAliveInterval = CoreConfiguration.pingInterval
         proxy.delegate = self
         self.proxy = proxy
 
@@ -219,11 +222,11 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
     
     // MARK: Connection (tunnel queue)
     
-    private func connectTunnel(preferredAddress: String? = nil) {
+    private func connectTunnel(upgradedSocket: GenericSocket? = nil, preferredAddress: String? = nil) {
         log.info("Creating link session")
         
         // reuse upgraded socket
-        if let upgradedSocket = upgradedSocket {
+        if let upgradedSocket = upgradedSocket, !upgradedSocket.isShutdown {
             log.debug("Socket follows a path upgrade")
             connectTunnel(via: upgradedSocket)
             return
@@ -239,17 +242,18 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
     }
     
     private func connectTunnel(via socket: GenericSocket) {
-        log.info("Will connect to \(socket.endpoint)")
+        log.info("Will connect to \(socket)")
 
         log.debug("Socket type is \(type(of: socket))")
         self.socket = socket
-        upgradedSocket = nil
         self.socket?.delegate = self
         self.socket?.observe(queue: tunnelQueue, activeTimeout: socketTimeout)
     }
     
     private func finishTunnelDisconnection(error: Error?) {
-        proxy?.cleanup()
+        if let proxy = proxy, !(reasserting && proxy.canRebindLink()) {
+            proxy.cleanup()
+        }
         
         socket?.delegate = nil
         socket?.unobserve()
@@ -319,13 +323,24 @@ extension PIATunnelProvider: GenericSocketDelegate {
     }
     
     func socketDidBecomeActive(_ socket: GenericSocket) {
-        proxy?.setLink(link: socket.link())
+        guard let proxy = proxy else {
+            return
+        }
+        if proxy.canRebindLink() {
+            proxy.rebindLink(socket.link())
+            reasserting = false
+        } else {
+            proxy.setLink(socket.link())
+        }
     }
     
     func socket(_ socket: GenericSocket, didShutdownWithFailure failure: Bool) {
         guard let proxy = proxy else {
             return
         }
+        
+        // upgrade available?
+        let upgradedSocket = socket.upgraded()
         
         var shutdownError: Error?
         if !failure {
@@ -351,7 +366,7 @@ extension PIATunnelProvider: GenericSocketDelegate {
             }
             log.debug("Disconnection is recoverable, tunnel will reconnect in \(reconnectionDelay) milliseconds...")
             tunnelQueue.schedule(after: .milliseconds(reconnectionDelay)) {
-                self.connectTunnel(preferredAddress: socket.endpoint.hostname)
+                self.connectTunnel(upgradedSocket: upgradedSocket, preferredAddress: socket.remoteAddress)
             }
             return
         }
@@ -361,8 +376,7 @@ extension PIATunnelProvider: GenericSocketDelegate {
     func socketHasBetterPath(_ socket: GenericSocket) {
         log.debug("Stopping tunnel due to a new better path")
         logCurrentSSID()
-        upgradedSocket = socket.upgraded()
-        proxy?.shutdown(error: ProviderError.networkChanged)
+        proxy?.reconnect(error: ProviderError.networkChanged)
     }
 }
 

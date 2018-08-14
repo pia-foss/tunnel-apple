@@ -40,12 +40,24 @@ public class Keychain {
     
     // MARK: Password
     
-    public func set(password: String, for username: String) throws {
+    public func set(password: String, for username: String, label: String? = nil) throws {
+        do {
+            let currentPassword = try self.password(for: username)
+            guard password != currentPassword else {
+                return
+            }
+        } catch {
+            // no pre-existing password
+        }
+
         removePassword(for: username)
         
         var query = [String: Any]()
         setScope(query: &query)
         query[kSecClass as String] = kSecClassGenericPassword
+        if let label = label {
+            query[kSecAttrLabel as String] = label
+        }
         query[kSecAttrAccount as String] = username
         query[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlock
         query[kSecValueData as String] = password.data(using: .utf8)
@@ -90,10 +102,9 @@ public class Keychain {
 
     public func passwordReference(for username: String) throws -> Data {
         var query = [String: Any]()
-        query[kSecClass as String] = kSecClassGenericPassword
         setScope(query: &query)
+        query[kSecClass as String] = kSecClassGenericPassword
         query[kSecAttrAccount as String] = username
-        query[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlock
         query[kSecMatchLimit as String] = kSecMatchLimitOne
         query[kSecReturnPersistentRef as String] = true
         

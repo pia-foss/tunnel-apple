@@ -57,7 +57,7 @@ public enum SessionError: Error {
 }
 
 /// Observes major events notified by a `SessionProxy`.
-public protocol SessionProxyDelegate {
+public protocol SessionProxyDelegate: class {
 
     /**
      Called after starting a session.
@@ -139,11 +139,14 @@ public class SessionProxy {
     
     private let credentials: Credentials
     
+    /// Sends periodical keep-alive packets if set.
+    public var keepAliveInterval: TimeInterval?
+
     /// The number of seconds after which a renegotiation should be initiated. If `nil`, the client will never initiate a renegotiation.
     public var renegotiatesAfter: TimeInterval?
     
     /// An optional `SessionProxyDelegate` for receiving session events.
-    public var delegate: SessionProxyDelegate?
+    public weak var delegate: SessionProxyDelegate?
     
     // MARK: State
 
@@ -238,6 +241,7 @@ public class SessionProxy {
         self.encryption = encryption
         self.credentials = credentials
 
+        keepAliveInterval = nil
         renegotiatesAfter = nil
         
         keys = [:]
@@ -436,7 +440,7 @@ public class SessionProxy {
         }
         
         guard (negotiationKey.controlState == .connected) else {
-            queue.asyncAfter(deadline: .now() + Configuration.tickInterval) { [weak self] in
+            queue.asyncAfter(deadline: .now() + CoreConfiguration.tickInterval) { [weak self] in
                 self?.loopNegotiation()
             }
             return
@@ -573,7 +577,7 @@ public class SessionProxy {
             }
 
             if (code == .ackV1) {
-                return
+                continue
             }
 
             guard packet.count >= offset + ProtocolMacros.packetIdLength else {
@@ -591,7 +595,7 @@ public class SessionProxy {
                 payload = packet.subdata(in: offset..<packet.count)
 
                 if let payload = payload {
-                    if Configuration.logsSensitiveData {
+                    if CoreConfiguration.logsSensitiveData {
                         log.debug("Control packet payload (\(payload.count) bytes): \(payload.toHex())")
                     } else {
                         log.debug("Control packet payload (\(payload.count) bytes)")
@@ -609,7 +613,7 @@ public class SessionProxy {
                     continue
                 }
                 if (queuedControlPacket.packetId != controlPacketIdIn) {
-                    return
+                    continue
                 }
 
                 handleControlPacket(queuedControlPacket)
@@ -645,26 +649,30 @@ public class SessionProxy {
         }
         
         let now = Date()
-        guard (now.timeIntervalSince(lastPingIn) <= Configuration.pingTimeout) else {
+        guard (now.timeIntervalSince(lastPingIn) <= CoreConfiguration.pingTimeout) else {
             deferStop(.shutdown, SessionError.pingTimeout)
             return
         }
 
-        let elapsed = now.timeIntervalSince(lastPingOut)
-        guard (elapsed >= Configuration.pingInterval) else {
-            let remaining = min(Configuration.pingInterval, Configuration.pingInterval - elapsed)
-            queue.asyncAfter(deadline: .now() + remaining) { [weak self] in
-                self?.ping()
+        if let interval = keepAliveInterval {
+            let elapsed = now.timeIntervalSince(lastPingOut)
+            guard (elapsed >= interval) else {
+                let remaining = min(interval, interval - elapsed)
+                queue.asyncAfter(deadline: .now() + remaining) { [weak self] in
+                    self?.ping()
+                }
+                return
             }
-            return
         }
 
         log.debug("Send ping")
-        
         sendDataPackets([DataPacket.pingString])
         lastPingOut = Date()
-        queue.asyncAfter(deadline: .now() + Configuration.pingInterval) { [weak self] in
-            self?.ping()
+
+        if let interval = keepAliveInterval {
+            queue.asyncAfter(deadline: .now() + interval) { [weak self] in
+                self?.ping()
+            }
         }
     }
     
@@ -773,7 +781,7 @@ public class SessionProxy {
             connectedDate = Date()
             transitionKeys()
         }
-        nextPushRequestDate = Date().addingTimeInterval(Configuration.retransmissionLimit)
+        nextPushRequestDate = Date().addingTimeInterval(CoreConfiguration.retransmissionLimit)
     }
     
     private func maybeRenegotiate() {
@@ -892,7 +900,7 @@ public class SessionProxy {
     private func handleControlData(_ data: ZeroingData) {
         guard let auth = authenticator else { return }
 
-        if Configuration.logsSensitiveData {
+        if CoreConfiguration.logsSensitiveData {
             log.debug("Pulled plain control data (\(data.count) bytes): \(data.toHex())")
         } else {
             log.debug("Pulled plain control data (\(data.count) bytes)")
@@ -901,23 +909,24 @@ public class SessionProxy {
         auth.appendControlData(data)
 
         if (negotiationKey.controlState == .preAuth) {
-            guard auth.isAuthReplyComplete() else {
-                return
-            }
-            guard auth.parseAuthReply() else {
-                deferStop(.shutdown, SessionError.wrongControlDataPrefix)
+            do {
+                guard try auth.parseAuthReply() else {
+                    return
+                }
+            } catch let e {
+                deferStop(.shutdown, e)
                 return
             }
             
             setupKeys()
 
             negotiationKey.controlState = .preIfConfig
-            nextPushRequestDate = Date().addingTimeInterval(negotiationKey.softReset ? Configuration.softResetDelay : Configuration.retransmissionLimit)
+            nextPushRequestDate = Date().addingTimeInterval(negotiationKey.softReset ? CoreConfiguration.softResetDelay : CoreConfiguration.retransmissionLimit)
             pushRequest()
         }
         
         for message in auth.parseMessages() {
-            if Configuration.logsSensitiveData {
+            if CoreConfiguration.logsSensitiveData {
                 log.debug("Parsed control message (\(message.count) bytes): \"\(message)\"")
             } else {
                 log.debug("Parsed control message (\(message.count) bytes)")
@@ -933,74 +942,45 @@ public class SessionProxy {
             return
         }
         
-        if ((negotiationKey.controlState == .preIfConfig) && message.hasPrefix("PUSH_REPLY")) {
-            log.debug("Received PUSH_REPLY: \"\(message)\"")
+        guard (negotiationKey.controlState == .preIfConfig) else {
+            return
+        }
 
-            let ifconfigRegexp = try! NSRegularExpression(pattern: "ifconfig [\\d\\.]+ [\\d\\.]+", options: [])
-            let dnsRegexp = try! NSRegularExpression(pattern: "dhcp-option DNS [\\d\\.]+", options: [])
-            let authTokenRegexp = try! NSRegularExpression(pattern: "auth-token [a-zA-Z0-9/=+]+", options: [])
-            let peerIdRegexp = try! NSRegularExpression(pattern: "peer-id [0-9]+", options: [])
-
-            var ifconfigComponents: [String]?
-            ifconfigRegexp.enumerateMatches(in: message, options: [], range: NSMakeRange(0, message.count), using: { (result, flags, _) in
-                guard let range = result?.range else { return }
-                
-                let match = (message as NSString).substring(with: range)
-                ifconfigComponents = match.components(separatedBy: " ")
-            })
-            
-            guard let addresses = ifconfigComponents else {
-                deferStop(.shutdown, SessionError.malformedPushReply)
+        log.debug("Received control message: \"\(message)\"")
+        
+        let reply: PushReply
+        do {
+            guard let optionalReply = try PushReply(message: message) else {
                 return
             }
-            
-            let address = addresses[1]
-            let gatewayAddress = addresses[2]
+            reply = optionalReply
+            authToken = reply.authToken
+            peerId = reply.peerId
+        } catch let e {
+            deferStop(.shutdown, e)
+            return
+        }
+        
+        authenticator = nil
+        negotiationKey.startHandlingPackets(withPeerId: peerId)
+        negotiationKey.controlState = .connected
+        connectedDate = Date()
+        transitionKeys()
 
-            var dnsServers = [String]()
-            dnsRegexp.enumerateMatches(in: message, options: [], range: NSMakeRange(0, message.count), using: { (result, flags, _) in
-                guard let range = result?.range else { return }
+        guard let remoteAddress = link?.remoteAddress else {
+            fatalError("Could not resolve link remote address")
+        }
 
-                let match = (message as NSString).substring(with: range)
-                let dnsEntryComponents = match.components(separatedBy: " ")
+        delegate?.sessionDidStart(
+            self,
+            remoteAddress: remoteAddress,
+            address: reply.address,
+            gatewayAddress: reply.gatewayAddress,
+            dnsServers: reply.dnsServers
+        )
 
-                dnsServers.append(dnsEntryComponents[2])
-            })
-            
-            authTokenRegexp.enumerateMatches(in: message, options: [], range: NSMakeRange(0, message.count), using: { (result, flags, _) in
-                guard let range = result?.range else { return }
-
-                let match = (message as NSString).substring(with: range)
-                let tokenComponents = match.components(separatedBy: " ")
-                
-                if (tokenComponents.count > 1) {
-                    self.authToken = tokenComponents[1]
-                }
-            })
-            
-            peerIdRegexp.enumerateMatches(in: message, options: [], range: NSMakeRange(0, message.count), using: { (result, flags, _) in
-                guard let range = result?.range else { return }
-                
-                let match = (message as NSString).substring(with: range)
-                let tokenComponents = match.components(separatedBy: " ")
-                
-                if (tokenComponents.count > 1) {
-                    self.peerId = UInt32(tokenComponents[1])
-                }
-            })
-            
-            authenticator = nil
-            negotiationKey.startHandlingPackets(withPeerId: peerId)
-            negotiationKey.controlState = .connected
-            connectedDate = Date()
-            transitionKeys()
-
-            guard let remoteAddress = link?.remoteAddress else {
-                fatalError("Could not resolve link remote address")
-            }
-            delegate?.sessionDidStart(self, remoteAddress: remoteAddress, address: address, gatewayAddress: gatewayAddress, dnsServers: dnsServers)
-
-            queue.asyncAfter(deadline: .now() + Configuration.pingInterval) { [weak self] in
+        if let interval = keepAliveInterval {
+            queue.asyncAfter(deadline: .now() + interval) { [weak self] in
                 self?.ping()
             }
         }
@@ -1064,7 +1044,7 @@ public class SessionProxy {
         for controlPacket in controlQueueOut {
             if let sentDate = controlPacket.sentDate {
                 let timeAgo = -sentDate.timeIntervalSinceNow
-                guard (timeAgo >= Configuration.retransmissionLimit) else {
+                guard (timeAgo >= CoreConfiguration.retransmissionLimit) else {
                     log.debug("Skip control packet with id \(controlPacket.packetId) (sent on \(sentDate), \(timeAgo) seconds ago)")
                     continue
                 }
@@ -1073,7 +1053,7 @@ public class SessionProxy {
             log.debug("Send control packet with code \(controlPacket.code.rawValue)")
 
             if let payload = controlPacket.payload {
-                if Configuration.logsSensitiveData {
+                if CoreConfiguration.logsSensitiveData {
                     log.debug("Control packet has payload (\(payload.count) bytes): \(payload.toHex())")
                 } else {
                     log.debug("Control packet has payload (\(payload.count) bytes)")
@@ -1116,7 +1096,7 @@ public class SessionProxy {
             fatalError("Setting up keys without server randoms")
         }
         
-        if Configuration.logsSensitiveData {
+        if CoreConfiguration.logsSensitiveData {
             log.debug("Setup keys from the following components:")
             log.debug("\tpreMaster: \(auth.preMaster.toHex())")
             log.debug("\trandom1: \(auth.random1.toHex())")
@@ -1141,7 +1121,7 @@ public class SessionProxy {
             encrypter: proxy.encrypter(),
             decrypter: proxy.decrypter(),
             maxPackets: link?.packetBufferSize ?? 200,
-            usesReplayProtection: Configuration.usesReplayProtection
+            usesReplayProtection: CoreConfiguration.usesReplayProtection
         )
     }
     

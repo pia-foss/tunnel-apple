@@ -63,7 +63,7 @@ class SessionKey {
     
     // Ruby: Key.negotiate_timeout
     func didNegotiationTimeOut(link: LinkInterface) -> Bool {
-        let timeout = (softReset ? Configuration.softNegotiationTimeout : link.negotiationTimeout)
+        let timeout = (softReset ? CoreConfiguration.softNegotiationTimeout : link.negotiationTimeout)
         
         return ((controlState != .connected) && (-startTime.timeIntervalSinceNow > timeout))
     }

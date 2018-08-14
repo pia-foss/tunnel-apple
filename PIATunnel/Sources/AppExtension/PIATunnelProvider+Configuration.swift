@@ -545,7 +545,7 @@ extension PIATunnelProvider {
             
             let keychain = Keychain(group: appGroup)
             do {
-                try keychain.set(password: endpoint.password, for: endpoint.username)
+                try keychain.set(password: endpoint.password, for: endpoint.username, label: Bundle.main.bundleIdentifier)
             } catch _ {
                 throw ProviderError.credentials(field: "keychain.set()")
             }

@@ -110,13 +110,14 @@ class ViewController: NSViewController {
             
             let endpoint = PIATunnelProvider.AuthenticatedEndpoint(
                 hostname: hostname,
-                port: port,
                 username: username,
                 password: password
             )
             
             var builder = PIATunnelProvider.ConfigurationBuilder(appGroup: ViewController.APP_GROUP)
-            builder.endpointProtocols = [PIATunnelProvider.EndpointProtocol(.udp, port, .vanilla)]
+//            let socketType: PIATunnelProvider.SocketType = (self.switchTCP.isOn ? .tcp : .udp)
+            let socketType: PIATunnelProvider.SocketType = .udp
+            builder.endpointProtocols = [PIATunnelProvider.EndpointProtocol(socketType, port, .vanilla)]
             builder.cipher = ViewController.CIPHER
             builder.digest = ViewController.DIGEST
             builder.handshake = ViewController.HANDSHAKE

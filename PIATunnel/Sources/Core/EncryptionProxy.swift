@@ -104,21 +104,21 @@ public class EncryptionProxy {
         }
         
         let masterData = try EncryptionProxy.keysPRF(
-            Configuration.label1, auth.preMaster, auth.random1,
+            CoreConfiguration.label1, auth.preMaster, auth.random1,
             serverRandom1, nil, nil,
-            Configuration.preMasterLength
+            CoreConfiguration.preMasterLength
         )
         
         let keysData = try EncryptionProxy.keysPRF(
-            Configuration.label2, masterData, auth.random2,
+            CoreConfiguration.label2, masterData, auth.random2,
             serverRandom2, sessionId, remoteSessionId,
-            Configuration.keysCount * Configuration.keyLength
+            CoreConfiguration.keysCount * CoreConfiguration.keyLength
         )
         
         var keysArray = [ZeroingData]()
-        for i in 0..<Configuration.keysCount {
-            let offset = i * Configuration.keyLength
-            let zbuf = keysData.withOffset(offset, count: Configuration.keyLength)
+        for i in 0..<CoreConfiguration.keysCount {
+            let offset = i * CoreConfiguration.keyLength
+            let zbuf = keysData.withOffset(offset, count: CoreConfiguration.keyLength)
             keysArray.append(zbuf)
         }
         

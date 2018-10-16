@@ -89,6 +89,21 @@ Example:
     MIIFJDCC...
     -----END CERTIFICATE-----
     """
+    
+    
+### Compatibility with iOS 9
+
+As this tunnel library is compatible with old iOS versions (iOS 9+) we need to compile the openssl framework for iOS9+.
+
+If you are using XCode 7 or you have updated XCode from that version you don't need to follow the following steps, if not you will need to download the iOS SDK for iOS 9.
+
+- Download Xcode 7 from Apple
+- Install Xcode 7 in Applications/xcode7
+- sudo xcode-select -switch /Applications/xcode7/Xcode.app/Contents/Developer
+- Clean all the pod cache from the computer
+- pod install ... etc
+- sudo xcode-select -switch /Applications/Xcode.app/Contents/Developer
+
 
 ## Documentation
 
@@ -127,6 +142,7 @@ Issues and Pull Requests should use these templates: [ISSUE](/.github/ISSUE_TEMP
 ## Authors
 
 - Davide De Rosa - [keeshux](https://github.com/keeshux)
+- Jose Blaya - [ueshiba](https://github.com/ueshiba)
 - Steve
 
 ## License

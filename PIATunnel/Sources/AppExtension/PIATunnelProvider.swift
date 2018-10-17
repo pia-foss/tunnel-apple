@@ -433,8 +433,11 @@ extension PIATunnelProvider: SessionProxyDelegate {
         ipv4Settings.includedRoutes = [defaultRoute]
         ipv4Settings.excludedRoutes = []
         
-        let dnsSettings = NEDNSSettings(servers: dnsServers)
-        
+        //Check if we need to set custom DNS servers from the configuration file 
+        let dnsSettings = NEDNSSettings(servers: cfg.dnsServers.isEmpty ?
+            dnsServers :
+            cfg.dnsServers)
+
         let newSettings = NEPacketTunnelNetworkSettings(tunnelRemoteAddress: tunnel)
         newSettings.ipv4Settings = ipv4Settings
         newSettings.dnsSettings = dnsSettings

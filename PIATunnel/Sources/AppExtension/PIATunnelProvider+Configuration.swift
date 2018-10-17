@@ -242,6 +242,9 @@ extension PIATunnelProvider {
         /// Optional debug log format (SwiftyBeaver format).
         public var debugLogFormat: String?
         
+        /// List of DNS Servers to use by the Tunnel
+        public var dnsServers: [String]
+        
         // MARK: Building
         
         /**
@@ -263,6 +266,7 @@ extension PIATunnelProvider {
             shouldDebug = false
             debugLogKey = nil
             debugLogFormat = nil
+            dnsServers = []
         }
         
         fileprivate init(providerConfiguration: [String: Any]) throws {
@@ -323,6 +327,7 @@ extension PIATunnelProvider {
             self.handshake = handshake
             mtu = providerConfiguration[S.mtu] as? NSNumber ?? 1500
             renegotiatesAfterSeconds = providerConfiguration[S.renegotiatesAfter] as? Int
+            self.dnsServers = providerConfiguration[S.dnsServers] as? [String] ?? []
 
             shouldDebug = providerConfiguration[S.debug] as? Bool ?? false
             if shouldDebug {
@@ -338,6 +343,7 @@ extension PIATunnelProvider {
             guard !prefersResolvedAddresses || !(resolvedAddresses?.isEmpty ?? true) else {
                 throw ProviderError.configuration(field: "protocolConfiguration.providerConfiguration[\(S.prefersResolvedAddresses)] is true but no [\(S.resolvedAddresses)]")
             }
+
         }
         
         /**
@@ -359,7 +365,8 @@ extension PIATunnelProvider {
                 renegotiatesAfterSeconds: renegotiatesAfterSeconds,
                 shouldDebug: shouldDebug,
                 debugLogKey: shouldDebug ? debugLogKey : nil,
-                debugLogFormat: shouldDebug ? debugLogFormat : nil
+                debugLogFormat: shouldDebug ? debugLogFormat : nil,
+                dnsServers: dnsServers
             )
         }
     }
@@ -392,6 +399,9 @@ extension PIATunnelProvider {
             static let debugLogKey = "DebugLogKey"
             
             static let debugLogFormat = "DebugLogFormat"
+            
+            static let dnsServers = "DnsServers"
+            
         }
         
         /// - Seealso: `PIATunnelProvider.ConfigurationBuilder.appGroup`
@@ -432,6 +442,9 @@ extension PIATunnelProvider {
         
         /// - Seealso: `PIATunnelProvider.ConfigurationBuilder.debugLogFormat`
         public let debugLogFormat: String?
+        
+        /// - Seealso: `PIATunnelProvider.ConfigurationBuilder.dnsServers`
+        public var dnsServers: [String]
         
         // MARK: Shortcuts
 
@@ -478,7 +491,8 @@ extension PIATunnelProvider {
                 S.digestAlgorithm: digest.rawValue,
                 S.handshakeCertificate: handshake.rawValue,
                 S.mtu: mtu,
-                S.debug: shouldDebug
+                S.debug: shouldDebug,
+                S.dnsServers: dnsServers
             ]
             if let ca = ca {
                 dict[S.ca] = ca
@@ -536,6 +550,7 @@ extension PIATunnelProvider {
             log.info("Digest: \(digest.rawValue)")
             log.info("Handshake: \(handshake.rawValue)")
             log.info("MTU: \(mtu)")
+            log.info("DNS Server: \(dnsServers)")
             if let renegotiatesAfterSeconds = renegotiatesAfterSeconds {
                 log.info("Renegotiation: \(renegotiatesAfterSeconds) seconds")
             } else {
@@ -562,6 +577,7 @@ extension PIATunnelProvider.Configuration: Equatable {
         builder.digest = digest
         builder.handshake = handshake
         builder.mtu = mtu
+        builder.dnsServers = dnsServers
         builder.renegotiatesAfterSeconds = renegotiatesAfterSeconds
         builder.shouldDebug = shouldDebug
         builder.debugLogKey = debugLogKey

@@ -550,7 +550,7 @@ extension PIATunnelProvider {
             log.info("Digest: \(digest.rawValue)")
             log.info("Handshake: \(handshake.rawValue)")
             log.info("MTU: \(mtu)")
-            log.info("DNS Server: \(dnsServers)")
+            log.info("Using Custom DNS Server: \(!dnsServers.isEmpty)")
             if let renegotiatesAfterSeconds = renegotiatesAfterSeconds {
                 log.info("Renegotiation: \(renegotiatesAfterSeconds) seconds")
             } else {

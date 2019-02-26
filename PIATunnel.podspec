@@ -5,7 +5,7 @@ Pod::Spec.new do |s|
 
     s.homepage          = "https://www.privateinternetaccess.com/"
     s.license           = { :type => "MIT", :file => "LICENSE" }
-    s.author            = { "Davide De Rosa" => "davide@londontrustmedia.com" }
+    s.author            = { "Davide De Rosa" => "davide@londontrustmedia.com", "Jose Blaya" => "joseblaya@londontrustmedia.com" }
     s.source            = { :git => "https://github.com/pia-foss/tunnel-apple.git", :tag => "v#{s.version}" }
 
     s.ios.deployment_target = "10.0"
@@ -18,7 +18,7 @@ Pod::Spec.new do |s|
         p.pod_target_xcconfig   = { "SWIFT_INCLUDE_PATHS" => "${PODS_TARGET_SRCROOT}/PIATunnel/Sources/Core",
                                     "APPLICATION_EXTENSION_API_ONLY" => "YES" }
         p.dependency "SwiftyBeaver"
-        p.dependency "OpenSSL-Apple", "~> 1.1.0i"
+        p.dependency "OpenSSL-Apple", "~> 1.1.0h"
     end
 
     s.subspec "AppExtension" do |p|

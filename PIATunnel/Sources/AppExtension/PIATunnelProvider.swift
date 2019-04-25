@@ -187,12 +187,13 @@ open class PIATunnelProvider: NEPacketTunnelProvider {
         }
 
         pendingStopHandler = completionHandler
-        tunnelQueue.schedule(after: .milliseconds(shutdownTimeout)) {
-            guard let pendingHandler = self.pendingStopHandler else {
+        tunnelQueue.schedule(after: .milliseconds(shutdownTimeout)) { [weak self] in
+            guard let strongSelf = self else { return }
+            guard let pendingHandler = strongSelf.pendingStopHandler else {
                 return
             }
-            log.warning("Tunnel not responding after \(self.shutdownTimeout) milliseconds, forcing stop")
-            self.flushLog()
+            log.warning("Tunnel not responding after \(strongSelf) milliseconds, forcing stop")
+            strongSelf.flushLog()
             pendingHandler()
         }
         tunnelQueue.sync {

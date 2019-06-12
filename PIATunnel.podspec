@@ -5,7 +5,7 @@ Pod::Spec.new do |s|
 
     s.homepage          = "https://www.privateinternetaccess.com/"
     s.license           = { :type => "MIT", :file => "LICENSE" }
-    s.author            = { "Davide De Rosa", "Jose Blaya" => "joseblaya@londontrustmedia.com" }
+    s.author            = { "Davide De Rosa" => "", "Jose Blaya" => "joseblaya@londontrustmedia.com" }
     s.source            = { :git => "https://github.com/pia-foss/tunnel-apple.git", :tag => "v#{s.version}" }
 
     s.ios.deployment_target = "10.0"

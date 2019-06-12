@@ -377,7 +377,7 @@ extension PIATunnelProvider: GenericSocketDelegate {
     func socketHasBetterPath(_ socket: GenericSocket) {
         log.debug("Stopping tunnel due to a new better path")
         logCurrentSSID()
-        proxy?.shutdown(error: ProviderError.networkChanged)
+        proxy?.reconnect(error: ProviderError.networkChanged)
     }
 }
 

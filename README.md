@@ -6,7 +6,7 @@ Private Internet Access is the world's leading consumer VPN service. At Private 
 
 # Tunnel for Apple platforms
 
-This library provides a simplified Swift/Obj-C implementation of the OpenVPN® protocol for the Apple platforms, while also taking advantage of the Private Internet Access [client patch customizations](https://www.privateinternetaccess.com/forum/discussion/9093/pia-openvpn-client-encryption-patch). The crypto layer is built on top of [OpenSSL][dep-openssl] 1.1.0h, which in turn enables support for a certain range of encryption and digest algorithms.
+This library provides a simplified Swift/Obj-C implementation of the OpenVPN® protocol for the Apple platforms, while also taking advantage of the Private Internet Access [client patch customizations](https://www.privateinternetaccess.com/forum/discussion/9093/pia-openvpn-client-encryption-patch). The crypto layer is built on top of [OpenSSL][dep-openssl] 1.1.0j.2, which in turn enables support for a certain range of encryption and digest algorithms.
 
 ## Getting started
 
@@ -30,7 +30,7 @@ The client is known to work with [OpenVPN®][openvpn] 2.3+ servers. Key renegoti
 
 ### Requirements
 
-- iOS 9.0+ / macOS 10.11+
+- iOS 11.0+ / macOS 10.11+
 - Xcode 9+ (Swift 4)
 - Git (preinstalled with Xcode Command Line Tools)
 - Ruby (preinstalled with macOS)
@@ -90,21 +90,6 @@ Example:
     -----END CERTIFICATE-----
     """
     
-    
-### Compatibility with iOS 9
-
-As this tunnel library is compatible with old iOS versions (iOS 9+) we need to compile the openssl framework for iOS9+.
-
-If you are using XCode 7 or you have updated XCode from that version you don't need to follow the following steps, if not you will need to download the iOS SDK for iOS 9.
-
-- Download Xcode 7 from Apple
-- Install Xcode 7 in Applications/xcode7
-- sudo xcode-select -switch /Applications/xcode7/Xcode.app/Contents/Developer
-- Clean all the pod cache from the computer
-- pod install ... etc
-- sudo xcode-select -switch /Applications/Xcode.app/Contents/Developer
-
-
 ## Documentation
 
 The library is split into two modules, in order to decouple the low-level protocol implementation from the platform-specific bridging, namely the [NetworkExtension][ne-home] VPN framework.
@@ -141,8 +126,8 @@ Issues and Pull Requests should use these templates: [ISSUE](/.github/ISSUE_TEMP
 
 ## Authors
 
-- Davide De Rosa - [keeshux](https://github.com/keeshux)
 - Jose Blaya - [ueshiba](https://github.com/ueshiba)
+- Davide De Rosa 
 - Steve
 
 ## License
@@ -152,6 +137,7 @@ This project is licensed under the [MIT (Expat) license](https://choosealicense.
 ## Acknowledgements
 
 - SwiftyBeaver - © 2015 Sebastian Kreutzberger
+- OpenSSL-Apple - © Davide De Rosa
 
 This product includes software developed by the OpenSSL Project for use in the OpenSSL Toolkit. ([https://www.openssl.org/][dep-openssl])
 

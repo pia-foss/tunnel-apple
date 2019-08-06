@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		03542490082017F216F4120D /* Pods_PIATunnel_PIATunnel_iOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 13671D14CDE38B4531B4F9F7 /* Pods_PIATunnel_PIATunnel_iOS.framework */; };
 		0E07595F20EF6D1400F38FD8 /* CryptoCBC.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E07595C20EF6D1400F38FD8 /* CryptoCBC.m */; };
 		0E07596020EF6D1400F38FD8 /* CryptoCBC.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E07595C20EF6D1400F38FD8 /* CryptoCBC.m */; };
 		0E07596320EF733F00F38FD8 /* CryptoMacros.h in Headers */ = {isa = PBXBuildFile; fileRef = 0E07596120EF733F00F38FD8 /* CryptoMacros.h */; };
@@ -149,8 +148,9 @@
 		0EFEB4AF2007627700F81029 /* InterfaceObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EFEB4AA200760EC00F81029 /* InterfaceObserver.swift */; };
 		0EFEB4B02007627700F81029 /* Keychain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EFEB4AD2007625E00F81029 /* Keychain.swift */; };
 		0EFEB4B12007627700F81029 /* MemoryDestination.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EFEB4A9200760EB00F81029 /* MemoryDestination.swift */; };
-		59AD9530C14668576FABB4FA /* Pods_PIATunnel_PIATunnelHost.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CE2FE207E5ACDF871DAC6FE1 /* Pods_PIATunnel_PIATunnelHost.framework */; };
-		944E7C891D2B24B32AFD0F9E /* Pods_PIATunnel_macOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2E20E23C41F6225FC5C0197C /* Pods_PIATunnel_macOS.framework */; };
+		413760A155DC35D92C471EE5 /* Pods_PIATunnel_PIATunnel_iOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DA02E36BE24F31BF2C0FADF0 /* Pods_PIATunnel_PIATunnel_iOS.framework */; };
+		5649844695A47FA4B66FC6E7 /* Pods_PIATunnel_macOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5BC2017BECF0E7F26B866891 /* Pods_PIATunnel_macOS.framework */; };
+		EEA8F9159E4FF1CAE7B5FFA6 /* Pods_PIATunnel_PIATunnelHost.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B9D497DF76AE2BDB479E32BD /* Pods_PIATunnel_PIATunnelHost.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -178,6 +178,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		0DED389A643A02FE8D3CD3F7 /* Pods-PIATunnel-macOS.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PIATunnel-macOS.release.xcconfig"; path = "Target Support Files/Pods-PIATunnel-macOS/Pods-PIATunnel-macOS.release.xcconfig"; sourceTree = "<group>"; };
 		0E07595C20EF6D1400F38FD8 /* CryptoCBC.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CryptoCBC.m; sourceTree = "<group>"; };
 		0E07596120EF733F00F38FD8 /* CryptoMacros.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CryptoMacros.h; sourceTree = "<group>"; };
 		0E07596A20EF79AB00F38FD8 /* Encryption.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Encryption.h; sourceTree = "<group>"; };
@@ -265,15 +266,14 @@
 		0EFEB4A9200760EB00F81029 /* MemoryDestination.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MemoryDestination.swift; sourceTree = "<group>"; };
 		0EFEB4AA200760EC00F81029 /* InterfaceObserver.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InterfaceObserver.swift; sourceTree = "<group>"; };
 		0EFEB4AD2007625E00F81029 /* Keychain.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Keychain.swift; sourceTree = "<group>"; };
-		13671D14CDE38B4531B4F9F7 /* Pods_PIATunnel_PIATunnel_iOS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PIATunnel_PIATunnel_iOS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		258A7A8FDDE23277A2CD0A2D /* Pods-PIATunnel-PIATunnel-iOS.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PIATunnel-PIATunnel-iOS.debug.xcconfig"; path = "Pods/Target Support Files/Pods-PIATunnel-PIATunnel-iOS/Pods-PIATunnel-PIATunnel-iOS.debug.xcconfig"; sourceTree = "<group>"; };
-		2E20E23C41F6225FC5C0197C /* Pods_PIATunnel_macOS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PIATunnel_macOS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		51167595581C9BD591D1BB92 /* Pods-PIATunnel-PIATunnelHost.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PIATunnel-PIATunnelHost.debug.xcconfig"; path = "Pods/Target Support Files/Pods-PIATunnel-PIATunnelHost/Pods-PIATunnel-PIATunnelHost.debug.xcconfig"; sourceTree = "<group>"; };
-		9843ED31BC38BCE31E127399 /* Pods-PIATunnel-macOS.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PIATunnel-macOS.release.xcconfig"; path = "Pods/Target Support Files/Pods-PIATunnel-macOS/Pods-PIATunnel-macOS.release.xcconfig"; sourceTree = "<group>"; };
-		CE2FE207E5ACDF871DAC6FE1 /* Pods_PIATunnel_PIATunnelHost.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PIATunnel_PIATunnelHost.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		DA0B0AE40763C710F8D9B895 /* Pods-PIATunnel-macOS.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PIATunnel-macOS.debug.xcconfig"; path = "Pods/Target Support Files/Pods-PIATunnel-macOS/Pods-PIATunnel-macOS.debug.xcconfig"; sourceTree = "<group>"; };
-		E3947AA3A6A4E1BA7A99AB2E /* Pods-PIATunnel-PIATunnel-iOS.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PIATunnel-PIATunnel-iOS.release.xcconfig"; path = "Pods/Target Support Files/Pods-PIATunnel-PIATunnel-iOS/Pods-PIATunnel-PIATunnel-iOS.release.xcconfig"; sourceTree = "<group>"; };
-		E3E03A3B1F1650C5EE759C2E /* Pods-PIATunnel-PIATunnelHost.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PIATunnel-PIATunnelHost.release.xcconfig"; path = "Pods/Target Support Files/Pods-PIATunnel-PIATunnelHost/Pods-PIATunnel-PIATunnelHost.release.xcconfig"; sourceTree = "<group>"; };
+		52CEF30BEEC8485B2CA65EA4 /* Pods-PIATunnel-macOS.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PIATunnel-macOS.debug.xcconfig"; path = "Target Support Files/Pods-PIATunnel-macOS/Pods-PIATunnel-macOS.debug.xcconfig"; sourceTree = "<group>"; };
+		5BC2017BECF0E7F26B866891 /* Pods_PIATunnel_macOS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PIATunnel_macOS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		B9D497DF76AE2BDB479E32BD /* Pods_PIATunnel_PIATunnelHost.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PIATunnel_PIATunnelHost.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		C7B206694974589FB806A7A5 /* Pods-PIATunnel-PIATunnel-iOS.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PIATunnel-PIATunnel-iOS.debug.xcconfig"; path = "Target Support Files/Pods-PIATunnel-PIATunnel-iOS/Pods-PIATunnel-PIATunnel-iOS.debug.xcconfig"; sourceTree = "<group>"; };
+		D9A4844CDEB13469AD144453 /* Pods-PIATunnel-PIATunnelHost.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PIATunnel-PIATunnelHost.release.xcconfig"; path = "Target Support Files/Pods-PIATunnel-PIATunnelHost/Pods-PIATunnel-PIATunnelHost.release.xcconfig"; sourceTree = "<group>"; };
+		DA02E36BE24F31BF2C0FADF0 /* Pods_PIATunnel_PIATunnel_iOS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PIATunnel_PIATunnel_iOS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		DF631947B121334F6CBF76B1 /* Pods-PIATunnel-PIATunnelHost.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PIATunnel-PIATunnelHost.debug.xcconfig"; path = "Target Support Files/Pods-PIATunnel-PIATunnelHost/Pods-PIATunnel-PIATunnelHost.debug.xcconfig"; sourceTree = "<group>"; };
+		E8A8233573128F66A8B24C34 /* Pods-PIATunnel-PIATunnel-iOS.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PIATunnel-PIATunnel-iOS.release.xcconfig"; path = "Target Support Files/Pods-PIATunnel-PIATunnel-iOS/Pods-PIATunnel-PIATunnel-iOS.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -290,7 +290,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				0E9379C91F819A4300CE91B6 /* PIATunnel.framework in Frameworks */,
-				59AD9530C14668576FABB4FA /* Pods_PIATunnel_PIATunnelHost.framework in Frameworks */,
+				EEA8F9159E4FF1CAE7B5FFA6 /* Pods_PIATunnel_PIATunnelHost.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -298,7 +298,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				03542490082017F216F4120D /* Pods_PIATunnel_PIATunnel_iOS.framework in Frameworks */,
+				413760A155DC35D92C471EE5 /* Pods_PIATunnel_PIATunnel_iOS.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -306,7 +306,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				944E7C891D2B24B32AFD0F9E /* Pods_PIATunnel_macOS.framework in Frameworks */,
+				5649844695A47FA4B66FC6E7 /* Pods_PIATunnel_macOS.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -352,8 +352,8 @@
 				0E11089B1F77B9E800A92462 /* PIATunnelTests */,
 				0E1108AA1F77B9F900A92462 /* PIATunnelHost */,
 				0E17D7FA1F730D9F009EE129 /* Products */,
-				10D3E27EB73BC4D6F07DF856 /* Pods */,
-				61AE68164249A956E9529FBA /* Frameworks */,
+				7A5561BC7623B17C5728FCD7 /* Pods */,
+				2FF23DF5041D0B62C487B89B /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -488,27 +488,28 @@
 			path = AppExtension;
 			sourceTree = "<group>";
 		};
-		10D3E27EB73BC4D6F07DF856 /* Pods */ = {
+		2FF23DF5041D0B62C487B89B /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				258A7A8FDDE23277A2CD0A2D /* Pods-PIATunnel-PIATunnel-iOS.debug.xcconfig */,
-				E3947AA3A6A4E1BA7A99AB2E /* Pods-PIATunnel-PIATunnel-iOS.release.xcconfig */,
-				51167595581C9BD591D1BB92 /* Pods-PIATunnel-PIATunnelHost.debug.xcconfig */,
-				E3E03A3B1F1650C5EE759C2E /* Pods-PIATunnel-PIATunnelHost.release.xcconfig */,
-				DA0B0AE40763C710F8D9B895 /* Pods-PIATunnel-macOS.debug.xcconfig */,
-				9843ED31BC38BCE31E127399 /* Pods-PIATunnel-macOS.release.xcconfig */,
-			);
-			name = Pods;
-			sourceTree = "<group>";
-		};
-		61AE68164249A956E9529FBA /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				13671D14CDE38B4531B4F9F7 /* Pods_PIATunnel_PIATunnel_iOS.framework */,
-				CE2FE207E5ACDF871DAC6FE1 /* Pods_PIATunnel_PIATunnelHost.framework */,
-				2E20E23C41F6225FC5C0197C /* Pods_PIATunnel_macOS.framework */,
+				DA02E36BE24F31BF2C0FADF0 /* Pods_PIATunnel_PIATunnel_iOS.framework */,
+				B9D497DF76AE2BDB479E32BD /* Pods_PIATunnel_PIATunnelHost.framework */,
+				5BC2017BECF0E7F26B866891 /* Pods_PIATunnel_macOS.framework */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		7A5561BC7623B17C5728FCD7 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				C7B206694974589FB806A7A5 /* Pods-PIATunnel-PIATunnel-iOS.debug.xcconfig */,
+				E8A8233573128F66A8B24C34 /* Pods-PIATunnel-PIATunnel-iOS.release.xcconfig */,
+				DF631947B121334F6CBF76B1 /* Pods-PIATunnel-PIATunnelHost.debug.xcconfig */,
+				D9A4844CDEB13469AD144453 /* Pods-PIATunnel-PIATunnelHost.release.xcconfig */,
+				52CEF30BEEC8485B2CA65EA4 /* Pods-PIATunnel-macOS.debug.xcconfig */,
+				0DED389A643A02FE8D3CD3F7 /* Pods-PIATunnel-macOS.release.xcconfig */,
+			);
+			name = Pods;
+			path = Pods;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -578,11 +579,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 0E1108B81F77B9F900A92462 /* Build configuration list for PBXNativeTarget "PIATunnelHost" */;
 			buildPhases = (
-				E2BFBC09B14A1EFA3F2F3DBE /* [CP] Check Pods Manifest.lock */,
+				21F98CAFD4E154DCBB5EF452 /* [CP] Check Pods Manifest.lock */,
 				0E1108A51F77B9F900A92462 /* Sources */,
 				0E1108A61F77B9F900A92462 /* Frameworks */,
 				0E1108A71F77B9F900A92462 /* Resources */,
-				6B1C73B7E10DC7A09E11A9B4 /* [CP] Embed Pods Frameworks */,
+				CA58351E7FA3A535981F0406 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -598,7 +599,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 0E17D8011F730D9F009EE129 /* Build configuration list for PBXNativeTarget "PIATunnel-iOS" */;
 			buildPhases = (
-				D73E16881B1602092870D0BC /* [CP] Check Pods Manifest.lock */,
+				D7EB0F6243FDF048BDCDDC5C /* [CP] Check Pods Manifest.lock */,
 				0E17D7F41F730D9F009EE129 /* Sources */,
 				0E17D7F51F730D9F009EE129 /* Frameworks */,
 				0E17D7F61F730D9F009EE129 /* Headers */,
@@ -617,7 +618,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 0E3251CA1F95770D00C108D9 /* Build configuration list for PBXNativeTarget "PIATunnel-macOS" */;
 			buildPhases = (
-				D8FC9E2BC8A03126A9B41157 /* [CP] Check Pods Manifest.lock */,
+				41500CF6BD539D912EE548D8 /* [CP] Check Pods Manifest.lock */,
 				0E3251C01F95770D00C108D9 /* Sources */,
 				0E3251C11F95770D00C108D9 /* Frameworks */,
 				0E3251C21F95770D00C108D9 /* Headers */,
@@ -737,31 +738,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		6B1C73B7E10DC7A09E11A9B4 /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${SRCROOT}/Pods/Target Support Files/Pods-PIATunnel-PIATunnelHost/Pods-PIATunnel-PIATunnelHost-frameworks.sh",
-				"${PODS_ROOT}/OpenSSL-Apple/frameworks/iPhone/openssl.framework",
-				"${BUILT_PRODUCTS_DIR}/SwiftyBeaver/SwiftyBeaver.framework",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/openssl.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SwiftyBeaver.framework",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-PIATunnel-PIATunnelHost/Pods-PIATunnel-PIATunnelHost-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		D73E16881B1602092870D0BC /* [CP] Check Pods Manifest.lock */ = {
+		21F98CAFD4E154DCBB5EF452 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -776,14 +753,14 @@
 			outputFileListPaths = (
 			);
 			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-PIATunnel-PIATunnel-iOS-checkManifestLockResult.txt",
+				"$(DERIVED_FILE_DIR)/Pods-PIATunnel-PIATunnelHost-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		D8FC9E2BC8A03126A9B41157 /* [CP] Check Pods Manifest.lock */ = {
+		41500CF6BD539D912EE548D8 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -805,7 +782,27 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		E2BFBC09B14A1EFA3F2F3DBE /* [CP] Check Pods Manifest.lock */ = {
+		CA58351E7FA3A535981F0406 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-PIATunnel-PIATunnelHost/Pods-PIATunnel-PIATunnelHost-frameworks.sh",
+				"${PODS_ROOT}/OpenSSL-Apple/frameworks/iPhone/openssl.framework",
+				"${BUILT_PRODUCTS_DIR}/SwiftyBeaver/SwiftyBeaver.framework",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/openssl.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SwiftyBeaver.framework",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-PIATunnel-PIATunnelHost/Pods-PIATunnel-PIATunnelHost-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		D7EB0F6243FDF048BDCDDC5C /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -820,7 +817,7 @@
 			outputFileListPaths = (
 			);
 			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-PIATunnel-PIATunnelHost-checkManifestLockResult.txt",
+				"$(DERIVED_FILE_DIR)/Pods-PIATunnel-PIATunnel-iOS-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -1030,7 +1027,7 @@
 		};
 		0E1108B91F77B9F900A92462 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 51167595581C9BD591D1BB92 /* Pods-PIATunnel-PIATunnelHost.debug.xcconfig */;
+			baseConfigurationReference = DF631947B121334F6CBF76B1 /* Pods-PIATunnel-PIATunnelHost.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = PIATunnelHost/PIATunnelHost.entitlements;
@@ -1046,7 +1043,7 @@
 		};
 		0E1108BA1F77B9F900A92462 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = E3E03A3B1F1650C5EE759C2E /* Pods-PIATunnel-PIATunnelHost.release.xcconfig */;
+			baseConfigurationReference = D9A4844CDEB13469AD144453 /* Pods-PIATunnel-PIATunnelHost.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = PIATunnelHost/PIATunnelHost.entitlements;
@@ -1183,7 +1180,7 @@
 		};
 		0E17D8021F730D9F009EE129 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 258A7A8FDDE23277A2CD0A2D /* Pods-PIATunnel-PIATunnel-iOS.debug.xcconfig */;
+			baseConfigurationReference = C7B206694974589FB806A7A5 /* Pods-PIATunnel-PIATunnel-iOS.debug.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "";
 				CODE_SIGN_STYLE = Automatic;
@@ -1206,7 +1203,7 @@
 		};
 		0E17D8031F730D9F009EE129 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = E3947AA3A6A4E1BA7A99AB2E /* Pods-PIATunnel-PIATunnel-iOS.release.xcconfig */;
+			baseConfigurationReference = E8A8233573128F66A8B24C34 /* Pods-PIATunnel-PIATunnel-iOS.release.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "";
 				CODE_SIGN_STYLE = Automatic;
@@ -1229,7 +1226,7 @@
 		};
 		0E3251CB1F95770D00C108D9 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = DA0B0AE40763C710F8D9B895 /* Pods-PIATunnel-macOS.debug.xcconfig */;
+			baseConfigurationReference = 52CEF30BEEC8485B2CA65EA4 /* Pods-PIATunnel-macOS.debug.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
@@ -1252,7 +1249,7 @@
 		};
 		0E3251CC1F95770D00C108D9 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 9843ED31BC38BCE31E127399 /* Pods-PIATunnel-macOS.release.xcconfig */;
+			baseConfigurationReference = 0DED389A643A02FE8D3CD3F7 /* Pods-PIATunnel-macOS.release.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;

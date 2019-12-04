@@ -1,5 +1,9 @@
 [![PIA logo][pia-image]][pia-url]
 
+# Discontinued
+
+We're sorry to say that we have been discontinued this library in favour of [TunnelKit](https://github.com/passepartoutvpn/tunnelkit).
+
 # Private Internet Access
 
 Private Internet Access is the world's leading consumer VPN service. At Private Internet Access we believe in unfettered access for all, and as a firm supporter of the open source ecosystem we have made the decision to open source our VPN clients. For more information about the PIA service, please visit our website [privateinternetaccess.com][pia-url] or check out the [Wiki][pia-wiki].
